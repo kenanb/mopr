@@ -6,6 +6,6 @@
 
 MOPR_API
 int
- mopr_test_core( );
+ mopr_test_core( void );
 
 #endif   // MOPR_CORE_H

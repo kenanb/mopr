@@ -1,0 +1,28 @@
+{
+    "Plugins": [
+        {
+            "Info": {
+                "Types": {
+                    "moprInt_v0_0::MoprUsdxFileFormat": {
+                        "bases": [
+                            "SdfFileFormat"
+                        ],
+                        "displayName": "USD Plugin for testing MOPR initialization.",
+                        "extensions": [
+                            "usdx"
+                        ],
+                        "formatId": "usdx",
+                        "primary": true,
+                        "supportsWriting": false,
+                        "target": "usd"
+                    }
+                }
+            },
+            "LibraryPath": "libmopr_usdx.so",
+            "Name": "Usdx",
+            "ResourcePath": ".",
+            "Root": ".",
+            "Type": "library"
+        }
+    ]
+}

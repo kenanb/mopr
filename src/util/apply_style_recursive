@@ -1,0 +1,38 @@
+#!/bin/bash
+
+if [ -z "$1" ]
+then
+    echo "No path provided for recursive style application. Skipping."
+else
+    echo "Starting reformatting."
+    echo "######################"
+
+    MOPR_FOUND_SOURCE_FILES=`find $1 -type f -name '*.c' -o -name '*.cpp' -o -name '*.h' -o -name '*.inl'`
+
+    echo "Below are the files that would be modified by clang-format"
+    echo "source reformatting command:"
+    echo "##########################################################"
+
+    for f in $MOPR_FOUND_SOURCE_FILES; do echo $f; done
+
+    echo "##########################################################"
+    echo "Above are the files that would be modified by clang-format"
+    echo "source reformatting command."
+
+    echo "Do you wish to apply reformatting to all listed files?"
+    select MOPR_REFORMAT_YN in "Yes" "No"
+    do
+        case $MOPR_REFORMAT_YN in
+            Yes )
+                for f in $MOPR_FOUND_SOURCE_FILES
+                do clang-format -i $f
+                done
+                break
+                ;;
+            No )
+                break
+                ;;
+        esac
+    done
+
+fi
