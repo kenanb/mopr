@@ -37,13 +37,18 @@
                  (:file "usds" :depends-on ("package"
                                             "prim-types"
                                             "prop-types"))))
+               (:module "util"
+                :depends-on ("mopr" "usds")
+                :components
+                ((:file "package")
+                 (:file "test" :depends-on ("package"))))
                ;; NOTE: If module A depends-on a module B that happens
                ;; to call use-foreign-library, the call triggers the
                ;; library search at compile time, which fails due to
                ;; lookup paths.
                ;; TODO [2024-01-29] : Investigate the right time for initialization.
                (:module "user"
-                :depends-on ("usds")
+                :depends-on ("ffi" "mopr" "usds" "util")
                 :components
                 ((:file "package")
                  (:file "user" :depends-on ("package")))))

@@ -1,0 +1,19 @@
+#usda 1.0
+
+class "a"
+{
+}
+
+def Xform "b"
+{
+    def Xform "d"
+    {
+        over Sphere "e"
+        {
+        }
+    }
+}
+
+def Cube "c"
+{
+}

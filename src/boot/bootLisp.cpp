@@ -42,7 +42,7 @@ ARCH_CONSTRUCTOR( moprInit, 100, void )
     // cl_funcall( 1, sym_ffi_init );
 
     // Run some interpreter tests.
-    // run_examples( );
+    // runExamples( );
 }
 
 ARCH_DESTRUCTOR( moprFini, 100, void )

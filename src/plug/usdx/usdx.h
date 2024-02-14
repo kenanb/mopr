@@ -31,6 +31,17 @@ class MoprUsdxFileFormat : public pxr::SdfFileFormat
            const std::string & resolvedPath,
            bool metadataOnly ) const override;
 
+    // Overriding Write methods for SdfLayer::ExportToString() to work. Save won't.
+    virtual bool
+     WriteToString( const pxr::SdfLayer & layer,
+                    std::string * str,
+                    const std::string & comment = std::string( ) ) const override;
+
+    virtual bool
+     WriteToStream( const pxr::SdfSpecHandle & spec,
+                    std::ostream & out,
+                    size_t indent ) const override;
+
   protected:
     MOPR_SDF_FILE_FORMAT_FACTORY_ACCESS;
 

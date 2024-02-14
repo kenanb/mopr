@@ -9,18 +9,18 @@ static cl_object
 static cl_object
  example01( )
 {
-    return cl_eval( ecl_read_from_cstring( "(mopr-user::test-mopr)" ) );
+    return cl_eval( ecl_read_from_cstring( "(mopr-util::test-mopr)" ) );
 }
 
 static cl_object
  example02( )
 {
-    const cl_object pkgUsds_l = ecl_find_package( "MOPR-USER" );
-    const cl_object strTestUsds_l = ecl_make_constant_base_string( "TEST-MOPR", -1 );
-    int symTestUsdsIf = 0;
-    const cl_object symTestUsds_l =
-     ecl_find_symbol( strTestUsds_l, pkgUsds_l, &symTestUsdsIf );
-    return cl_funcall( 1, symTestUsds_l );
+    const cl_object pkgMoprUtil_l = ecl_find_package( "MOPR-UTIL" );
+    const cl_object strTestMopr_l = ecl_make_constant_base_string( "TEST-MOPR", -1 );
+    int symTestMoprIf = 0;
+    const cl_object symTestMopr_l =
+     ecl_find_symbol( strTestMopr_l, pkgMoprUtil_l, &symTestMoprIf );
+    return cl_funcall( 1, symTestMopr_l );
 }
 
 static cl_object
@@ -33,27 +33,27 @@ static cl_object
 static cl_object
  example04( )
 {
-    const cl_object pkgUsds_l = ecl_find_package( "MOPR" );
+    const cl_object pkgMopr_l = ecl_find_package( "MOPR" );
     const cl_object strTestWrap_l = ecl_make_constant_base_string( "TEST-WRAP-STD", -1 );
     int symTestWrapIf = 0;
     const cl_object symTestWrap_l =
-     ecl_find_symbol( strTestWrap_l, pkgUsds_l, &symTestWrapIf );
+     ecl_find_symbol( strTestWrap_l, pkgMopr_l, &symTestWrapIf );
     return cl_funcall( 1, symTestWrap_l );
 }
 
 static cl_object
  example05( )
 {
-    const cl_object pkgUsds_l = ecl_find_package( "MOPR" );
+    const cl_object pkgMopr_l = ecl_find_package( "MOPR" );
     const cl_object strTestWrap_l = ecl_make_constant_base_string( "TEST-WRAP-USD", -1 );
     int symTestWrapIf = 0;
     const cl_object symTestWrap_l =
-     ecl_find_symbol( strTestWrap_l, pkgUsds_l, &symTestWrapIf );
+     ecl_find_symbol( strTestWrap_l, pkgMopr_l, &symTestWrapIf );
     return cl_funcall( 1, symTestWrap_l );
 }
 
 void
- run_examples( )
+ runExamples( )
 {
     ecl_print( example00( ), ECL_T );
     ecl_print( example01( ), ECL_T );

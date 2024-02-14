@@ -4,6 +4,9 @@
 
 #include "pxr/usd/sdf/layer.h"
 
+// Needed because WriteTo* functions use the USDA format.
+#include "pxr/usd/usd/usdaFileFormat.h"
+
 // #include "wrap/usd/box/layer.h"
 
 #include <ecl/ecl.h>
@@ -48,14 +51,35 @@ bool
     // sLayer.SetRefPtr( tmpLayer );
     // cl_object hLayer_l = ecl_make_pointer( &sLayer );
 
-    const cl_object pkgMoprUser_l = ecl_find_package( "MOPR-USER" );
+    const cl_object pkgMoprUser_l = ecl_find_package( "MOPR-UTIL" );
     const cl_object strTestMopr_l = ecl_make_constant_base_string( "TEST-MOPR", -1 );
     int symTestMoprIf = 0;
     const cl_object symTestMopr_l =
      ecl_find_symbol( strTestMopr_l, pkgMoprUser_l, &symTestMoprIf );
     cl_funcall( 1, symTestMopr_l );
 
-    return false;
+    layer->TransferContent( tmpLayer );
+    return true;
+}
+
+bool
+ MoprUsdxFileFormat::WriteToString( const SdfLayer & layer,
+                                    std::string * str,
+                                    const std::string & comment ) const
+{
+    // TODO: For now, defer to the usda file format for this.
+    return SdfFileFormat::FindById( UsdUsdaFileFormatTokens->Id )
+     ->WriteToString( layer, str, comment );
+}
+
+bool
+ MoprUsdxFileFormat::WriteToStream( const SdfSpecHandle & spec,
+                                    std::ostream & out,
+                                    size_t indent ) const
+{
+    // TODO: For now, defer to the usda file format for this.
+    return SdfFileFormat::FindById( UsdUsdaFileFormatTokens->Id )
+     ->WriteToStream( spec, out, indent );
 }
 
 MOPR_NAMESPACE_CLOSE_SCOPE
