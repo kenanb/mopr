@@ -5,6 +5,8 @@
 
 (defvar *debug-mode* t)
 
+(defvar *enable-call* nil)
+
 (defun unknown-form-error (form action)
   (format t "
 [ERROR] Cannot handle form.
@@ -24,7 +26,31 @@
 
 (defvar *bind-table* nil)
 (defvar *alias-table* nil)
+(defvar *prim-type-table* nil)
+(defvar *prop-type-table* nil)
+(defvar *data-call-table* nil)
+(defvar *prim-call-table* nil)
 (defvar *usds-ns-package* (find-package "USDS-NS"))
+
+(defun handle-prim-call-form (prim-h form)
+  ;; (format t "~%Called handle-prim-call-form!~%: ~S~%" form)
+  (if *enable-call*
+      (when form
+        (handle-prim-subforms
+         prim-h
+         (alexandria:when-let ((fn (gethash (car form) *prim-call-table*)))
+           (apply fn (cdr form)))))
+      (unknown-form-error :call :debug)))
+
+(defun handle-call-form (stage-h form)
+  ;; (format t "~%Called handle-call-form!~%: ~S~%" form)
+  (if *enable-call*
+      (when form
+        (handle-data-subforms
+         stage-h
+         (alexandria:when-let ((fn (gethash (car form) *data-call-table*)))
+           (apply fn (cdr form)))))
+      (unknown-form-error :call :debug)))
 
 (defclass node ()
   ((path
@@ -104,9 +130,9 @@
 (defun handle-prim-type-form (prim-h form &aux (prim-type (car form)))
   ;; (format t "~%Called handle-prim-type-form!~%: ~S~%" form)
   (when prim-type
-    (mopr:prim-set-type-name
-     prim-h
-     (gethash prim-type usds-cn:*prim-type-table*))))
+    (alexandria:if-let ((type-entry (gethash prim-type *prim-type-table*)))
+      (mopr:prim-set-type-name prim-h type-entry)
+      (unknown-form-error prim-type :debug))))
 
 (defun handle-prim-meta-form (prim-h form)
   ;; (format t "~%Called handle-prim-meta-form!~%: ~S~%" form)
@@ -144,7 +170,7 @@
            (data (if datum-array-p (cdr data) data))
            (values (cdr data))
            (prop-type-sym (car data))
-           (prop-type (gethash prop-type-sym usds-cn:*prop-type-table*)))
+           (prop-type (gethash prop-type-sym *prop-type-table*)))
         form
 
       ;; TODO: We don't handle metadata yet.
@@ -188,6 +214,24 @@
                    (funcall fn prim-h (cdr l) (cons ns ns-list))
                    (unknown-form-error (car l) :debug))))))
 
+(defun handle-prim-subforms (prim-h subforms)
+  ;; (format t "~%Called handle-prim-subforms!~%: ~S~%" form)
+  (loop for l in subforms
+        for fn = (case (car l)
+                   (:call   #'handle-prim-call-form)
+                   (:|call| #'handle-prim-call-form)
+                   (:type   #'handle-prim-type-form)
+                   (:|type| #'handle-prim-type-form)
+                   (:meta   #'handle-prim-meta-form)
+                   (:|meta| #'handle-prim-meta-form)
+                   (:prop   #'handle-prim-prop-form)
+                   (:|prop| #'handle-prim-prop-form)
+                   (:ns     #'handle-prim-ns-form)
+                   (:|ns|   #'handle-prim-ns-form))
+        do (if fn
+               (funcall fn prim-h (cdr l))
+               (unknown-form-error (car l) :debug))))
+
 (defun handle-prim-form (stage-h form)
   ;; (format t "~%Called handle-prim-form!~%: ~S~%" form)
   (destructuring-bind
@@ -204,19 +248,7 @@
                          (prim-h :prim))
       (mopr:path-ctor-cstr path-h prim-path-str)
       (mopr:stage-get-prim-at-path prim-h stage-h path-h)
-      (loop for l in prim-forms
-            for fn = (case (car l)
-                       (:type   #'handle-prim-type-form)
-                       (:|type| #'handle-prim-type-form)
-                       (:meta   #'handle-prim-meta-form)
-                       (:|meta| #'handle-prim-meta-form)
-                       (:prop   #'handle-prim-prop-form)
-                       (:|prop| #'handle-prim-prop-form)
-                       (:ns     #'handle-prim-ns-form)
-                       (:|ns|   #'handle-prim-ns-form))
-            do (if fn
-                   (funcall fn prim-h (cdr l))
-                   (unknown-form-error (car l) :debug))))))
+      (handle-prim-subforms prim-h prim-forms))))
 
 (defun handle-tree-form (stage-h form)
   ;; (format t "~%Called handle-tree-form!~%: ~S~%" form)
@@ -230,10 +262,12 @@
 
   nil)
 
-(defun handle-data-form (stage-h tl-form)
-  ;; (format t "~%Called handle-data-form!~%: ~S~%" tl-form)
-  (loop for l in tl-form
+(defun handle-data-subforms (stage-h subforms)
+  ;; (format t "~%Called handle-data-subforms!~%: ~S~%" subforms)
+  (loop for l in subforms
         for fn = (case (car l)
+                   (:call   #'handle-call-form)
+                   (:|call| #'handle-call-form)
                    (:meta   #'handle-meta-form)
                    (:|meta| #'handle-meta-form)
                    (:tree   #'handle-tree-form)
@@ -244,22 +278,36 @@
                (funcall fn stage-h (cdr l))
                (unknown-form-error (car l) :debug))))
 
-(defmacro with-usds-tables (&body body)
-  `(let* ((*bind-table* (make-hash-table))
+(defmacro with-usds-variables ((&key
+                                  (enable-call nil))
+                               &body body)
+  `(let* ((*enable-call* ,enable-call)
+          (*bind-table* (make-hash-table))
           (*alias-table* (make-hash-table))
-          (usds-cn:*prim-type-table* (make-hash-table))
-          (usds-cn:*prop-type-table* (make-hash-table)))
-     (usds-cn:create-generic-prim-type-tokens usds-cn:*prim-type-table*)
-     (mopr-val:create-generic-value-type-tokens usds-cn:*prop-type-table*)
+          (*data-call-table* (make-hash-table))
+          (*prim-call-table* (make-hash-table))
+          (*prim-type-table* (make-hash-table))
+          (*prop-type-table* (make-hash-table)))
+     (mopr-plug:create-data-call-table *data-call-table*)
+     (mopr-plug:create-prim-call-table *prim-call-table*)
+     (mopr-prim:create-generic-prim-type-tokens *prim-type-table*)
+     (mopr-val:create-generic-value-type-tokens *prop-type-table*)
      ,@body
      ;; (format t "HT ALIAS: ~A~%" (hash-table-count *alias-table*))
      ;; (format t "HT BIND : ~A~%" (hash-table-count *bind-table*))
-     (mopr-val:delete-generic-value-type-tokens usds-cn:*prop-type-table*)
-     (usds-cn:delete-generic-prim-type-tokens usds-cn:*prim-type-table*)))
+     (mopr-val:delete-generic-value-type-tokens *prop-type-table*)
+     (mopr-prim:delete-generic-prim-type-tokens *prim-type-table*)))
 
 (defun write-to-layer (layer-h usds-data)
   (when (mopr:layer-try-upgrade layer-h)
     (mopr:with-handle (stage-h :stage)
       (mopr:stage-open-layer stage-h layer-h)
-      (with-usds-tables
-          (handle-data-form stage-h usds-data)))))
+      (with-usds-variables (:enable-call nil)
+        (handle-data-subforms stage-h usds-data)))))
+
+(defun write-to-layer-call-enabled (layer-h usds-data)
+  (when (mopr:layer-try-upgrade layer-h)
+    (mopr:with-handle (stage-h :stage)
+      (mopr:stage-open-layer stage-h layer-h)
+      (with-usds-variables (:enable-call t)
+        (handle-data-subforms stage-h usds-data)))))

@@ -23,3 +23,27 @@
    #:delete-generic-value-type-tokens
    #:transfer-for-type
    #:get-transfer-for-type-function))
+
+(defpackage :mopr-prim
+  (:use #:cl)
+  (:export
+   #:create-generic-prim-type-tokens
+   #:delete-generic-prim-type-tokens))
+
+(defpackage :mopr-ns
+  (:use)
+  (:export
+   ;; Generic prim types:  Standard reader case forms:
+   #:|PointInstancer|      #:PointInstancer
+   #:|Camera|              #:Camera
+   #:|Xform|               #:Xform
+   #:|Mesh|                #:Mesh
+   #:|NurbsPatch|          #:NurbsPatch
+   #:|BasisCurves|         #:BasisCurves
+   #:|NurbsCurves|         #:NurbsCurves
+   #:|Points|              #:Points
+   #:|Capsule|             #:Capsule
+   #:|Cone|                #:Cone
+   #:|Cube|                #:Cube
+   #:|Cylinder|            #:Cylinder
+   #:|Sphere|              #:Sphere))

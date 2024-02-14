@@ -27,6 +27,27 @@ TEST_CASE( "USDS Output", "[usds]" )
     REQUIRE( usdsAsUsda == usdaAsUsda );
 }
 
+TEST_CASE( "USDS Callable Output", "[usds]" )
+{
+    registerPlugins( );
+
+    auto i = GENERATE( "08_call", "09_call" );
+    const auto & config = Config::GetInstance( );
+    const std::string & iFile = config.FromDataset( i, "lisp" );
+    const std::string & oFile = config.FromDataset( i, "usda" );
+
+    INFO( "Comparing files " << iFile << " -- " << oFile );
+
+    std::string usdsAsUsda = generateUsdaString( iFile, /* callEnabled = */ true );
+    std::string usdaAsUsda = exportToUsdaString( oFile );
+
+    // Remove first line, as our export produces "sdf" header, not "usd".
+    usdsAsUsda.erase( 0, usdsAsUsda.find( "\n" ) + 1 );
+    usdaAsUsda.erase( 0, usdaAsUsda.find( "\n" ) + 1 );
+
+    REQUIRE( usdsAsUsda == usdaAsUsda );
+}
+
 TEST_CASE( "USDX File Format Output", "[usdx]" )
 {
     auto i = GENERATE( "00" );

@@ -7,7 +7,7 @@
 
 MOPR_API
 std::string
- generateUsdaString( const std::string & src );
+ generateUsdaString( const std::string & src, bool callEnabled = false );
 
 MOPR_API
 std::string

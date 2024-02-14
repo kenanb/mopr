@@ -1,0 +1,26 @@
+#usda 1.0
+(
+)
+
+class "a"
+{
+}
+
+def "b"
+{
+    def "d"
+    {
+        over Sphere "e"
+        {
+            double radius = 5
+        }
+
+        def "f"
+        {
+        }
+    }
+}
+
+def Mesh "c"
+{
+}

@@ -26,17 +26,20 @@
                 :components
                 ((:file "package")
                  (:file "raii" :depends-on ("package"))
+                 (:file "prim" :depends-on ("package"))
                  (:file "value" :depends-on ("package" "raii"))
                  (:file "describe" :depends-on ("package"))))
+               (:module "plug"
+                :depends-on ("mopr")
+                :components
+                ((:file "package")
+                 (:file "call" :depends-on ("package"))
+                 (:file "plug" :depends-on ("package" "call"))))
                (:module "usds"
                 :depends-on ("mopr")
                 :components
                 ((:file "package")
-                 (:file "prim-types" :depends-on ("package"))
-                 (:file "prop-types" :depends-on ("package"))
-                 (:file "usds" :depends-on ("package"
-                                            "prim-types"
-                                            "prop-types"))))
+                 (:file "usds" :depends-on ("package"))))
                (:module "util"
                 :depends-on ("mopr" "usds")
                 :components
