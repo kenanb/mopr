@@ -1,0 +1,11 @@
+#usda 1.0
+
+def Sphere "a"
+{
+    double radius = 5
+    double radius.timeSamples = {
+        10: 4,
+        130: 10,
+    }
+    timecode[] testTimecode = [5.3, 10]
+}

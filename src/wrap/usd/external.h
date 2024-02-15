@@ -12,6 +12,7 @@
 #include "ext/path.h"
 #include "ext/prim.h"
 #include "ext/stage.h"
+#include "ext/timecode.h"
 #include "ext/token.h"
 #include "ext/value.h"
 #include "ext/valueTypeName.h"

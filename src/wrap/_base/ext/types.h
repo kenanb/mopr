@@ -52,6 +52,7 @@
     MOPR_APPLY_TYPE( UInt64, uint64, uint64_t, ( ), unsigned long * )                    \
     MOPR_APPLY_TYPE( Float, float, float, ( ), float * )                                 \
     MOPR_APPLY_TYPE( Double, double, double, ( ), double * )                             \
+    MOPR_APPLY_TYPE( TimeCode, timecode, pxr::SdfTimeCode, ( ), MoprTimecode_h )         \
     MOPR_APPLY_TYPE( Token, token, pxr::TfToken, ( ), MoprToken_h )
 
 #define MOPR_VECTOR_VALUE_TYPES                                                          \

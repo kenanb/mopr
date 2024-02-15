@@ -3,6 +3,7 @@
 
 #include "wrap/_base/box/generic.h"
 
+#include "wrap/usd/box/timecode.h"
 #include "wrap/usd/box/token.h"
 
 #include "wrap/_base/ext/types.h"
@@ -47,6 +48,14 @@ struct MOPR_API MoprDatumBase< pxr::TfToken > : public MoprGeneric
 {
     typedef pxr::TfToken source_primitive_type;
     typedef struct MoprToken target_primitive_type;
+    static constexpr const size_t dim = 1;
+};
+
+template <>
+struct MOPR_API MoprDatumBase< pxr::SdfTimeCode > : public MoprGeneric
+{
+    typedef pxr::SdfTimeCode source_primitive_type;
+    typedef struct MoprTimecode target_primitive_type;
     static constexpr const size_t dim = 1;
 };
 

@@ -138,6 +138,7 @@ WRAP_USD_CF ::= $(COMMON_CFLAGS) $(USD_CFLAGS) -fPIC
 WRAP_USD_CPP_OBJ ::= src/wrap/usd/ext/._test.cpp.o \
 	src/wrap/usd/ext/.attribute.cpp.o \
 	src/wrap/usd/ext/.valueTypeName.cpp.o \
+	src/wrap/usd/ext/.timecode.cpp.o \
 	src/wrap/usd/ext/.token.cpp.o \
 	src/wrap/usd/ext/.array.cpp.o \
 	src/wrap/usd/ext/.datum.cpp.o \

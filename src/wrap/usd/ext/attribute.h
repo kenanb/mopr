@@ -5,6 +5,7 @@
 #include "wrap/_base/ext/common.h"
 #include "wrap/_base/ext/prolog.h"
 
+#include "wrap/usd/ext/timecode.h"
 #include "wrap/usd/ext/value.h"
 
 // Generic includes.
@@ -47,7 +48,9 @@ extern "C"
 
     MOPR_API
     _Bool
-     mopr_attribute_set_value( MoprAttribute_ch this_ch, MoprValue_ch value_ch );
+     mopr_attribute_set_value( MoprAttribute_ch this_ch,
+                               MoprValue_ch value_ch,
+                               MoprTimecode_ch timecode_ch );
 
 #ifdef __cplusplus
 }

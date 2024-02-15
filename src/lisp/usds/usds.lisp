@@ -148,6 +148,21 @@
                               (reverse r-prop-name)
                               r-prop-name)))
 
+(defun set-attr-for-all-timecodes (fn attribute-h value-h value-list)
+  (mopr:with-handles* ((timecode-h :timecode))
+    (loop for val-elt in value-list
+          do (let (val)
+               (etypecase val-elt
+                 (array
+                  (mopr:timecode-ctor-default timecode-h)
+                  (setf val val-elt))
+                 (cons
+                  (mopr:timecode-ctor-double timecode-h
+                                             (coerce (car val-elt) 'double-float))
+                  (setf val (cdr val-elt))))
+               (funcall fn val value-h)
+               (mopr:attribute-set-value attribute-h value-h timecode-h)))))
+
 (defun handle-prim-prop-form (prim-h form &optional ns-list)
   ;; (format t "~%Called handle-prim-prop-form!~%: ~S~%" form)
   (when form
@@ -190,12 +205,13 @@
                                         (mopr-val:value-type-name prop-type datum-array-p)
                                         0 ; bool custom
                                         mopr:+mopr-attribute-variability-varying+)
-            (if (mopr-val:transfer-for-type (mopr-val:value-type-real-type prop-type)
-                                            datum-array-p
-                                            (car values)
-                                            value-h)
-                (mopr:attribute-set-value attribute-h value-h)
-                (format t "SKIPPED UNSUPPORTED ATTRIBUTE: ~A~%" prop-name-str)))
+            (alexandria:if-let
+                ((transfer-for-type-fn
+                  (mopr-val:get-transfer-for-type-function
+                   (mopr-val:value-type-real-type prop-type)
+                   datum-array-p)))
+              (set-attr-for-all-timecodes transfer-for-type-fn attribute-h value-h values)
+              (format t "SKIPPED UNSUPPORTED ATTRIBUTE: ~A~%" prop-name-str)))
           (format t "SKIPPED UNRECOGNIZED ATTRIBUTE: ~A~%" prop-name-str)))))
 
 (defun handle-prim-ns-form (prim-h form &optional ns-list)

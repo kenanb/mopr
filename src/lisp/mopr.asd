@@ -36,7 +36,7 @@
                  (:file "call" :depends-on ("package"))
                  (:file "plug" :depends-on ("package" "call"))))
                (:module "usds"
-                :depends-on ("mopr")
+                :depends-on ("mopr" "plug")
                 :components
                 ((:file "package")
                  (:file "usds" :depends-on ("package"))))

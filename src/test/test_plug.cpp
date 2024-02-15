@@ -10,7 +10,7 @@ TEST_CASE( "USDS Output", "[usds]" )
 {
     registerPlugins( );
 
-    auto i = GENERATE( "00", "01", "02", "03", "04", "05", "06", "07" );
+    auto i = GENERATE( "00", "01", "02", "03", "04", "05", "06", "07", "10" );
     const auto & config = Config::GetInstance( );
     const std::string & iFile = config.FromDataset( i, "lisp" );
     const std::string & oFile = config.FromDataset( i, "usda" );

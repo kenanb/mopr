@@ -2,6 +2,7 @@
 
 // Wrap internal includes.
 #include "wrap/usd/box/attribute.h"
+#include "wrap/usd/box/timecode.h"
 #include "wrap/usd/box/value.h"
 
 MOPR_DEFINE_RAII_FUNCTIONS( MoprAttribute, attribute )
@@ -23,8 +24,10 @@ _Bool
 }
 
 _Bool
- mopr_attribute_set_value( MoprAttribute_ch this_ch, MoprValue_ch value_ch )
+ mopr_attribute_set_value( MoprAttribute_ch this_ch,
+                           MoprValue_ch value_ch,
+                           MoprTimecode_ch timecode_ch )
 {
-    this_ch->d.Set( value_ch->d );
+    this_ch->d.Set( value_ch->d, timecode_ch->d );
     return !mopr_attribute_is_empty_p( this_ch );
 }
