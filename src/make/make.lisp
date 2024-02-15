@@ -14,11 +14,15 @@
 ;; If there is an existing QL installation, that can be used instead
 ;; by means of manually adding QL init code here, or removing "-norc" option
 ;; from ecl instantiation in the makefile.
-(require :ecl-quicklisp)
 
-(ql:quickload :cffi)
+;; (require :ecl-quicklisp)
 
-(ql:quickload :cl-autowrap)
+;; (ql:quickload :cffi)
+
+;; (ql:quickload :cl-autowrap)
+
+(asdf:oos 'asdf:load-op :cffi)
+(asdf:oos 'asdf:load-op :cl-autowrap)
 
 (asdf:make-build :mopr
                  :type :shared-library
