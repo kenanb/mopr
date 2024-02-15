@@ -13,7 +13,7 @@
      '(:|int64| ((signed-byte 64)) :int64 :int64)
      '(:|uint64| ((unsigned-byte 64)) :uint64 :uint64)
 
-     '(:|timecode| (double-float))
+     '(:|timecode| (double-float) :timecode :double)
      '(:|string| (string))
      '(:|token| (keyword))
      '(:|asset| ((or pathname string)))
@@ -250,30 +250,6 @@
           do (mopr:token-ctor-cstr elt val-str))
     (#.(get-value-assign-fn-symbol :array :token) value-h datum-h)))
 
-(defun timecode-transfer-datum-handler (value-array value-h)
-  (mopr:with-handles* ((datum-h "DATUM-TIMECODE"))
-    (#.(get-ctor-fn-symbol :datum :timecode) datum-h)
-    (loop for i below (array-total-size value-array)
-          for elt = (#.(get-row-major-aref-fn-symbol :datum :timecode) datum-h i)
-          for val = (row-major-aref value-array i)
-          for val-dbl = (coerce val 'double-float)
-          ;; do (format t "WRITING for ~A: ~S ~%" i (row-major-aref value-array i))
-          do (mopr:timecode-ctor-double elt val-dbl))
-    (#.(get-value-assign-fn-symbol :datum :timecode) value-h datum-h)))
-
-(defun timecode-transfer-array-handler (value-array value-h)
-  (mopr:with-handles* ((datum-h "ARRAY-TIMECODE"))
-    (#.(get-ctor-fn-symbol :array :timecode) datum-h)
-    (#.(get-resize-fn-symbol :array :timecode) datum-h
-       (array-dimension value-array 0))
-    (loop for i below (array-total-size value-array)
-          for elt = (#.(get-row-major-aref-fn-symbol :array :timecode) datum-h i)
-          for val = (row-major-aref value-array i)
-          for val-dbl = (coerce val 'double-float)
-          ;; do (format t "WRITING for ~A: ~S ~%" i (row-major-aref value-array i))
-          do (mopr:timecode-ctor-double elt val-dbl))
-    (#.(get-value-assign-fn-symbol :array :timecode) value-h datum-h)))
-
 (defmacro %transfer-for-type (category real-type)
   `(case ,real-type
      ,@(loop for type-info in +value-type-list+
@@ -285,8 +261,6 @@
                              `(%get-transfer-for-type-fn ,category ,elt-type ,@ffi-info)))
      (:|token|
       #',(alexandria:symbolicate "TOKEN-TRANSFER-" category "-HANDLER"))
-     (:|timecode|
-      #',(alexandria:symbolicate "TIMECODE-TRANSFER-" category "-HANDLER"))
      (otherwise nil)))
 
 (defun get-transfer-for-type-function (real-type datum-array-p)

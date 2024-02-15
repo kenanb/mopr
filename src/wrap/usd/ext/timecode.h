@@ -14,9 +14,8 @@ extern "C"
 #endif
 
     //
-    // SDF & USD TIMECODE COMBINED WRAPPER
-    // Internally stores the Sdf value so it can be used in the VtArray instantiation,
-    // but it provides the API to reuse it for cases where UsdTimeCode is needed.
+    // USD TIMECODE WRAPPER
+    //
 
     MOPR_DECLARE_HANDLE( MoprTimecode )
 
