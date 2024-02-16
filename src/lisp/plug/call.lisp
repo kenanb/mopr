@@ -11,8 +11,49 @@
                                    ("xformOp" "rotateXYZ")))
                (:ns "xformOp"
                     (:prop "translate" :float3 ,tr-array)
-                    (:prop "rotateXYZ" :double3 ,rt-array))))))
+                    (:prop "rotateXYZ" :double3 ,rt-array)))))
+         (prim-fn-grid-extent (x y z s)
+           (list (list :prop "extent"
+                       :array :float3
+                       (make-array '(2 3)
+                                   :initial-contents
+                                   `((00 00 00)
+                                     (,(* s x) ,(* s y) ,(* s z)))))))
+         (prim-fn-grid-fv-counts (w h)
+           (list (list :prop "faceVertexCounts"
+                       :array :int
+                       (make-array
+                        (* w h)
+                        :initial-element 4))))
+         (prim-fn-grid-fv-indices (w h
+                                   &key
+                                     (counter-clockwise-p nil)
+                                   &aux
+                                     (p (if counter-clockwise-p
+                                            (list 0 1 (+ w 2) (+ w 1))
+                                            (list 0 (+ w 1) (+ w 2) 1))))
+           (list (list :prop "faceVertexIndices"
+                       :array :int
+                       (make-array
+                        (list (* w h 4))
+                        :initial-contents
+                        (loop for y below h
+                              nconc (loop for x below w
+                                          nconc (mapcar (lambda (s) (+ x s (* y (+ 1 w)))) p)))))))
+         (prim-fn-grid-points-xy (w h s)
+           (list (list :prop "points"
+                       :array :point3f
+                       (make-array
+                        (list (* (1+ h) (1+ w)) 3)
+                        :initial-contents
+                        (loop for y upto h
+                              nconc (loop for x upto w
+                                          collect (list (* s x) (* s y) (* s 0)))))))))
 
+    (setf (gethash :grid-extent table) #'prim-fn-grid-extent)
+    (setf (gethash :grid-fv-counts table) #'prim-fn-grid-fv-counts)
+    (setf (gethash :grid-fv-indices table) #'prim-fn-grid-fv-indices)
+    (setf (gethash :grid-points-xy table) #'prim-fn-grid-points-xy)
     (setf (gethash :test-gen-xform-info table) #'prim-fn-test-gen-xform-info)))
 
 (defun create-data-call-table (table)

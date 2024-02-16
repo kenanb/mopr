@@ -10,16 +10,20 @@ TEST_CASE( "USDS Output", "[usds]" )
 {
     registerPlugins( );
 
-    auto i = GENERATE( "00", "01", "02", "03", "04", "05", "06", "07", "10",
-                       "11_grid", "12_grid", "13_grid", "14_grid" );
+    const std::string i = GENERATE( "00", "01", "02", "03", "04", "05", "06", "07", "10",
+                                    "11_grid", "12_grid", "13_grid", "14_grid" );
+
     const auto & config = Config::GetInstance( );
     const std::string & iFile = config.FromDataset( i, "lisp" );
-    const std::string & oFile = config.FromDataset( i, "usda" );
+    const std::string::size_type pos = i.find( '_' );
+    const std::string & rFile = config.FromDataset( pos != std::string::npos
+                                                    ? i.substr( 0, pos )
+                                                    : i, "usda" );
 
-    INFO( "Comparing files " << iFile << " -- " << oFile );
+    INFO( "Comparing files " << iFile << " -- " << rFile );
 
     std::string usdsAsUsda = generateUsdaString( iFile );
-    std::string usdaAsUsda = exportToUsdaString( oFile );
+    std::string usdaAsUsda = exportToUsdaString( rFile );
 
     // Remove first line, as our export produces "sdf" header, not "usd".
     usdsAsUsda.erase( 0, usdsAsUsda.find( "\n" ) + 1 );
@@ -32,15 +36,21 @@ TEST_CASE( "USDS Callable Output", "[usds]" )
 {
     registerPlugins( );
 
-    auto i = GENERATE( "08_call", "09_call" );
+    const std::string i = GENERATE( "08_call", "09_call",
+                                    "11_call", "12_call",
+                                    "13_call", "14_call" );
+
     const auto & config = Config::GetInstance( );
     const std::string & iFile = config.FromDataset( i, "lisp" );
-    const std::string & oFile = config.FromDataset( i, "usda" );
+    const std::string::size_type pos = i.find( '_' );
+    const std::string & rFile = config.FromDataset( pos != std::string::npos
+                                                    ? i.substr( 0, pos )
+                                                    : i, "usda" );
 
-    INFO( "Comparing files " << iFile << " -- " << oFile );
+    INFO( "Comparing files " << iFile << " -- " << rFile );
 
     std::string usdsAsUsda = generateUsdaString( iFile, /* callEnabled = */ true );
-    std::string usdaAsUsda = exportToUsdaString( oFile );
+    std::string usdaAsUsda = exportToUsdaString( rFile );
 
     // Remove first line, as our export produces "sdf" header, not "usd".
     usdsAsUsda.erase( 0, usdsAsUsda.find( "\n" ) + 1 );
@@ -54,11 +64,11 @@ TEST_CASE( "USDX File Format Output", "[usdx]" )
     auto i = GENERATE( "00" );
     const auto & config = Config::GetInstance( );
     const std::string & iFile = config.FromDataset( i, "usdx" );
-    const std::string & oFile = config.FromDataset( i, "usda" );
+    const std::string & rFile = config.FromDataset( i, "usda" );
 
-    INFO( "Comparing files " << iFile << " -- " << oFile );
+    INFO( "Comparing files " << iFile << " -- " << rFile );
 
     std::string usdxAsUsda = exportToUsdaString( iFile );
-    std::string usdaAsUsda = exportToUsdaString( oFile );
+    std::string usdaAsUsda = exportToUsdaString( rFile );
     REQUIRE( usdxAsUsda == usdaAsUsda );
 }
