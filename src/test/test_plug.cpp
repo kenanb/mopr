@@ -11,7 +11,7 @@ TEST_CASE( "USDS Output", "[usds]" )
     registerPlugins( );
 
     auto i = GENERATE( "00", "01", "02", "03", "04", "05", "06", "07", "10",
-                       "11_grid", "12_grid", "13_grid" );
+                       "11_grid", "12_grid", "13_grid", "14_grid" );
     const auto & config = Config::GetInstance( );
     const std::string & iFile = config.FromDataset( i, "lisp" );
     const std::string & oFile = config.FromDataset( i, "usda" );
