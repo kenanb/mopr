@@ -13,7 +13,7 @@
   (setf (gethash :grid-extent table) #'prim-fn-grid-extent)
   (setf (gethash :grid-fv-counts table) #'prim-fn-grid-fv-counts)
   (setf (gethash :grid-fv-indices table) #'prim-fn-grid-fv-indices)
-  (setf (gethash :grid-points-xy table) #'prim-fn-grid-points-xy)
+  (setf (gethash :grid-points table) #'prim-fn-grid-points)
 
   (setf (gethash :test-gen-xform-info table) #'prim-fn-test-gen-xform-info))
 

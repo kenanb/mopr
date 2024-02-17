@@ -34,19 +34,21 @@
              nconc (loop for x below w
                          nconc (mapcar (lambda (s) (+ x s (* y (+ 1 w)))) p)))))))
 
-(defun prim-fn-grid-points-xy (w h s)
+(defun prim-fn-grid-points (s dims &optional (order #(2 1 0)))
   (let* ((min-a #3(0))
          (max-a #3(0))
          (points
            (make-array
-            (list (* (1+ h) (1+ w)) 3)
+            (list (apply #'* (mapcar #'1+ dims)) 3)
             :initial-contents
-            (loop for y upto h
-                  nconc (loop for x upto w
-                              for v = (vector (* s x) (* s y) (* s 0))
-                              do (setf min-a (map 'vector #'min min-a v))
-                              do (setf max-a (map 'vector #'max max-a v))
-                              collect v))))
+            (loop for elt-d0 upto (elt dims 0)
+                  nconc (loop for elt-d1 upto (elt dims 1)
+                              nconc (loop for elt-d2 upto (elt dims 2)
+                                          for v = (vector (* s elt-d0) (* s elt-d1) (* s elt-d2))
+                                          for shuffled = (map 'vector (lambda (i) (aref v i)) order)
+                                          do (setf min-a (map 'vector #'min min-a shuffled))
+                                          do (setf max-a (map 'vector #'max max-a shuffled))
+                                          collect shuffled)))))
          (extent (make-array '(2 3) :initial-contents (list min-a max-a))))
     `((:prop "points"
        :array :point3f
