@@ -175,24 +175,18 @@ wrap: $(wrap_std) $(wrap_usd)
 ## Target: mopr--all-systems.so
 #
 
+MOPR_LISP_CF ::= $(COMMON_CFLAGS)
+
 MOPR_LISP_FILE ::= mopr--all-systems.so
 
 mopr_lisp ::= $(MOPR_LIB_DIR)/$(MOPR_LISP_FILE)
 
-MOPR_LISP_SRC ::= src/lisp/mopr.asd \
-	src/lisp/mopr/package.lisp \
-	src/lisp/usds/usds.lisp \
-	src/lisp/usds/package.lisp \
-	src/lisp/ffi/autowrap-core.lisp \
-	src/lisp/ffi/autowrap-wrap.lisp \
-	src/lisp/ffi/bindings-core.lisp \
-	src/lisp/ffi/bindings-wrap.lisp \
-	src/lisp/ffi/moprCoreIncludes.h \
-	src/lisp/ffi/moprWrapIncludes.h \
-	src/lisp/ffi/package.lisp
+MOPR_LISP_DEP ::= src/lisp/.mopr.asd.d
+$(MOPR_LISP_DEP): CFLAGS = $(MOPR_LISP_CF) $(CSTD)
+include $(MOPR_LISP_DEP)
 
 # $(wrap_usd) is dynamically loaded via CFFI. So no linker declaration.
-$(mopr_lisp): $(mopr_core) $(wrap_usd) $(MOPR_LISP_SRC)
+$(mopr_lisp): $(mopr_core) $(wrap_usd) $(MOPR_LISP_DEP)
 	$(call ECHO_RULE)
 	@mkdir -p $(@D)
 	ecl -norc --shell ./src/make/make.lisp
@@ -368,7 +362,7 @@ $(with_plugin_sh): src/make/with_plugin
 	@mkdir -p $(@D)
 	@cp $< $@
 
-TEST_ARGS ::= -s -R $(CURDIR)
+TEST_ARGS ::= -R $(CURDIR) # -s
 
 # The ending slash of plugin path is important.
 .PHONY: test_run

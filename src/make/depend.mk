@@ -33,3 +33,9 @@
 .%.c.o: .%.c.d
 	$(call ECHO_RULE)
 	$(CC) -c $(CFLAGS) -o $@ $(*D)/$(*F).c
+
+.%.asd.d: %.asd
+	$(call ECHO_RULE)
+	echo -n > $@
+	for f in `find $(*D) -type f -name '*.h'`; do $(CC) -MM -MT "$@" $(CFLAGS) $$f >> $@; done
+	echo "$@ :" `find $(*D) -type f -name '*.asd' -o -name '*.lisp' -o -name '*.spec' | tr "\n" " "` >> $@

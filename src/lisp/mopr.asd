@@ -33,7 +33,9 @@
                 :depends-on ("mopr")
                 :components
                 ((:file "package")
-                 (:file "call" :depends-on ("package"))
+                 (:file "grid" :depends-on ("package"))
+                 (:file "test" :depends-on ("package"))
+                 (:file "call" :depends-on ("package" "grid" "test"))
                  (:file "plug" :depends-on ("package" "call"))))
                (:module "usds"
                 :depends-on ("mopr" "plug")
