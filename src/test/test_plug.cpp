@@ -11,7 +11,7 @@ TEST_CASE( "USDS Output", "[usds]" )
     registerPlugins( );
 
     const std::string i = GENERATE( "00", "01", "02", "03", "04", "05", "06", "07", "10",
-                                    "11_grid", "12_grid", "13_grid", "14_grid" );
+                                    "11_grid", "12_grid", "13_grid", "15_grid" );
 
     const auto & config = Config::GetInstance( );
     const std::string & iFile = config.FromDataset( i, "lisp" );
@@ -38,7 +38,7 @@ TEST_CASE( "USDS Callable Output", "[usds]" )
 
     const std::string i = GENERATE( "08_call", "09_call",
                                     "11_call", "12_call",
-                                    "13_call", "14_call" );
+                                    "13_call", "15_call" );
 
     const auto & config = Config::GetInstance( );
     const std::string & iFile = config.FromDataset( i, "lisp" );
