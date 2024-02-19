@@ -9,17 +9,21 @@
                               r-prop-name)))
 
 (defclass prop-info ()
-  ((name-rlist
+  ((namespace
     :type list
-    :initarg :name-rlist
+    :initarg :namespace
     :initform nil
-    :reader prop-info-name-rlist
+    :reader prop-info-namespace
     :documentation "...")
-   (name-string
+   (base-name
     :type base-string
-    :initarg :name-string
+    :initarg :base-name
     :initform (error "...")
-    :reader prop-info-name-string
+    :reader prop-info-base-name
+    :documentation "...")
+   (full-name
+    :type base-string
+    :reader prop-info-full-name
     :documentation "...")
    (meta
     :type list
@@ -29,8 +33,13 @@
     :documentation "..."))
   (:documentation "..."))
 
+(defmethod initialize-instance :after ((ob prop-info)
+                                       &key base-name namespace)
+  (setf (slot-value ob 'full-name)
+        (prop-name-string (cons base-name namespace) :reverse-p t)))
+
 (defun print-prop-info (pinfo)
-  (format t "~%[PROP-NAME-STR] ~S~%" (prop-info-name-string pinfo))
+  (format t "~%[PROP-NAME-STR] ~S~%" (prop-info-full-name pinfo))
   (format t "~%[PROP-META] ~S~%" (prop-info-meta pinfo)))
 
 (defclass attr-info (prop-info)
@@ -54,3 +63,10 @@
 (defclass rel-info (prop-info)
   ()
   (:documentation "..."))
+
+(defstruct property
+  (info (error "...") :type prop-info :read-only t)
+  (data nil))
+
+(defstruct compound
+  (properties nil))

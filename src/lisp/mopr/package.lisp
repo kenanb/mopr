@@ -37,14 +37,21 @@
    #:prop-info
    #:attr-info
    #:rel-info
-   #:prop-info-name-rlist
-   #:prop-info-name-string
+   #:prop-info-namespace
+   #:prop-info-base-name
+   #:prop-info-full-name
    #:prop-info-meta
    #:print-prop-info
    #:attr-info-array-p
    #:attr-info-type-key
    #:get-attr-type
-   #:rel-info-targets))
+   #:property
+   #:compound
+   #:make-property
+   #:make-compound
+   #:property-info
+   #:property-data
+   #:compound-properties))
 
 (defpackage :mopr-ns
   (:use)

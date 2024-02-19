@@ -32,6 +32,46 @@
 (defvar *prim-call-table* nil)
 (defvar *usds-ns-package* (find-package "USDS-NS"))
 
+(defgeneric serialize-prop-info (ob)
+
+  (:documentation "...")
+
+  (:method ((ob mopr-prop:attr-info))
+    (with-accessors ((name mopr-prop:prop-info-base-name)
+                     (meta mopr-prop:prop-info-meta)
+                     (array-p mopr-prop:attr-info-array-p)
+                     (t-key mopr-prop:attr-info-type-key)) ob
+      (list :attr
+            (if meta (cons name meta) name)
+            (if array-p :array :datum)
+            t-key)))
+
+  (:method ((ob mopr-prop:rel-info))
+    (with-accessors ((name mopr-prop:prop-info-base-name)
+                     (meta mopr-prop:prop-info-meta)) ob
+      (list :rel (if meta (cons name meta) name)))))
+
+(defgeneric serialize (ob)
+
+  (:documentation "...")
+
+  (:method ((ob t))
+    nil)
+
+  (:method ((ob mopr-prop:property)
+            &aux
+              (info (mopr-prop:property-info ob)))
+    ;; (format t "~%~S~%" ob)
+    (list (loop with x = (append (serialize-prop-info info)
+                                 (mopr-prop:property-data ob))
+                for n in (mopr-prop:prop-info-namespace info)
+                do (setf x (list :ns n x))
+                finally (return x))))
+
+  (:method ((ob mopr-prop:compound))
+    (loop for p in (mopr-prop:compound-properties ob)
+          appending (serialize p))))
+
 (defun handle-prim-call-form (prim-h form)
   ;; (format t "~%Called handle-prim-call-form!~%: ~S~%" form)
   (if *enable-call*
@@ -39,7 +79,7 @@
         (handle-prim-subforms
          prim-h
          (alexandria:when-let ((fn (gethash (car form) *prim-call-table*)))
-           (apply fn (cdr form)))))
+           (serialize (apply fn (cdr form))))))
       (unknown-form-error :call :debug)))
 
 (defun handle-call-form (stage-h form)
@@ -144,7 +184,7 @@
     nil))
 
 (defun extract-prop-info
-    (data ns-list
+    (data ns-rlist
      &aux
        meta
        (name (etypecase data
@@ -152,11 +192,9 @@
                (string data)
                (list
                 (setf meta (cdr data))
-                (car data))))
-       (full-name-r (cons name ns-list)))
-  (list :name-rlist full-name-r
-        :name-string (mopr-prop:prop-name-string full-name-r
-                                                 :reverse-p t)
+                (car data)))))
+  (list :namespace ns-rlist
+        :base-name name
         :meta meta))
 
 (defun set-attr-for-all-timecodes (fn attribute-h value-h value-list)
@@ -174,7 +212,7 @@
                (funcall fn val value-h)
                (mopr:attribute-set-value attribute-h value-h timecode-h)))))
 
-(defun handle-prim-attr-form (prim-h form &optional ns-list)
+(defun handle-prim-attr-form (prim-h form &optional ns-rlist)
   ;; (format t "~%Called handle-prim-attr-form!~%: ~S~%" form)
   (when form
     (destructuring-bind
@@ -187,7 +225,7 @@
            (info (apply #'make-instance 'mopr-prop:attr-info
                         :array-p (member attr-category '(:array :|array|))
                         :type-key attr-type-key
-                        (extract-prop-info prop-data ns-list)))
+                        (extract-prop-info prop-data ns-rlist)))
            (attr-type (mopr-prop:get-attr-type info *attr-type-table*)))
         form
 
@@ -198,7 +236,7 @@
           (mopr:with-handles* ((attribute-h :attribute)
                                (prop-name-h :token)
                                (value-h :value))
-            (mopr:token-ctor-cstr prop-name-h (mopr-prop:prop-info-name-string info))
+            (mopr:token-ctor-cstr prop-name-h (mopr-prop:prop-info-full-name info))
             (mopr:prim-create-attribute attribute-h
                                         prim-h
                                         prop-name-h
@@ -214,11 +252,11 @@
                    (mopr-prop:attr-info-array-p info))))
               (set-attr-for-all-timecodes transfer-for-type-fn attribute-h value-h values)
               (format t "SKIPPED UNSUPPORTED ATTRIBUTE: ~A~%"
-                      (mopr-prop:prop-info-name-string info))))
+                      (mopr-prop:prop-info-full-name info))))
           (format t "SKIPPED UNRECOGNIZED ATTRIBUTE: ~A~%"
-                  (mopr-prop:prop-info-name-string info))))))
+                  (mopr-prop:prop-info-full-name info))))))
 
-(defun handle-prim-rel-form (prim-h form &optional ns-list)
+(defun handle-prim-rel-form (prim-h form &optional ns-rlist)
   ;; (format t "~%Called handle-prim-rel-form!~%: ~S~%" form)
 
   (declare (ignorable prim-h))
@@ -230,7 +268,7 @@
            targets
          &aux
            (info (apply #'make-instance 'mopr-prop:rel-info
-                        (extract-prop-info prop-data ns-list))))
+                        (extract-prop-info prop-data ns-rlist))))
         form
 
       (declare (ignorable targets))
@@ -238,7 +276,7 @@
       ;; TODO: We don't handle rel yet.
       (mopr-prop:print-prop-info info))))
 
-(defun handle-prim-ns-form (prim-h form &optional ns-list)
+(defun handle-prim-ns-form (prim-h form &optional ns-rlist)
   ;; (format t "~%Called handle-prim-ns-form!~%: ~S~%" form)
   (when form
     (destructuring-bind
@@ -253,7 +291,7 @@
                        (:ns     #'handle-prim-ns-form)
                        (:|ns|   #'handle-prim-ns-form))
             do (if fn
-                   (funcall fn prim-h (cdr l) (cons ns ns-list))
+                   (funcall fn prim-h (cdr l) (cons ns ns-rlist))
                    (unknown-form-error (car l) :debug))))))
 
 (defun handle-prim-subforms (prim-h subforms)
