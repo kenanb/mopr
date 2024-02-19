@@ -6,7 +6,7 @@
 ;; Grid generation functions.
 
 (defun prim-fn-grid-extent (x y z s)
-  `((:prop "extent"
+  `((:attr "extent"
      :array :float3
      ,(make-array '(2 3)
                   :initial-contents
@@ -14,7 +14,7 @@
                     ,(list (* s x) (* s y) (* s z)))))))
 
 (defun prim-fn-grid-fv-counts (w h)
-  `((:prop "faceVertexCounts"
+  `((:attr "faceVertexCounts"
      :array :int
      ,(make-array
        (* w h)
@@ -25,7 +25,7 @@
                                 &aux (p (if counter-clockwise-p
                                             (list 0 1 (+ w 2) (+ w 1))
                                             (list 0 (+ w 1) (+ w 2) 1))))
-  `((:prop "faceVertexIndices"
+  `((:attr "faceVertexIndices"
      :array :int
      ,(make-array
        (list (* w h 4))
@@ -50,9 +50,9 @@
                                           do (setf max-a (map 'vector #'max max-a shuffled))
                                           collect shuffled)))))
          (extent (make-array '(2 3) :initial-contents (list min-a max-a))))
-    `((:prop "points"
+    `((:attr "points"
        :array :point3f
        ,points)
-      (:prop "extent"
+      (:attr "extent"
        :array :float3
        ,extent))))

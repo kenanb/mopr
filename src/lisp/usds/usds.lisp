@@ -27,7 +27,7 @@
 (defvar *bind-table* nil)
 (defvar *alias-table* nil)
 (defvar *prim-type-table* nil)
-(defvar *prop-type-table* nil)
+(defvar *attr-type-table* nil)
 (defvar *data-call-table* nil)
 (defvar *prim-call-table* nil)
 (defvar *usds-ns-package* (find-package "USDS-NS"))
@@ -163,13 +163,13 @@
                (funcall fn val value-h)
                (mopr:attribute-set-value attribute-h value-h timecode-h)))))
 
-(defun handle-prim-prop-form (prim-h form &optional ns-list)
-  ;; (format t "~%Called handle-prim-prop-form!~%: ~S~%" form)
+(defun handle-prim-attr-form (prim-h form &optional ns-list)
+  ;; (format t "~%Called handle-prim-attr-form!~%: ~S~%" form)
   (when form
     (destructuring-bind
         (prop-data
-         category
-         prop-type-key
+         attr-category
+         attr-type-key
          &rest
            values
          &aux
@@ -183,8 +183,8 @@
            (prop-name-str (prop-name-string
                            (cons prop-name ns-list)
                            :reverse-p t))
-           (datum-array-p (member category '(:array :|array|)))
-           (prop-type (gethash prop-type-key *prop-type-table*)))
+           (datum-array-p (member attr-category '(:array :|array|)))
+           (attr-type (gethash attr-type-key *attr-type-table*)))
         form
 
       ;; TODO: We don't handle metadata yet.
@@ -193,7 +193,7 @@
       ;; (format t "~%[PROP-NAME-STR] ~S~%" prop-name-str)
       ;; (format t "~%[PROP-META] ~S~%" prop-meta)
 
-      (if prop-type
+      (if attr-type
           (mopr:with-handles* ((attribute-h :attribute)
                                (prop-name-h :token)
                                (value-h :value))
@@ -201,17 +201,44 @@
             (mopr:prim-create-attribute attribute-h
                                         prim-h
                                         prop-name-h
-                                        (mopr-val:value-type-name prop-type datum-array-p)
+                                        (mopr-val:value-type-name attr-type datum-array-p)
                                         0 ; bool custom
                                         mopr:+mopr-attribute-variability-varying+)
             (alexandria:if-let
                 ((transfer-for-type-fn
                   (mopr-val:get-transfer-for-type-function
-                   (mopr-val:value-type-real-type prop-type)
+                   (mopr-val:value-type-real-type attr-type)
                    datum-array-p)))
               (set-attr-for-all-timecodes transfer-for-type-fn attribute-h value-h values)
               (format t "SKIPPED UNSUPPORTED ATTRIBUTE: ~A~%" prop-name-str)))
           (format t "SKIPPED UNRECOGNIZED ATTRIBUTE: ~A~%" prop-name-str)))))
+
+(defun handle-prim-rel-form (prim-h form &optional ns-list)
+  ;; (format t "~%Called handle-prim-rel-form!~%: ~S~%" form)
+  (when form
+    (destructuring-bind
+        (prop-data
+         &rest
+           values
+         &aux
+           prop-meta
+           (prop-name (etypecase prop-data
+                        (symbol prop-data)
+                        (string prop-data)
+                        (list
+                         (setf prop-meta (cdr prop-data))
+                         (car prop-data))))
+           (prop-name-str (prop-name-string
+                           (cons prop-name ns-list)
+                           :reverse-p t)))
+        form
+
+      ;; TODO: We don't handle rel yet.
+      (declare (ignorable prop-name prop-meta values prop-name-str))
+
+      ;; (format t "~%[PROP-NAME-STR] ~S~%" prop-name-str)
+      ;; (format t "~%[PROP-META] ~S~%" prop-meta)
+      )))
 
 (defun handle-prim-ns-form (prim-h form &optional ns-list)
   ;; (format t "~%Called handle-prim-ns-form!~%: ~S~%" form)
@@ -221,8 +248,10 @@
         form
       (loop for l in ns-forms
             for fn = (case (car l)
-                       (:prop   #'handle-prim-prop-form)
-                       (:|prop| #'handle-prim-prop-form)
+                       (:attr   #'handle-prim-attr-form)
+                       (:|attr| #'handle-prim-attr-form)
+                       (:rel    #'handle-prim-rel-form)
+                       (:|rel|  #'handle-prim-rel-form)
                        (:ns     #'handle-prim-ns-form)
                        (:|ns|   #'handle-prim-ns-form))
             do (if fn
@@ -239,8 +268,10 @@
                    (:|type| #'handle-prim-type-form)
                    (:meta   #'handle-prim-meta-form)
                    (:|meta| #'handle-prim-meta-form)
-                   (:prop   #'handle-prim-prop-form)
-                   (:|prop| #'handle-prim-prop-form)
+                   (:attr   #'handle-prim-attr-form)
+                   (:|attr| #'handle-prim-attr-form)
+                   (:rel    #'handle-prim-rel-form)
+                   (:|rel|  #'handle-prim-rel-form)
                    (:ns     #'handle-prim-ns-form)
                    (:|ns|   #'handle-prim-ns-form))
         do (if fn
@@ -302,15 +333,15 @@
           (*data-call-table* (make-hash-table))
           (*prim-call-table* (make-hash-table))
           (*prim-type-table* (make-hash-table))
-          (*prop-type-table* (make-hash-table)))
+          (*attr-type-table* (make-hash-table)))
      (mopr-plug:create-data-call-table *data-call-table*)
      (mopr-plug:create-prim-call-table *prim-call-table*)
      (mopr-prim:create-generic-prim-type-tokens *prim-type-table*)
-     (mopr-val:create-generic-value-type-tokens *prop-type-table*)
+     (mopr-val:create-generic-value-type-tokens *attr-type-table*)
      ,@body
      ;; (format t "HT ALIAS: ~A~%" (hash-table-count *alias-table*))
      ;; (format t "HT BIND : ~A~%" (hash-table-count *bind-table*))
-     (mopr-val:delete-generic-value-type-tokens *prop-type-table*)
+     (mopr-val:delete-generic-value-type-tokens *attr-type-table*)
      (mopr-prim:delete-generic-prim-type-tokens *prim-type-table*)))
 
 (defun write-to-layer (layer-h usds-data)

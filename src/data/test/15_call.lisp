@@ -11,7 +11,7 @@
 
   (:call :grid-fv-indices 3 3)
 
-  (:prop "points"
+  (:attr "points"
    :array :point3f
    (0 . #2A
     ((00 00 00) (10 03 00) (20 00 00) (30 03 00)

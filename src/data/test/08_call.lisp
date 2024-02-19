@@ -4,7 +4,7 @@
 
  (:prim :x
         (:type Sphere)
-        (:prop "radius"
+        (:attr "radius"
          :datum :double #0A 5.0d0))
 
  (:prim ("c")

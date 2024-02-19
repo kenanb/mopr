@@ -17,17 +17,17 @@
 
   (:type Mesh)
 
-  (:prop "extent"
+  (:attr "extent"
    :array :float3 #2A
    ((00 00 00)
     (30 20 00)))
 
-  (:prop "faceVertexCounts"
+  (:attr "faceVertexCounts"
    :array :int #1A
    (4 4 4
     4 4 4))
 
-  (:prop "faceVertexIndices"
+  (:attr "faceVertexIndices"
    :array :int #1A
    (00 01 05 04
     01 02 06 05
@@ -37,7 +37,7 @@
     05 06 10 09
     06 07 11 10))
 
-  (:prop "points"
+  (:attr "points"
    :array :point3f #2A
    ((00 00 00) (10 00 00) (20 00 00) (30 00 00)
     (00 10 00) (10 10 00) (20 10 00) (30 10 00)

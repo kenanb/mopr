@@ -15,21 +15,21 @@
 
  (:prim ("b" "d")
         (:type Xform)
-        (:prop ("testToken" :interp :uniform)
+        (:attr ("testToken" :interp :uniform)
          :datum :token #0A "xformOp:translate")
-        (:prop "test2dMatrix2d"
+        (:attr "test2dMatrix2d"
          :array :matrix2d #2A ((0 1 430 -145)))
-        (:prop "test3dMatrix2d"
+        (:attr "test3dMatrix2d"
          :array :matrix2d #3A (((0 1) (430 -145)))))
 
  (:prim x
         (:type Sphere)
-        (:prop "radius"
+        (:attr "radius"
          :datum :double #0A 5.0d0))
 
  (:prim y
         (:type Sphere)
-        (:prop "radius"
+        (:attr "radius"
          :datum :double #0A 50.0d0))
 
  (:prim ("c")
@@ -37,24 +37,24 @@
         (:meta :kind "component"))
 
  (:prim ("c")
-        (:prop ("xformOpOrder" :interp :uniform)
+        (:attr ("xformOpOrder" :interp :uniform)
          :array :token #1A (("xformOp" "translate")
                             ("xformOp" "rotateXYZ")))
         (:ns "xformOp"
-             (:prop "translate"
+             (:attr "translate"
               :datum :float3 #1A (10 0 100))
-             (:prop "rotateXYZ"
+             (:attr "rotateXYZ"
               :datum :double3 #1A (33 55 4))))
 
  (:prim ("c")
-        (:prop "extent"
+        (:attr "extent"
          :array :float3 #2A ((-430 -145 0)
                              (430 145 0)))
-        (:prop "faceVertexCounts"
+        (:attr "faceVertexCounts"
          :array :int #1A (4))
-        (:prop "faceVertexIndices"
+        (:attr "faceVertexIndices"
          :array :int #1A (0 1 2 3))
-        (:prop "points"
+        (:attr "points"
          :array :point3f #2A ((-430 -145 0)
                               (430 -145 0)
                               (430 145 0)
