@@ -167,25 +167,24 @@
   ;; (format t "~%Called handle-prim-prop-form!~%: ~S~%" form)
   (when form
     (destructuring-bind
-        (prop-id
+        (prop-data
+         category
+         prop-type-key
          &rest
-           data
+           values
          &aux
            prop-meta
-           (prop-name (etypecase prop-id
-                        (symbol prop-id)
-                        (string prop-id)
+           (prop-name (etypecase prop-data
+                        (symbol prop-data)
+                        (string prop-data)
                         (list
-                         (setf prop-meta (cdr prop-id))
-                         (car prop-id))))
+                         (setf prop-meta (cdr prop-data))
+                         (car prop-data))))
            (prop-name-str (prop-name-string
                            (cons prop-name ns-list)
                            :reverse-p t))
-           (datum-array-p (member (car data) '(:array :|array|)))
-           (data (if datum-array-p (cdr data) data))
-           (values (cdr data))
-           (prop-type-sym (car data))
-           (prop-type (gethash prop-type-sym *prop-type-table*)))
+           (datum-array-p (member category '(:array :|array|)))
+           (prop-type (gethash prop-type-key *prop-type-table*)))
         form
 
       ;; TODO: We don't handle metadata yet.

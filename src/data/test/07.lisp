@@ -16,7 +16,7 @@
  (:prim ("b" "d")
         (:type Xform)
         (:prop ("testToken" :interp :uniform)
-         :token #0A "xformOp:translate")
+         :datum :token #0A "xformOp:translate")
         (:prop "test2dMatrix2d"
          :array :matrix2d #2A ((0 1 430 -145)))
         (:prop "test3dMatrix2d"
@@ -25,12 +25,12 @@
  (:prim x
         (:type Sphere)
         (:prop "radius"
-         :double #0A 5.0d0))
+         :datum :double #0A 5.0d0))
 
  (:prim y
         (:type Sphere)
         (:prop "radius"
-         :double #0A 50.0d0))
+         :datum :double #0A 50.0d0))
 
  (:prim ("c")
         (:type Mesh)
@@ -42,9 +42,9 @@
                             ("xformOp" "rotateXYZ")))
         (:ns "xformOp"
              (:prop "translate"
-              :float3 #1A (10 0 100))
+              :datum :float3 #1A (10 0 100))
              (:prop "rotateXYZ"
-              :double3 #1A (33 55 4))))
+              :datum :double3 #1A (33 55 4))))
 
  (:prim ("c")
         (:prop "extent"

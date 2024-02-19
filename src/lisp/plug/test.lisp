@@ -11,8 +11,8 @@
        :array :token #1A (("xformOp" "translate")
                           ("xformOp" "rotateXYZ")))
       (:ns "xformOp"
-           (:prop "translate" :float3 ,tr-array)
-           (:prop "rotateXYZ" :double3 ,rt-array)))))
+           (:prop "translate" :datum :float3 ,tr-array)
+           (:prop "rotateXYZ" :datum :double3 ,rt-array)))))
 
 (defun data-fn-test-gen-cubes (&rest args)
   (flet ((define-cube (x r prim-name)
@@ -22,7 +22,7 @@
                   (rt-a (make-array 3 :initial-contents rt)))
              `(:prim (,prim-name)
                      (:type mopr-ns:Cube)
-                     (:prop "size" :double #0A .5)
+                     (:prop "size" :datum :double #0A .5)
                      (:call :test-gen-xform-info ,tr-a ,rt-a)))))
     (destructuring-bind (r) args
       (loop for x below (* r r)

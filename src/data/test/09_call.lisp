@@ -8,6 +8,6 @@
                #1A (10 0 100)
                #1A (33 55 4))
         (:prop "radius"
-         :double #0A 5.0d0))
+         :datum :double #0A 5.0d0))
 
  (:call :test-gen-cubes 2))

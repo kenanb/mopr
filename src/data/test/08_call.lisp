@@ -5,7 +5,7 @@
  (:prim :x
         (:type Sphere)
         (:prop "radius"
-         :double #0A 5.0d0))
+         :datum :double #0A 5.0d0))
 
  (:prim ("c")
         (:type Mesh)
