@@ -30,6 +30,22 @@
    #:create-generic-prim-type-tokens
    #:delete-generic-prim-type-tokens))
 
+(defpackage :mopr-prop
+  (:use #:cl)
+  (:export
+   #:prop-name-string
+   #:prop-info
+   #:attr-info
+   #:rel-info
+   #:prop-info-name-rlist
+   #:prop-info-name-string
+   #:prop-info-meta
+   #:print-prop-info
+   #:attr-info-array-p
+   #:attr-info-type-key
+   #:get-attr-type
+   #:rel-info-targets))
+
 (defpackage :mopr-ns
   (:use)
   (:export

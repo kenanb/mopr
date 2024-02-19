@@ -143,10 +143,21 @@
   (when form
     nil))
 
-(defun prop-name-string (r-prop-name &key reverse-p)
-  (format nil "~{~A~^:~}" (if reverse-p
-                              (reverse r-prop-name)
-                              r-prop-name)))
+(defun extract-prop-info
+    (data ns-list
+     &aux
+       meta
+       (name (etypecase data
+               (symbol data)
+               (string data)
+               (list
+                (setf meta (cdr data))
+                (car data))))
+       (full-name-r (cons name ns-list)))
+  (list :name-rlist full-name-r
+        :name-string (mopr-prop:prop-name-string full-name-r
+                                                 :reverse-p t)
+        :meta meta))
 
 (defun set-attr-for-all-timecodes (fn attribute-h value-h value-list)
   (mopr:with-handles* ((timecode-h :timecode))
@@ -173,72 +184,59 @@
          &rest
            values
          &aux
-           prop-meta
-           (prop-name (etypecase prop-data
-                        (symbol prop-data)
-                        (string prop-data)
-                        (list
-                         (setf prop-meta (cdr prop-data))
-                         (car prop-data))))
-           (prop-name-str (prop-name-string
-                           (cons prop-name ns-list)
-                           :reverse-p t))
-           (datum-array-p (member attr-category '(:array :|array|)))
-           (attr-type (gethash attr-type-key *attr-type-table*)))
+           (info (apply #'make-instance 'mopr-prop:attr-info
+                        :array-p (member attr-category '(:array :|array|))
+                        :type-key attr-type-key
+                        (extract-prop-info prop-data ns-list)))
+           (attr-type (mopr-prop:get-attr-type info *attr-type-table*)))
         form
 
       ;; TODO: We don't handle metadata yet.
-      (declare (ignorable prop-meta))
-
-      ;; (format t "~%[PROP-NAME-STR] ~S~%" prop-name-str)
-      ;; (format t "~%[PROP-META] ~S~%" prop-meta)
+      ;; (mopr-prop:print-prop-info info)
 
       (if attr-type
           (mopr:with-handles* ((attribute-h :attribute)
                                (prop-name-h :token)
                                (value-h :value))
-            (mopr:token-ctor-cstr prop-name-h prop-name-str)
+            (mopr:token-ctor-cstr prop-name-h (mopr-prop:prop-info-name-string info))
             (mopr:prim-create-attribute attribute-h
                                         prim-h
                                         prop-name-h
-                                        (mopr-val:value-type-name attr-type datum-array-p)
+                                        (mopr-val:value-type-name
+                                         attr-type
+                                         (mopr-prop:attr-info-array-p info))
                                         0 ; bool custom
                                         mopr:+mopr-attribute-variability-varying+)
             (alexandria:if-let
                 ((transfer-for-type-fn
                   (mopr-val:get-transfer-for-type-function
                    (mopr-val:value-type-real-type attr-type)
-                   datum-array-p)))
+                   (mopr-prop:attr-info-array-p info))))
               (set-attr-for-all-timecodes transfer-for-type-fn attribute-h value-h values)
-              (format t "SKIPPED UNSUPPORTED ATTRIBUTE: ~A~%" prop-name-str)))
-          (format t "SKIPPED UNRECOGNIZED ATTRIBUTE: ~A~%" prop-name-str)))))
+              (format t "SKIPPED UNSUPPORTED ATTRIBUTE: ~A~%"
+                      (mopr-prop:prop-info-name-string info))))
+          (format t "SKIPPED UNRECOGNIZED ATTRIBUTE: ~A~%"
+                  (mopr-prop:prop-info-name-string info))))))
 
 (defun handle-prim-rel-form (prim-h form &optional ns-list)
   ;; (format t "~%Called handle-prim-rel-form!~%: ~S~%" form)
+
+  (declare (ignorable prim-h))
+
   (when form
     (destructuring-bind
         (prop-data
          &rest
-           values
+           targets
          &aux
-           prop-meta
-           (prop-name (etypecase prop-data
-                        (symbol prop-data)
-                        (string prop-data)
-                        (list
-                         (setf prop-meta (cdr prop-data))
-                         (car prop-data))))
-           (prop-name-str (prop-name-string
-                           (cons prop-name ns-list)
-                           :reverse-p t)))
+           (info (apply #'make-instance 'mopr-prop:rel-info
+                        (extract-prop-info prop-data ns-list))))
         form
 
-      ;; TODO: We don't handle rel yet.
-      (declare (ignorable prop-name prop-meta values prop-name-str))
+      (declare (ignorable targets))
 
-      ;; (format t "~%[PROP-NAME-STR] ~S~%" prop-name-str)
-      ;; (format t "~%[PROP-META] ~S~%" prop-meta)
-      )))
+      ;; TODO: We don't handle rel yet.
+      (mopr-prop:print-prop-info info))))
 
 (defun handle-prim-ns-form (prim-h form &optional ns-list)
   ;; (format t "~%Called handle-prim-ns-form!~%: ~S~%" form)

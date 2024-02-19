@@ -26,8 +26,9 @@
                 :components
                 ((:file "package")
                  (:file "raii" :depends-on ("package"))
-                 (:file "prim" :depends-on ("package"))
                  (:file "value" :depends-on ("package" "raii"))
+                 (:file "prop" :depends-on ("package" "value"))
+                 (:file "prim" :depends-on ("package"))
                  (:file "describe" :depends-on ("package"))))
                (:module "plug"
                 :depends-on ("mopr")
