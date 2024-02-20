@@ -4,8 +4,18 @@
 (in-package #:mopr-plug)
 
 (defun process-call-stack (form table)
-  (alexandria:when-let ((c (gethash (car form) table)))
-    (apply (callable-fn c) (cdr form))))
+  (loop with stack = nil
+        for e in form
+        for c = (gethash e table)
+        if c
+          do (let (args)
+               (loop for i below (length (callable-in c))
+                     do (push (pop stack) args))
+               (push (apply (callable-fn c) args) stack))
+        else
+          do (push e stack)
+        end
+        finally (return (reverse stack))))
 
 ;; TODO [2024-02-17] : Move this logic behind user-driven plugin registration.
 

@@ -5,11 +5,11 @@
 
   (:type Mesh)
 
-  (:call :grid-extent 10 3 0 3)
+  (:call 10 3 0 3 :grid-extent)
 
-  (:call :grid-fv-counts 3 3)
+  (:call 3 3 :grid-fv-counts)
 
-  (:call :grid-fv-indices 3 3 :cw)
+  (:call 3 3 :cw :grid-fv-indices)
 
   (:attr "points"
    :array :point3f

@@ -50,7 +50,7 @@
               :data `((,prim-name)
                       (:type mopr-ns:Cube)
                       (:attr "size" :datum :double #0A .5)
-                      (:call :test-gen-xform-info ,tr-a ,rt-a))))))
+                      (:call ,tr-a ,rt-a :test-gen-xform-info))))))
 
     (loop for x below (* r r)
           for prim-name = (format nil "Prim_~4,'0d" x)

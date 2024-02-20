@@ -4,10 +4,10 @@
 
  (:prim :x
         (:type Sphere)
-        (:call :test-gen-xform-info
-               #1A (10 0 100)
-               #1A (33 55 4))
+        (:call #1A (10 0 100)
+               #1A (33 55 4)
+               :test-gen-xform-info)
         (:attr "radius"
          :datum :double #0A 5.0d0))
 
- (:call :test-gen-cubes 2))
+ (:call 2 :test-gen-cubes))

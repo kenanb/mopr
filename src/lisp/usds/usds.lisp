@@ -84,20 +84,22 @@
   ;; (format t "~%Called handle-prim-call-form!~%: ~S~%" form)
   (if *enable-call*
       (when form
-        (handle-prim-subforms
-         prim-h
-         (serialize
-          (mopr-plug:process-call-stack form *prim-call-table*))))
+        (loop for s in (mopr-plug:process-call-stack
+                        form *prim-call-table*)
+              do (handle-prim-subforms
+                  prim-h
+                  (serialize s))))
       (unknown-form-error :call :debug)))
 
 (defun handle-call-form (stage-h form)
   ;; (format t "~%Called handle-call-form!~%: ~S~%" form)
   (if *enable-call*
       (when form
-        (handle-data-subforms
-         stage-h
-         (serialize
-          (mopr-plug:process-call-stack form *data-call-table*))))
+        (loop for s in (mopr-plug:process-call-stack
+                        form *data-call-table*)
+              do (handle-data-subforms
+                  stage-h
+                  (serialize s))))
       (unknown-form-error :call :debug)))
 
 (defclass node ()
