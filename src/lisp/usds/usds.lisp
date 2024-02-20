@@ -86,8 +86,8 @@
       (when form
         (handle-prim-subforms
          prim-h
-         (alexandria:when-let ((fn (gethash (car form) *prim-call-table*)))
-           (serialize (apply fn (cdr form))))))
+         (serialize
+          (mopr-plug:process-call-stack form *prim-call-table*))))
       (unknown-form-error :call :debug)))
 
 (defun handle-call-form (stage-h form)
@@ -96,8 +96,8 @@
       (when form
         (handle-data-subforms
          stage-h
-         (alexandria:when-let ((fn (gethash (car form) *data-call-table*)))
-           (serialize (apply fn (cdr form))))))
+         (serialize
+          (mopr-plug:process-call-stack form *data-call-table*))))
       (unknown-form-error :call :debug)))
 
 (defclass node ()

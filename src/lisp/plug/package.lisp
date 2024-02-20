@@ -6,5 +6,6 @@
 (defpackage :mopr-plug
   (:use #:cl #:mopr)
   (:export
+   #:process-call-stack
    #:create-data-call-table
    #:create-prim-call-table))

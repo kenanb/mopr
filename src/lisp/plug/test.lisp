@@ -24,24 +24,23 @@
 
 ;; Test functions.
 
-(defun prim-fn-test-gen-xform-info (&rest args)
-  (destructuring-bind (tr-array rt-array) args
-    (let ((data-group (mopr-sgt:make-data-group)))
-      (setf (mopr-sgt:data-group-data data-group)
-            (list
-             (mopr-sgt:make-prop-entry
-              :info *attr-info-xform-op-order*
-              :data (list #1A (("xformOp" "translate")
-                               ("xformOp" "rotateXYZ"))))
-             (mopr-sgt:make-prop-entry
-              :info *attr-info-translate*
-              :data (list tr-array))
-             (mopr-sgt:make-prop-entry
-              :info *attr-info-rotate-x-y-z*
-              :data (list rt-array))))
-      data-group)))
+(defun prim-fn-test-gen-xform-info (tr-array rt-array)
+  (let ((data-group (mopr-sgt:make-data-group)))
+    (setf (mopr-sgt:data-group-data data-group)
+          (list
+           (mopr-sgt:make-prop-entry
+            :info *attr-info-xform-op-order*
+            :data (list #1A (("xformOp" "translate")
+                             ("xformOp" "rotateXYZ"))))
+           (mopr-sgt:make-prop-entry
+            :info *attr-info-translate*
+            :data (list tr-array))
+           (mopr-sgt:make-prop-entry
+            :info *attr-info-rotate-x-y-z*
+            :data (list rt-array))))
+    data-group))
 
-(defun data-fn-test-gen-cubes (&rest args)
+(defun data-fn-test-gen-cubes (r)
   (flet ((define-cube (x r prim-name)
            (let* ((tr (list (mod x r) (floor (/ x r)) 0))
                   (rt (list 0 x x))
@@ -52,16 +51,16 @@
                       (:type mopr-ns:Cube)
                       (:attr "size" :datum :double #0A .5)
                       (:call :test-gen-xform-info ,tr-a ,rt-a))))))
-    (destructuring-bind (r) args
-      (loop for x below (* r r)
-            for prim-name = (format nil "Prim_~4,'0d" x)
-            collecting (list prim-name :spec :def) into tree
-            collecting (define-cube x r prim-name) into prims
-            finally (return (mopr-sgt:make-data-group
-                             :data (cons
-                                    (mopr-sgt:make-tree-entry
-                                     :data tree)
-                                    prims)))))))
+
+    (loop for x below (* r r)
+          for prim-name = (format nil "Prim_~4,'0d" x)
+          collecting (list prim-name :spec :def) into tree
+          collecting (define-cube x r prim-name) into prims
+          finally (return (mopr-sgt:make-data-group
+                           :data (cons
+                                  (mopr-sgt:make-tree-entry
+                                   :data tree)
+                                  prims))))))
 
 (defun data-fn-test-tree-gen ()
   (mopr-sgt:make-tree-entry
