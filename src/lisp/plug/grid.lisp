@@ -4,25 +4,25 @@
 (in-package #:mopr-plug)
 
 (defvar *attr-info-fv-counts*
-  (make-instance 'mopr-prop:attr-info
+  (make-instance 'mopr-sgt:attr-info
                  :base-name "faceVertexCounts"
                  :array-p t
                  :type-key :int))
 
 (defvar *attr-info-fv-indices*
-  (make-instance 'mopr-prop:attr-info
+  (make-instance 'mopr-sgt:attr-info
                  :base-name "faceVertexIndices"
                  :array-p t
                  :type-key :int))
 
 (defvar *attr-info-extent*
-  (make-instance 'mopr-prop:attr-info
+  (make-instance 'mopr-sgt:attr-info
                  :base-name "extent"
                  :array-p t
                  :type-key :float3))
 
 (defvar *attr-info-points*
-  (make-instance 'mopr-prop:attr-info
+  (make-instance 'mopr-sgt:attr-info
                  :base-name "points"
                  :array-p t
                  :type-key :point3f))
@@ -47,29 +47,29 @@
 
 (defstruct
     (point-based
-     (:include mopr-prop:compound)
+     (:include mopr-sgt:data-group)
      (:constructor make-point-based
          (points-data
           &optional
             (extent-data (compute-extent points-data))
           &aux
-            (mopr-prop::properties
+            (mopr-sgt::data
              (list
-              (mopr-prop:make-property
+              (mopr-sgt:make-prop-entry
                :info *attr-info-extent*
                :data (list extent-data))
-              (mopr-prop:make-property
+              (mopr-sgt:make-prop-entry
                :info *attr-info-points*
                :data (list points-data))))))))
 
 (defun prim-fn-grid-extent (s x y z)
-  (mopr-prop:make-property
+  (mopr-sgt:make-prop-entry
    :info *attr-info-extent*
    :data (list (make-extent-array '(00 00 00)
                                   (list (* s x) (* s y) (* s z))))))
 
 (defun prim-fn-grid-fv-counts (w h)
-  (mopr-prop:make-property
+  (mopr-sgt:make-prop-entry
    :info *attr-info-fv-counts*
    :data (list (make-array
                 (* w h)
@@ -86,7 +86,7 @@
            (loop for y below h
                  nconc (loop for x below w
                              nconc (mapcar (lambda (s) (+ x s (* y (+ 1 w)))) p))))))
-    (mopr-prop:make-property
+    (mopr-sgt:make-prop-entry
      :info *attr-info-fv-indices*
      :data (list contents))))
 

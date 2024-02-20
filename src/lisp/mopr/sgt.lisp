@@ -1,7 +1,7 @@
 ;;;; -*- Mode: LISP; Syntax: COMMON-LISP; Package: CL-USER -*-
 ;;
 
-(in-package #:mopr-prop)
+(in-package #:mopr-sgt)
 
 (defun prop-name-string (r-prop-name &key reverse-p)
   (format nil "~{~A~^:~}" (if reverse-p
@@ -64,9 +64,15 @@
   ()
   (:documentation "..."))
 
-(defstruct property
-  (info (error "...") :type prop-info :read-only t)
+(defstruct data-group
   (data nil))
 
-(defstruct compound
-  (properties nil))
+(defstruct tree-entry
+  (data nil))
+
+(defstruct prim-entry
+  (data nil))
+
+(defstruct prop-entry
+  (info (error "...") :type prop-info :read-only t)
+  (data nil))

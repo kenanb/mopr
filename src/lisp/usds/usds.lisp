@@ -36,19 +36,19 @@
 
   (:documentation "...")
 
-  (:method ((ob mopr-prop:attr-info))
-    (with-accessors ((name mopr-prop:prop-info-base-name)
-                     (meta mopr-prop:prop-info-meta)
-                     (array-p mopr-prop:attr-info-array-p)
-                     (t-key mopr-prop:attr-info-type-key)) ob
+  (:method ((ob mopr-sgt:attr-info))
+    (with-accessors ((name mopr-sgt:prop-info-base-name)
+                     (meta mopr-sgt:prop-info-meta)
+                     (array-p mopr-sgt:attr-info-array-p)
+                     (t-key mopr-sgt:attr-info-type-key)) ob
       (list :attr
             (if meta (cons name meta) name)
             (if array-p :array :datum)
             t-key)))
 
-  (:method ((ob mopr-prop:rel-info))
-    (with-accessors ((name mopr-prop:prop-info-base-name)
-                     (meta mopr-prop:prop-info-meta)) ob
+  (:method ((ob mopr-sgt:rel-info))
+    (with-accessors ((name mopr-sgt:prop-info-base-name)
+                     (meta mopr-sgt:prop-info-meta)) ob
       (list :rel (if meta (cons name meta) name)))))
 
 (defgeneric serialize (ob)
@@ -58,18 +58,26 @@
   (:method ((ob t))
     nil)
 
-  (:method ((ob mopr-prop:property)
+  (:method ((ob mopr-sgt:tree-entry))
+    ;; (format t "~%~S~%" ob)
+    (list (cons :tree (mopr-sgt:tree-entry-data ob))))
+
+  (:method ((ob mopr-sgt:prim-entry))
+    ;; (format t "~%~S~%" ob)
+    (list (cons :prim (mopr-sgt:prim-entry-data ob))))
+
+  (:method ((ob mopr-sgt:prop-entry)
             &aux
-              (info (mopr-prop:property-info ob)))
+              (info (mopr-sgt:prop-entry-info ob)))
     ;; (format t "~%~S~%" ob)
     (list (loop with x = (append (serialize-prop-info info)
-                                 (mopr-prop:property-data ob))
-                for n in (mopr-prop:prop-info-namespace info)
+                                 (mopr-sgt:prop-entry-data ob))
+                for n in (mopr-sgt:prop-info-namespace info)
                 do (setf x (list :ns n x))
                 finally (return x))))
 
-  (:method ((ob mopr-prop:compound))
-    (loop for p in (mopr-prop:compound-properties ob)
+  (:method ((ob mopr-sgt:data-group))
+    (loop for p in (mopr-sgt:data-group-data ob)
           appending (serialize p))))
 
 (defun handle-prim-call-form (prim-h form)
@@ -89,7 +97,7 @@
         (handle-data-subforms
          stage-h
          (alexandria:when-let ((fn (gethash (car form) *data-call-table*)))
-           (apply fn (cdr form)))))
+           (serialize (apply fn (cdr form))))))
       (unknown-form-error :call :debug)))
 
 (defclass node ()
@@ -222,39 +230,39 @@
          &rest
            values
          &aux
-           (info (apply #'make-instance 'mopr-prop:attr-info
+           (info (apply #'make-instance 'mopr-sgt:attr-info
                         :array-p (member attr-category '(:array :|array|))
                         :type-key attr-type-key
                         (extract-prop-info prop-data ns-rlist)))
-           (attr-type (mopr-prop:get-attr-type info *attr-type-table*)))
+           (attr-type (mopr-sgt:get-attr-type info *attr-type-table*)))
         form
 
       ;; TODO: We don't handle metadata yet.
-      ;; (mopr-prop:print-prop-info info)
+      ;; (mopr-sgt:print-prop-info info)
 
       (if attr-type
           (mopr:with-handles* ((attribute-h :attribute)
                                (prop-name-h :token)
                                (value-h :value))
-            (mopr:token-ctor-cstr prop-name-h (mopr-prop:prop-info-full-name info))
+            (mopr:token-ctor-cstr prop-name-h (mopr-sgt:prop-info-full-name info))
             (mopr:prim-create-attribute attribute-h
                                         prim-h
                                         prop-name-h
                                         (mopr-val:value-type-name
                                          attr-type
-                                         (mopr-prop:attr-info-array-p info))
+                                         (mopr-sgt:attr-info-array-p info))
                                         0 ; bool custom
                                         mopr:+mopr-attribute-variability-varying+)
             (alexandria:if-let
                 ((transfer-for-type-fn
                   (mopr-val:get-transfer-for-type-function
                    (mopr-val:value-type-real-type attr-type)
-                   (mopr-prop:attr-info-array-p info))))
+                   (mopr-sgt:attr-info-array-p info))))
               (set-attr-for-all-timecodes transfer-for-type-fn attribute-h value-h values)
               (format t "SKIPPED UNSUPPORTED ATTRIBUTE: ~A~%"
-                      (mopr-prop:prop-info-full-name info))))
+                      (mopr-sgt:prop-info-full-name info))))
           (format t "SKIPPED UNRECOGNIZED ATTRIBUTE: ~A~%"
-                  (mopr-prop:prop-info-full-name info))))))
+                  (mopr-sgt:prop-info-full-name info))))))
 
 (defun handle-prim-rel-form (prim-h form &optional ns-rlist)
   ;; (format t "~%Called handle-prim-rel-form!~%: ~S~%" form)
@@ -267,14 +275,14 @@
          &rest
            targets
          &aux
-           (info (apply #'make-instance 'mopr-prop:rel-info
+           (info (apply #'make-instance 'mopr-sgt:rel-info
                         (extract-prop-info prop-data ns-rlist))))
         form
 
       (declare (ignorable targets))
 
       ;; TODO: We don't handle rel yet.
-      (mopr-prop:print-prop-info info))))
+      (mopr-sgt:print-prop-info info))))
 
 (defun handle-prim-ns-form (prim-h form &optional ns-rlist)
   ;; (format t "~%Called handle-prim-ns-form!~%: ~S~%" form)

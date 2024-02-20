@@ -30,7 +30,7 @@
    #:create-generic-prim-type-tokens
    #:delete-generic-prim-type-tokens))
 
-(defpackage :mopr-prop
+(defpackage :mopr-sgt
   (:use #:cl)
   (:export
    #:prop-name-string
@@ -45,13 +45,19 @@
    #:attr-info-array-p
    #:attr-info-type-key
    #:get-attr-type
-   #:property
-   #:compound
-   #:make-property
-   #:make-compound
-   #:property-info
-   #:property-data
-   #:compound-properties))
+   #:data-group
+   #:tree-entry
+   #:prim-entry
+   #:prop-entry
+   #:make-data-group
+   #:make-tree-entry
+   #:make-prim-entry
+   #:make-prop-entry
+   #:data-group-data
+   #:tree-entry-data
+   #:prim-entry-data
+   #:prop-entry-data
+   #:prop-entry-info))
 
 (defpackage :mopr-ns
   (:use)
