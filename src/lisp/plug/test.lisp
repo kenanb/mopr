@@ -70,3 +70,25 @@
              ("e" :spec :over :alias :x)
              ("f" :alias :y)))
            ("c"))))
+
+(defun grid-oscillate-y (dim length val p-new)
+  (loop for p-sub below (array-dimension p-new 0)
+        for p = (aref-point p-new p-sub)
+        unless (eq 0 (mod p-sub dim))
+          do (setf val (if (eq 0 val) length 0))
+        end
+        do (setf (aref p 1) val))
+  p-new)
+
+(defun prim-fn-grid-oscillate (pbg length dim
+                               &aux
+                                 (points (cadr (mopr-sgt:data-group-data pbg)))
+                                 (p-data (car (mopr-sgt:prop-entry-data points))))
+  (setf (mopr-sgt:prop-entry-data points)
+        (list
+         (cons 00 (grid-oscillate-y dim length 0 p-data))
+         (cons 10 (grid-oscillate-y dim length length (alexandria:copy-array p-data)))
+         (cons 20 (grid-oscillate-y dim length 0 (alexandria:copy-array p-data)))))
+  (setf (mopr-sgt:prop-entry-data (car (mopr-sgt:data-group-data pbg)))
+        (list (compute-extent p-data)))
+  pbg)

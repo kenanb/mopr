@@ -52,6 +52,11 @@
 
   ;; Test functions.
 
+  (setf (gethash :test-grid-oscillate table)
+        (make-callable #'prim-fn-grid-oscillate
+                       '(:pbg :length :dim)
+                       '(:point-based)))
+
   (setf (gethash :test-gen-xform-info table)
         (make-callable #'prim-fn-test-gen-xform-info
                        '(:tr-array :rt-array)
