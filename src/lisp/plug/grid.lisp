@@ -31,14 +31,15 @@
 
 (defun aref-point (a2d subscript)
   (make-array 3 :displaced-to a2d
+                :element-type 'single-float
                 :displaced-index-offset (array-row-major-index a2d subscript 0)))
 
 (defun make-extent-array (min-a max-a)
-  (make-array '(2 3) :initial-contents (list min-a max-a)))
+  (make-array '(2 3) :initial-contents (list min-a max-a) :element-type 'single-float))
 
 (defun compute-extent (points)
-  (let* ((min-a #3(0))
-         (max-a #3(0)))
+  (let* ((min-a #3(0.0))
+         (max-a #3(0.0)))
     (loop for p-sub below (array-dimension points 0)
           for p = (aref-point points p-sub)
           do (setf min-a (map 'vector #'min min-a p))
@@ -62,10 +63,11 @@
                :info *attr-info-points*
                :data (list points-data))))))))
 
-(defun prim-fn-grid-extent (s x y z)
+(defun prim-fn-grid-extent (size x y z
+                            &aux (s (coerce size 'single-float)))
   (mopr-sgt:make-prop-entry
    :info *attr-info-extent*
-   :data (list (make-extent-array '(00 00 00)
+   :data (list (make-extent-array '(0.0 0.0 0.0)
                                   (list (* s x) (* s y) (* s z))))))
 
 (defun prim-fn-grid-fv-counts (w h)
@@ -73,6 +75,7 @@
    :info *attr-info-fv-counts*
    :data (list (make-array
                 (* w h)
+                :element-type 'fixnum
                 :initial-element 4))))
 
 (defun prim-fn-grid-fv-indices (w h dir
@@ -82,6 +85,7 @@
   (let ((contents
           (make-array
            (list (* w h 4))
+           :element-type 'fixnum
            :initial-contents
            (loop for y below h
                  nconc (loop for x below w
@@ -95,14 +99,17 @@
    (list (apply #'* (mapcar #'1+ dims)) 3)
    :initial-contents contents))
 
-(defun prim-fn-grid-points (s dims order)
-  (let* ((min-a #3(0))
-         (max-a #3(0))
+(defun prim-fn-grid-points (size dims order)
+  (let* ((s (coerce size 'single-float))
+         (min-a #3(0.0))
+         (max-a #3(0.0))
          (contents
            (loop for elt-d0 upto (elt dims 0)
                  nconc (loop for elt-d1 upto (elt dims 1)
                              nconc (loop for elt-d2 upto (elt dims 2)
-                                         for v = (vector (* s elt-d0) (* s elt-d1) (* s elt-d2))
+                                         for v = (vector (* s elt-d0)
+                                                         (* s elt-d1)
+                                                         (* s elt-d2))
                                          for shuffled = (map 'vector (lambda (i) (aref v i)) order)
                                          do (setf min-a (map 'vector #'min min-a shuffled))
                                          do (setf max-a (map 'vector #'max max-a shuffled))

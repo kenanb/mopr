@@ -32,7 +32,7 @@
 
   (setf (gethash :grid-extent table)
         (make-callable #'prim-fn-grid-extent
-                       '(:s :x :y :z)
+                       '(:size :x :y :z)
                        '(:prop-entry)))
 
   (setf (gethash :grid-fv-counts table)
@@ -47,7 +47,7 @@
 
   (setf (gethash :grid-points table)
         (make-callable #'prim-fn-grid-points
-                       '(:s :dims :order)
+                       '(:size :dims :order)
                        '(:point-based)))
 
   ;; Test functions.
