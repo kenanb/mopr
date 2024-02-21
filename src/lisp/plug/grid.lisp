@@ -35,7 +35,9 @@
                 :displaced-index-offset (array-row-major-index a2d subscript 0)))
 
 (defun make-extent-array (min-a max-a)
-  (make-array '(2 3) :initial-contents (list min-a max-a) :element-type 'single-float))
+  (make-array '(2 3)
+              :element-type 'single-float
+              :initial-contents (list min-a max-a)))
 
 (defun compute-extent (points)
   (let* ((min-a #3(0.0))
@@ -97,6 +99,7 @@
 (defun make-points-array (dims contents)
   (make-array
    (list (apply #'* (mapcar #'1+ dims)) 3)
+   :element-type 'single-float
    :initial-contents contents))
 
 (defun prim-fn-grid-points (size dims order)
