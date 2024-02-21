@@ -3,6 +3,11 @@
 
 (in-package #:mopr-plug)
 
+(defstruct (callable (:constructor make-callable (fn in out)))
+  (fn nil :read-only t)
+  (in nil :read-only t)
+  (out nil :read-only t))
+
 (defun process-call-stack (form table)
   (loop with stack = nil
         for e in form
@@ -18,11 +23,6 @@
         finally (return (reverse stack))))
 
 ;; TODO [2024-02-17] : Move this logic behind user-driven plugin registration.
-
-(defstruct (callable (:constructor make-callable (fn in out)))
-  (fn nil :read-only t)
-  (in nil :read-only t)
-  (out nil :read-only t))
 
 ;; Call table generation.
 
