@@ -77,7 +77,7 @@
    :info *attr-info-fv-counts*
    :data (list (make-array
                 (* w h)
-                :element-type 'fixnum
+                :element-type '(signed-byte 32)
                 :initial-element 4))))
 
 (defun prim-fn-grid-fv-indices (w h dir
@@ -87,7 +87,7 @@
   (let ((contents
           (make-array
            (list (* w h 4))
-           :element-type 'fixnum
+           :element-type '(signed-byte 32)
            :initial-contents
            (loop for y below h
                  nconc (loop for x below w
