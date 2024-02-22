@@ -9,6 +9,8 @@
 #include "wrap/_base/ext/common.h"
 #include "wrap/_base/ext/prolog.h"
 
+#include "wrap/usd/ext/variability.h"
+
 // Generic includes.
 #include "base/api.h"
 
@@ -63,6 +65,10 @@ extern "C"
     _Bool
      mopr_property_definition_attribute_get_type_name_token(
       MoprToken_h token_h, MoprPropertyDefinition_ch this_ch );
+
+    MOPR_API
+    enum MoprAttributeVariability
+     mopr_property_definition_get_variability( MoprPropertyDefinition_ch this_ch );
 
 #ifdef __cplusplus
 }

@@ -7,6 +7,7 @@
 
 #include "wrap/usd/ext/timecode.h"
 #include "wrap/usd/ext/value.h"
+#include "wrap/usd/ext/variability.h"
 
 // Generic includes.
 #include "base/api.h"
@@ -15,12 +16,6 @@
 extern "C"
 {
 #endif
-
-    enum MoprAttributeVariability
-    {
-        MoprAttributeVariabilityVarying,
-        MoprAttributeVariabilityUniform,
-    };
 
     //
     // TF ATTRIBUTE WRAPPER

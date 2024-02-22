@@ -1,6 +1,8 @@
 #ifndef MOPR_WRAP_USD_EXT_VALUE_TYPE_NAME_H
 #define MOPR_WRAP_USD_EXT_VALUE_TYPE_NAME_H
 
+#include "token.h"
+
 // Wrap external std includes.
 #include "wrap/std/ext/string.h"
 
@@ -44,6 +46,33 @@ extern "C"
     void
      mopr_value_type_name_find_cstr( MoprValueTypeName_h this_h,
                                      char const * type_name_cstr );
+
+    MOPR_API
+    _Bool
+     mopr_value_type_name_is_scalar_p( MoprValueTypeName_ch this_ch );
+
+    MOPR_API
+    _Bool
+     mopr_value_type_name_is_array_p( MoprValueTypeName_ch this_ch );
+
+    MOPR_API
+    _Bool
+     mopr_value_type_name_get_scalar_type( MoprValueTypeName_h other_h,
+                                           MoprValueTypeName_ch this_ch );
+
+    MOPR_API
+    _Bool
+     mopr_value_type_name_get_array_type( MoprValueTypeName_h other_h,
+                                          MoprValueTypeName_ch this_ch );
+
+    MOPR_API
+    _Bool
+     mopr_value_type_name_get_role( MoprToken_h token_h, MoprValueTypeName_ch this_ch );
+
+    MOPR_API
+    _Bool
+     mopr_value_type_name_get_as_token( MoprToken_h token_h,
+                                        MoprValueTypeName_ch this_ch );
 
 #ifdef __cplusplus
 }
