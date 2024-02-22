@@ -36,3 +36,9 @@ _Bool
 {
     return this_ch->d.IsEmpty( );
 }
+
+char const *
+ mopr_token_cstr( MoprToken_ch this_ch )
+{
+    return this_ch->d.GetText( );
+}

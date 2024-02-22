@@ -30,6 +30,10 @@ extern "C"
     _Bool
      mopr_token_is_empty_p( MoprToken_ch this_ch );
 
+    MOPR_API
+    char const *
+     mopr_token_cstr( MoprToken_ch this_ch );
+
     //
     // API
     //

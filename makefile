@@ -146,6 +146,8 @@ WRAP_USD_CPP_OBJ ::= src/wrap/usd/ext/._test.cpp.o \
 	src/wrap/usd/ext/.path.cpp.o \
 	src/wrap/usd/ext/.layer.cpp.o \
 	src/wrap/usd/ext/.prim.cpp.o \
+	src/wrap/usd/ext/.primDefinition.cpp.o \
+	src/wrap/usd/ext/.propertyDefinition.cpp.o \
 	src/wrap/usd/ext/.stage.cpp.o
 
 WRAP_USD_CPP_DEP ::= $(WRAP_USD_CPP_OBJ:.o=.d)

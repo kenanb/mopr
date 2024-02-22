@@ -11,6 +11,8 @@
 #include "ext/layer.h"
 #include "ext/path.h"
 #include "ext/prim.h"
+#include "ext/primDefinition.h"
+#include "ext/propertyDefinition.h"
 #include "ext/stage.h"
 #include "ext/timecode.h"
 #include "ext/token.h"
