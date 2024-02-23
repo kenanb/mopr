@@ -4,20 +4,20 @@
 (in-package #:mopr-plug)
 
 (defvar *attr-info-xform-op-order*
-  (make-instance 'mopr-sgt:attr-info
+  (make-instance 'mopr-scm:attr-info
                  :base-name "xformOpOrder"
                  :meta '(:interp :uniform)
                  :array-p t
                  :type-key :token))
 
 (defvar *attr-info-translate*
-  (make-instance 'mopr-sgt:attr-info
+  (make-instance 'mopr-scm:attr-info
                  :namespace '("xformOp")
                  :base-name "translate"
                  :type-key :float3))
 
 (defvar *attr-info-rotate-x-y-z*
-  (make-instance 'mopr-sgt:attr-info
+  (make-instance 'mopr-scm:attr-info
                  :namespace '("xformOp")
                  :base-name "rotateXYZ"
                  :type-key :double3))

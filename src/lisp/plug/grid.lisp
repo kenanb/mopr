@@ -4,25 +4,25 @@
 (in-package #:mopr-plug)
 
 (defvar *attr-info-fv-counts*
-  (make-instance 'mopr-sgt:attr-info
+  (make-instance 'mopr-scm:attr-info
                  :base-name "faceVertexCounts"
                  :array-p t
                  :type-key :int))
 
 (defvar *attr-info-fv-indices*
-  (make-instance 'mopr-sgt:attr-info
+  (make-instance 'mopr-scm:attr-info
                  :base-name "faceVertexIndices"
                  :array-p t
                  :type-key :int))
 
 (defvar *attr-info-extent*
-  (make-instance 'mopr-sgt:attr-info
+  (make-instance 'mopr-scm:attr-info
                  :base-name "extent"
                  :array-p t
                  :type-key :float3))
 
 (defvar *attr-info-points*
-  (make-instance 'mopr-sgt:attr-info
+  (make-instance 'mopr-scm:attr-info
                  :base-name "points"
                  :array-p t
                  :type-key :point3f))

@@ -27,8 +27,9 @@
                 ((:file "package")
                  (:file "raii" :depends-on ("package"))
                  (:file "value" :depends-on ("package" "raii"))
-                 (:file "sgt" :depends-on ("package" "value"))
-                 (:file "schema" :depends-on ("package"))
+                 (:file "prop" :depends-on ("package" "value"))
+                 (:file "schema" :depends-on ("package" "prop"))
+                 (:file "sgt" :depends-on ("package" "schema"))
                  (:file "describe" :depends-on ("package"))))
                (:module "plug"
                 :depends-on ("mopr")

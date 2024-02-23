@@ -27,14 +27,8 @@
 (defpackage :mopr-scm
   (:use #:cl)
   (:export
-   #:create-generic-api-schema-table
-   #:delete-generic-api-schema-table
-   #:create-generic-isa-schema-table
-   #:delete-generic-isa-schema-table))
 
-(defpackage :mopr-sgt
-  (:use #:cl)
-  (:export
+   ;; Propery information:
    #:prop-name-string
    #:prop-info
    #:attr-info
@@ -47,6 +41,16 @@
    #:attr-info-array-p
    #:attr-info-type-key
    #:get-attr-type
+
+   ;; Schema tables:
+   #:create-generic-api-schema-table
+   #:delete-generic-api-schema-table
+   #:create-generic-isa-schema-table
+   #:delete-generic-isa-schema-table))
+
+(defpackage :mopr-sgt
+  (:use #:cl)
+  (:export
    #:data-group
    #:tree-entry
    #:prim-entry
