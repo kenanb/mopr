@@ -3,31 +3,12 @@
 
 (in-package #:mopr-plug)
 
-(defvar *attr-info-fv-counts*
-  (make-instance 'mopr-scm:attr-info
-                 :base-name "faceVertexCounts"
-                 :array-p t
-                 :type-key :int))
-
-(defvar *attr-info-fv-indices*
-  (make-instance 'mopr-scm:attr-info
-                 :base-name "faceVertexIndices"
-                 :array-p t
-                 :type-key :int))
-
-(defvar *attr-info-extent*
-  (make-instance 'mopr-scm:attr-info
-                 :base-name "extent"
-                 :array-p t
-                 :type-key :float3))
-
-(defvar *attr-info-points*
-  (make-instance 'mopr-scm:attr-info
-                 :base-name "points"
-                 :array-p t
-                 :type-key :point3f))
-
 ;; Grid generation functions.
+
+(defun get-prop-info-for-schema (schema-type prop-name)
+  (gethash prop-name
+           (mopr-scm:schema-prop-table
+            (gethash schema-type mopr-db:*isa-schema-table*))))
 
 (defun aref-point (a2d subscript)
   (make-array 3 :displaced-to a2d
@@ -59,22 +40,22 @@
             (mopr-sgt::data
              (list
               (mopr-sgt:make-prop-entry
-               :info *attr-info-extent*
+               :info (get-prop-info-for-schema 'mopr-ns:|Mesh| :|extent|)
                :data (list extent-data))
               (mopr-sgt:make-prop-entry
-               :info *attr-info-points*
+               :info (get-prop-info-for-schema 'mopr-ns:|Mesh| :|points|)
                :data (list points-data))))))))
 
 (defun prim-fn-grid-extent (size x y z
                             &aux (s (coerce size 'single-float)))
   (mopr-sgt:make-prop-entry
-   :info *attr-info-extent*
+   :info (get-prop-info-for-schema 'mopr-ns:|Mesh| :|extent|)
    :data (list (make-extent-array '(0.0 0.0 0.0)
                                   (list (* s x) (* s y) (* s z))))))
 
 (defun prim-fn-grid-fv-counts (w h)
   (mopr-sgt:make-prop-entry
-   :info *attr-info-fv-counts*
+   :info (get-prop-info-for-schema 'mopr-ns:|Mesh| :|faceVertexCounts|)
    :data (list (make-array
                 (* w h)
                 :element-type '(signed-byte 32)
@@ -93,7 +74,7 @@
                  nconc (loop for x below w
                              nconc (mapcar (lambda (s) (+ x s (* y (+ 1 w)))) p))))))
     (mopr-sgt:make-prop-entry
-     :info *attr-info-fv-indices*
+     :info (get-prop-info-for-schema 'mopr-ns:|Mesh| :|faceVertexIndices|)
      :data (list contents))))
 
 (defun make-points-array (dims contents)

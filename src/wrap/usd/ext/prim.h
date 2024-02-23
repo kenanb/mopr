@@ -59,7 +59,7 @@ extern "C"
                                  MoprToken_ch name_token_ch,
                                  MoprValueTypeName_ch value_type_name_ch,
                                  _Bool custom,
-                                 MoprAttributeVariability variability );
+                                 MoprPropertyVariability variability );
 
 #ifdef __cplusplus
 }

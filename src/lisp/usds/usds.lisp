@@ -26,9 +26,6 @@
 
 (defvar *bind-table* nil)
 (defvar *alias-table* nil)
-(defvar *isa-schema-table* nil)
-(defvar *api-schema-table* nil)
-(defvar *value-type-table* nil)
 (defvar *data-call-table* nil)
 (defvar *prim-call-table* nil)
 (defvar *usds-ns-package* (find-package "USDS-NS"))
@@ -181,8 +178,8 @@
 (defun handle-prim-type-form (prim-h form &aux (prim-type (car form)))
   ;; (format t "~%Called handle-prim-type-form!~%: ~S~%" form)
   (when prim-type
-    (alexandria:if-let ((type-entry (gethash prim-type *isa-schema-table*)))
-      (mopr:prim-set-type-name prim-h type-entry)
+    (alexandria:if-let ((s (gethash prim-type mopr-db:*isa-schema-table*)))
+      (mopr:prim-set-type-name prim-h (mopr-scm:schema-name-token s))
       (unknown-form-error prim-type :debug))))
 
 (defun handle-prim-meta-form (prim-h form)
@@ -237,7 +234,7 @@
                         :array-p (member attr-category '(:array :|array|))
                         :type-key attr-type-key
                         (extract-prop-info prop-data ns-rlist)))
-           (attr-type (mopr-scm:get-attr-type info *value-type-table*)))
+           (attr-type (mopr-scm:get-attr-type info mopr-db:*value-type-table*)))
         form
 
       ;; TODO: We don't handle metadata yet.
@@ -255,7 +252,7 @@
                                          attr-type
                                          (mopr-scm:attr-info-array-p info))
                                         0 ; bool custom
-                                        mopr:+mopr-attribute-variability-varying+)
+                                        mopr:+mopr-property-variability-varying+)
             (alexandria:if-let
                 ((transfer-for-type-fn
                   (mopr-val:get-transfer-for-type-function
@@ -379,19 +376,20 @@
           (*alias-table* (make-hash-table))
           (*data-call-table* (make-hash-table))
           (*prim-call-table* (make-hash-table))
-          (*value-type-table* (make-hash-table))
-          (*isa-schema-table* (make-hash-table)))
+          (mopr-db:*value-type-table* (make-hash-table))
+          (mopr-db:*isa-schema-table* (make-hash-table))
+          (mopr-db:*api-schema-table* (make-hash-table)))
      (mopr-plug:create-data-call-table *data-call-table*)
      (mopr-plug:create-prim-call-table *prim-call-table*)
-     (mopr-val:create-generic-value-type-table *value-type-table*)
-     (mopr-scm:create-generic-isa-schema-table *isa-schema-table*)
-     (mopr-scm:create-generic-api-schema-table *api-schema-table*)
+     (mopr-val:create-generic-value-type-table mopr-db:*value-type-table*)
+     (mopr-scm:create-generic-isa-schema-table mopr-db:*isa-schema-table*)
+     (mopr-scm:create-generic-api-schema-table mopr-db:*api-schema-table*)
      ,@body
      ;; (format t "HT ALIAS: ~A~%" (hash-table-count *alias-table*))
      ;; (format t "HT BIND : ~A~%" (hash-table-count *bind-table*))
-     (mopr-scm:delete-generic-api-schema-table *api-schema-table*)
-     (mopr-scm:delete-generic-isa-schema-table *isa-schema-table*)
-     (mopr-val:delete-generic-value-type-table *value-type-table*)))
+     (mopr-scm:delete-generic-api-schema-table mopr-db:*api-schema-table*)
+     (mopr-scm:delete-generic-isa-schema-table mopr-db:*isa-schema-table*)
+     (mopr-val:delete-generic-value-type-table mopr-db:*value-type-table*)))
 
 (defun write-to-layer (layer-h usds-data)
   (when (mopr:layer-try-upgrade layer-h)

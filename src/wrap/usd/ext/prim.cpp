@@ -36,17 +36,17 @@ _Bool
                              MoprToken_ch name_token_ch,
                              MoprValueTypeName_ch value_type_name_ch,
                              _Bool custom,
-                             MoprAttributeVariability variability )
+                             MoprPropertyVariability variability )
 {
     pxr::SdfVariability vr;
 
     switch ( variability )
     {
-        case MoprAttributeVariabilityUniform:
+        case MoprPropertyVariabilityUniform:
             vr = pxr::SdfVariabilityUniform;
             break;
 
-        case MoprAttributeVariabilityVarying:
+        case MoprPropertyVariabilityVarying:
         default:
             vr = pxr::SdfVariabilityVarying;
             break;

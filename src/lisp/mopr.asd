@@ -29,6 +29,10 @@
                  (:file "value" :depends-on ("package" "raii"))
                  (:file "prop" :depends-on ("package" "value"))
                  (:file "schema" :depends-on ("package" "prop"))
+                 (:file "database" :depends-on ("package"
+                                                "value"
+                                                "prop"
+                                                "schema"))
                  (:file "sgt" :depends-on ("package" "schema"))
                  (:file "describe" :depends-on ("package"))))
                (:module "plug"

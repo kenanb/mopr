@@ -67,7 +67,7 @@ extern "C"
       MoprToken_h token_h, MoprPropertyDefinition_ch this_ch );
 
     MOPR_API
-    enum MoprAttributeVariability
+    enum MoprPropertyVariability
      mopr_property_definition_get_variability( MoprPropertyDefinition_ch this_ch );
 
 #ifdef __cplusplus

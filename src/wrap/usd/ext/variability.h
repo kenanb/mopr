@@ -9,10 +9,10 @@ extern "C"
 {
 #endif
 
-    enum MoprAttributeVariability
+    enum MoprPropertyVariability
     {
-        MoprAttributeVariabilityVarying,
-        MoprAttributeVariabilityUniform,
+        MoprPropertyVariabilityVarying,
+        MoprPropertyVariabilityUniform,
     };
 
 #ifdef __cplusplus

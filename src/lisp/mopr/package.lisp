@@ -42,11 +42,25 @@
    #:attr-info-type-key
    #:get-attr-type
 
+   ;; Schema class:
+   #:schema
+   #:make-schema
+   #:schema-name-token
+   #:schema-schema-type
+   #:schema-prop-table
+
    ;; Schema tables:
    #:create-generic-api-schema-table
    #:delete-generic-api-schema-table
    #:create-generic-isa-schema-table
    #:delete-generic-isa-schema-table))
+
+(defpackage :mopr-db
+  (:use #:cl)
+  (:export
+   #:*value-type-table*
+   #:*isa-schema-table*
+   #:*api-schema-table*))
 
 (defpackage :mopr-sgt
   (:use #:cl)
@@ -68,7 +82,7 @@
 (defpackage :mopr-ns
   (:use)
   (:export
-   ;; Generic prim types:  Standard reader case forms:
+   ;; Generic ISA schemas: Standard reader case forms:
    #:|PointInstancer|      #:PointInstancer
    #:|Camera|              #:Camera
    #:|Xform|               #:Xform
@@ -81,4 +95,8 @@
    #:|Cone|                #:Cone
    #:|Cube|                #:Cube
    #:|Cylinder|            #:Cylinder
-   #:|Sphere|              #:Sphere))
+   #:|Sphere|              #:Sphere
+
+   ;; Generic API schemas: Standard reader case forms:
+   #:|CollectionAPI|       #:CollectionAPI
+   #:|ClipsAPI|            #:ClipsAPI))

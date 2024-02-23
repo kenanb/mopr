@@ -25,6 +25,12 @@
     :type base-string
     :reader prop-info-full-name
     :documentation "...")
+   (variability
+    :type bit
+    :initarg :variability
+    :initform mopr:+mopr-property-variability-varying+
+    :reader prop-info-variability
+    :documentation "...")
    (meta
     :type list
     :initarg :meta

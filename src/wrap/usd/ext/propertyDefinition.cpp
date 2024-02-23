@@ -81,16 +81,16 @@ _Bool
     return !this_ch->d;
 }
 
-enum MoprAttributeVariability
+enum MoprPropertyVariability
  mopr_property_definition_get_variability( MoprPropertyDefinition_ch this_ch )
 {
     switch ( this_ch->d.GetVariability( ) )
     {
         case pxr::SdfVariabilityUniform:
-            return MoprAttributeVariabilityUniform;
+            return MoprPropertyVariabilityUniform;
 
         case pxr::SdfVariabilityVarying:
         default:
-            return MoprAttributeVariabilityVarying;
+            return MoprPropertyVariabilityVarying;
     }
 }

@@ -7,7 +7,7 @@
 
 struct MOPR_API MoprPrimDefinition : public MoprGeneric
 {
-    const pxr::UsdPrimDefinition * p;
+    const pxr::UsdPrimDefinition * p = nullptr;
 };
 
 #endif   // MOPR_WRAP_USD_BOX_PRIM_DEFINITION_H
