@@ -153,7 +153,7 @@
 (defun get-complete-type-list ()
   (mapcar #'car (append +value-type-list+ +value-role-list+)))
 
-(defun create-generic-value-type-tokens (table)
+(defun create-generic-value-type-table (table)
   (loop for s in (get-complete-type-list)
         for s-upcase = (alexandria:format-symbol "KEYWORD" "~:@(~A~)" s)
         for real-type = (get-real-type s)
@@ -169,7 +169,7 @@
              (setf (gethash s table) val)
              (setf (gethash s-upcase table) val))))
 
-(defun delete-generic-value-type-tokens (table)
+(defun delete-generic-value-type-table (table)
   (loop for s in (get-complete-type-list)
         for val = (gethash s table)
         for val-scalar = (value-type-scalar-type-name val)

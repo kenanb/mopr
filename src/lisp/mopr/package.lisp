@@ -19,16 +19,18 @@
    #:value-type-elt-type
    #:value-type-real-type
    #:value-type-name
-   #:create-generic-value-type-tokens
-   #:delete-generic-value-type-tokens
+   #:create-generic-value-type-table
+   #:delete-generic-value-type-table
    #:transfer-for-type
    #:get-transfer-for-type-function))
 
-(defpackage :mopr-prim
+(defpackage :mopr-scm
   (:use #:cl)
   (:export
-   #:create-generic-prim-type-tokens
-   #:delete-generic-prim-type-tokens))
+   #:create-generic-api-schema-table
+   #:delete-generic-api-schema-table
+   #:create-generic-isa-schema-table
+   #:delete-generic-isa-schema-table))
 
 (defpackage :mopr-sgt
   (:use #:cl)

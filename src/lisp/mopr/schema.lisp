@@ -1,9 +1,9 @@
 ;;;; -*- Mode: LISP; Syntax: COMMON-LISP; Package: CL-USER -*-
 ;;
 
-(in-package #:mopr-prim)
+(in-package #:mopr-scm)
 
-(defconstant +prim-type-list+
+(defconstant +isa-schema-list+
   (list 'mopr-ns:|PointInstancer|
         'mopr-ns:|Camera|
         'mopr-ns:|Xform|
@@ -18,8 +18,8 @@
         'mopr-ns:|Cylinder|
         'mopr-ns:|Sphere|))
 
-(defun create-generic-prim-type-tokens (table)
-  (loop for s in +prim-type-list+
+(defun create-generic-isa-schema-table (table)
+  (loop for s in +isa-schema-list+
         for s-upcase = (alexandria:format-symbol "MOPR-NS" "~:@(~A~)" s)
         for s-name = (symbol-name s)
         for val = (mopr:create-token)
@@ -28,9 +28,13 @@
              (setf (gethash s table) val)
              (setf (gethash s-upcase table) val))))
 
-(defun delete-generic-prim-type-tokens (table)
-  (loop for s in +prim-type-list+
+(defun delete-generic-isa-schema-table (table)
+  (loop for s in +isa-schema-list+
         for val = (gethash s table)
         do (progn
              (mopr:delete-token val)
              (autowrap:invalidate val))))
+
+(defun create-generic-api-schema-table (table))
+
+(defun delete-generic-api-schema-table (table))
