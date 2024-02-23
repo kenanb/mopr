@@ -35,22 +35,22 @@
             (mopr-sgt::data
              (list
               (mopr-sgt:make-prop-entry
-               :info (mopr-db:get-prop-info-for-isa-schema :Mesh :extent)
+               :info (mopr-reg:get-prop-info-for-isa-schema :Mesh :extent)
                :data (list extent-data))
               (mopr-sgt:make-prop-entry
-               :info (mopr-db:get-prop-info-for-isa-schema :Mesh :points)
+               :info (mopr-reg:get-prop-info-for-isa-schema :Mesh :points)
                :data (list points-data))))))))
 
 (defun prim-fn-grid-extent (size x y z
                             &aux (s (coerce size 'single-float)))
   (mopr-sgt:make-prop-entry
-   :info (mopr-db:get-prop-info-for-isa-schema :Mesh :extent)
+   :info (mopr-reg:get-prop-info-for-isa-schema :Mesh :extent)
    :data (list (make-extent-array '(0.0 0.0 0.0)
                                   (list (* s x) (* s y) (* s z))))))
 
 (defun prim-fn-grid-fv-counts (w h)
   (mopr-sgt:make-prop-entry
-   :info (mopr-db:get-prop-info-for-isa-schema :Mesh :faceVertexCounts)
+   :info (mopr-reg:get-prop-info-for-isa-schema :Mesh :faceVertexCounts)
    :data (list (make-array
                 (* w h)
                 :element-type '(signed-byte 32)
@@ -69,7 +69,7 @@
                  nconc (loop for x below w
                              nconc (mapcar (lambda (s) (+ x s (* y (+ 1 w)))) p))))))
     (mopr-sgt:make-prop-entry
-     :info (mopr-db:get-prop-info-for-isa-schema :Mesh :faceVertexIndices)
+     :info (mopr-reg:get-prop-info-for-isa-schema :Mesh :faceVertexIndices)
      :data (list contents))))
 
 (defun make-points-array (dims contents)

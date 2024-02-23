@@ -55,14 +55,14 @@
    #:create-generic-isa-schema-table
    #:delete-generic-isa-schema-table))
 
-(defpackage :mopr-db
+(defpackage :mopr-reg
   (:use #:cl)
   (:export
-   #:*database*
-   #:database
-   #:make-database
-   #:create-database-tables
-   #:delete-database-tables
+   #:*registry*
+   #:registry
+   #:make-registry
+   #:create-registry-tables
+   #:delete-registry-tables
    #:get-attr-type
    #:get-api-schema
    #:get-prop-info-for-isa-schema

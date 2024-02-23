@@ -29,7 +29,7 @@
                  (:file "value" :depends-on ("package" "raii"))
                  (:file "prop" :depends-on ("package" "value"))
                  (:file "schema" :depends-on ("package" "prop"))
-                 (:file "database" :depends-on ("package"
+                 (:file "registry" :depends-on ("package"
                                                 "value"
                                                 "prop"
                                                 "schema"))

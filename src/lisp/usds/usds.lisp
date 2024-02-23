@@ -178,7 +178,7 @@
 (defun handle-prim-type-form (prim-h form &aux (prim-type (car form)))
   ;; (format t "~%Called handle-prim-type-form!~%: ~S~%" form)
   (when prim-type
-    (alexandria:if-let ((s (mopr-db:get-isa-schema prim-type)))
+    (alexandria:if-let ((s (mopr-reg:get-isa-schema prim-type)))
       (mopr:prim-set-type-name prim-h (mopr-scm:schema-name-token s))
       (unknown-form-error prim-type :debug))))
 
@@ -234,7 +234,7 @@
                         :array-p (member attr-category '(:array :|array|))
                         :type-key attr-type-key
                         (extract-prop-info prop-data ns-rlist)))
-           (attr-type (mopr-db:get-attr-type info)))
+           (attr-type (mopr-reg:get-attr-type info)))
         form
 
       ;; TODO: We don't handle metadata yet.
@@ -376,12 +376,12 @@
           (*alias-table* (make-hash-table))
           (*data-call-table* (make-hash-table))
           (*prim-call-table* (make-hash-table))
-          (mopr-db:*database* (mopr-db:make-database)))
+          (mopr-reg:*registry* (mopr-reg:make-registry)))
      (mopr-plug:create-data-call-table *data-call-table*)
      (mopr-plug:create-prim-call-table *prim-call-table*)
-     (mopr-db:create-database-tables)
+     (mopr-reg:create-registry-tables)
      ,@body
-     (mopr-db:delete-database-tables)))
+     (mopr-reg:delete-registry-tables)))
 
 (defun write-to-layer (layer-h usds-data)
   (unless (zerop (mopr:layer-try-upgrade layer-h))
