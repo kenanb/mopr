@@ -58,10 +58,11 @@
 (defpackage :mopr-db
   (:use #:cl)
   (:export
-   #:*value-type-table*
-   #:*isa-schema-table*
-   #:*api-schema-table*
-
+   #:*database*
+   #:database
+   #:make-database
+   #:create-database-tables
+   #:delete-database-tables
    #:get-attr-type
    #:get-api-schema
    #:get-prop-info-for-isa-schema
