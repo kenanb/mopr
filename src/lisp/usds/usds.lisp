@@ -392,14 +392,14 @@
      (mopr-val:delete-generic-value-type-table mopr-db:*value-type-table*)))
 
 (defun write-to-layer (layer-h usds-data)
-  (when (mopr:layer-try-upgrade layer-h)
+  (unless (zerop (mopr:layer-try-upgrade layer-h))
     (mopr:with-handle (stage-h :stage)
       (mopr:stage-open-layer stage-h layer-h)
       (with-usds-variables (:enable-call nil)
         (handle-data-subforms stage-h usds-data)))))
 
 (defun write-to-layer-call-enabled (layer-h usds-data)
-  (when (mopr:layer-try-upgrade layer-h)
+  (unless (zerop (mopr:layer-try-upgrade layer-h))
     (mopr:with-handle (stage-h :stage)
       (mopr:stage-open-layer stage-h layer-h)
       (with-usds-variables (:enable-call t)
