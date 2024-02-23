@@ -10,13 +10,13 @@
  (:prim ("a"))
 
  (:prim ("b")
-        (:type Xform))
+        (:type :Xform))
 
  (:prim ("b" "d")
-        (:type Xform))
+        (:type :Xform))
 
  (:prim ("b" "d" "e")
-        (:type Sphere))
+        (:type :Sphere))
 
  (:prim ("c")
-        (:type Cube)))
+        (:type :Cube)))

@@ -178,7 +178,7 @@
 (defun handle-prim-type-form (prim-h form &aux (prim-type (car form)))
   ;; (format t "~%Called handle-prim-type-form!~%: ~S~%" form)
   (when prim-type
-    (alexandria:if-let ((s (gethash prim-type mopr-db:*isa-schema-table*)))
+    (alexandria:if-let ((s (mopr-db:get-isa-schema prim-type)))
       (mopr:prim-set-type-name prim-h (mopr-scm:schema-name-token s))
       (unknown-form-error prim-type :debug))))
 
@@ -234,7 +234,7 @@
                         :array-p (member attr-category '(:array :|array|))
                         :type-key attr-type-key
                         (extract-prop-info prop-data ns-rlist)))
-           (attr-type (mopr-scm:get-attr-type info mopr-db:*value-type-table*)))
+           (attr-type (mopr-db:get-attr-type info)))
         form
 
       ;; TODO: We don't handle metadata yet.

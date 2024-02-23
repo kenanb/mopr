@@ -5,11 +5,6 @@
 
 ;; Grid generation functions.
 
-(defun get-prop-info-for-schema (schema-type prop-name)
-  (gethash prop-name
-           (mopr-scm:schema-prop-table
-            (gethash schema-type mopr-db:*isa-schema-table*))))
-
 (defun aref-point (a2d subscript)
   (make-array 3 :displaced-to a2d
                 :element-type 'single-float
@@ -40,22 +35,22 @@
             (mopr-sgt::data
              (list
               (mopr-sgt:make-prop-entry
-               :info (get-prop-info-for-schema 'mopr-ns:|Mesh| :|extent|)
+               :info (mopr-db:get-prop-info-for-isa-schema :Mesh :extent)
                :data (list extent-data))
               (mopr-sgt:make-prop-entry
-               :info (get-prop-info-for-schema 'mopr-ns:|Mesh| :|points|)
+               :info (mopr-db:get-prop-info-for-isa-schema :Mesh :points)
                :data (list points-data))))))))
 
 (defun prim-fn-grid-extent (size x y z
                             &aux (s (coerce size 'single-float)))
   (mopr-sgt:make-prop-entry
-   :info (get-prop-info-for-schema 'mopr-ns:|Mesh| :|extent|)
+   :info (mopr-db:get-prop-info-for-isa-schema :Mesh :extent)
    :data (list (make-extent-array '(0.0 0.0 0.0)
                                   (list (* s x) (* s y) (* s z))))))
 
 (defun prim-fn-grid-fv-counts (w h)
   (mopr-sgt:make-prop-entry
-   :info (get-prop-info-for-schema 'mopr-ns:|Mesh| :|faceVertexCounts|)
+   :info (mopr-db:get-prop-info-for-isa-schema :Mesh :faceVertexCounts)
    :data (list (make-array
                 (* w h)
                 :element-type '(signed-byte 32)
@@ -74,7 +69,7 @@
                  nconc (loop for x below w
                              nconc (mapcar (lambda (s) (+ x s (* y (+ 1 w)))) p))))))
     (mopr-sgt:make-prop-entry
-     :info (get-prop-info-for-schema 'mopr-ns:|Mesh| :|faceVertexIndices|)
+     :info (mopr-db:get-prop-info-for-isa-schema :Mesh :faceVertexIndices)
      :data (list contents))))
 
 (defun make-points-array (dims contents)

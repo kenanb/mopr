@@ -4,23 +4,23 @@
 (in-package #:mopr-scm)
 
 (defconstant +isa-schema-list+
-  (list 'mopr-ns:|PointInstancer|
-        'mopr-ns:|Camera|
-        'mopr-ns:|Xform|
-        'mopr-ns:|Mesh|
-        'mopr-ns:|NurbsPatch|
-        'mopr-ns:|BasisCurves|
-        'mopr-ns:|NurbsCurves|
-        'mopr-ns:|Points|
-        'mopr-ns:|Capsule|
-        'mopr-ns:|Cone|
-        'mopr-ns:|Cube|
-        'mopr-ns:|Cylinder|
-        'mopr-ns:|Sphere|))
+  (list :|PointInstancer|
+        :|Camera|
+        :|Xform|
+        :|Mesh|
+        :|NurbsPatch|
+        :|BasisCurves|
+        :|NurbsCurves|
+        :|Points|
+        :|Capsule|
+        :|Cone|
+        :|Cube|
+        :|Cylinder|
+        :|Sphere|))
 
 (defconstant +api-schema-list+
-  (list 'mopr-ns:|CollectionAPI|
-        'mopr-ns:|ClipsAPI|))
+  (list :|CollectionAPI|
+        :|ClipsAPI|))
 
 (defun generate-prop-info (prop-name prop-def-h)
   (let (info-type
@@ -68,8 +68,10 @@
                  (mopr:prim-definition-get-property prop-def-h prim-def-h prop-token-h)
                  (let* ((prop-name (mopr:token-cstr prop-token-h))
                         (prop-name-kw (alexandria:format-symbol "KEYWORD" "~A" prop-name))
+                        (prop-name-kw-up (alexandria:format-symbol "KEYWORD" "~:@(~A~)" prop-name))
                         (info (generate-prop-info prop-name prop-def-h)))
-                   (setf (gethash prop-name-kw table) info))))))
+                   (setf (gethash prop-name-kw table) info
+                         (gethash prop-name-kw-up table) info))))))
   table)
 
 (defstruct (schema (:type vector) :named
@@ -98,11 +100,11 @@
 
 (defun create-generic-isa-schema-table (table)
   (loop for s in +isa-schema-list+
-        for s-upcase = (alexandria:format-symbol "MOPR-NS" "~:@(~A~)" s)
+        for s-upcase = (alexandria:format-symbol "KEYWORD" "~:@(~A~)" s)
         for s-name = (symbol-name s)
         for val = (make-schema s-name :isa)
-        do (setf (gethash s table) val)
-        do (setf (gethash s-upcase table) val)))
+        do (setf (gethash s table) val
+                 (gethash s-upcase table) val)))
 
 (defun delete-generic-isa-schema-table (table)
   (loop for s in +isa-schema-list+
@@ -113,11 +115,11 @@
 
 (defun create-generic-api-schema-table (table)
   (loop for s in +api-schema-list+
-        for s-upcase = (alexandria:format-symbol "MOPR-NS" "~:@(~A~)" s)
+        for s-upcase = (alexandria:format-symbol "KEYWORD" "~:@(~A~)" s)
         for s-name = (symbol-name s)
         for val = (make-schema s-name :api)
-        do (setf (gethash s table) val)
-        do (setf (gethash s-upcase table) val)))
+        do (setf (gethash s table) val
+                 (gethash s-upcase table) val)))
 
 (defun delete-generic-api-schema-table (table)
   (loop for s in +api-schema-list+

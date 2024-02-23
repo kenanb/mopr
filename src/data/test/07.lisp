@@ -11,10 +11,10 @@
  (:prim ("a"))
 
  (:prim ("b")
-        (:type Xform))
+        (:type :Xform))
 
  (:prim ("b" "d")
-        (:type Xform)
+        (:type :Xform)
         (:attr ("testToken" :interp :uniform)
          :datum :token #0A "xformOp:translate")
         (:attr "test2dMatrix2d"
@@ -23,17 +23,17 @@
          :array :matrix2d #3A (((0 1) (430 -145)))))
 
  (:prim x
-        (:type Sphere)
+        (:type :Sphere)
         (:attr "radius"
          :datum :double #0A 5.0d0))
 
  (:prim y
-        (:type Sphere)
+        (:type :Sphere)
         (:attr "radius"
          :datum :double #0A 50.0d0))
 
  (:prim ("c")
-        (:type Mesh)
+        (:type :Mesh)
         (:meta :kind "component"))
 
  (:prim ("c")

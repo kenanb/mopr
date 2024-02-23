@@ -3,7 +3,7 @@
  (:call :test-tree-gen)
 
  (:prim :x
-        (:type Sphere)
+        (:type :Sphere)
         (:call #1A (10 0 100)
                #1A (33 55 4)
                :test-gen-xform-info)

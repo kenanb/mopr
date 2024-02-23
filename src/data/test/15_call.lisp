@@ -3,7 +3,7 @@
 
  (:prim ("Grid3x3")
 
-  (:type Mesh)
+  (:type :Mesh)
 
   (:call 3 3 :grid-fv-counts)
 

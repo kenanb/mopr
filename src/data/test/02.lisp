@@ -5,7 +5,7 @@
    ("world")))
 
  (:prim ("hello")
-        (:type Xform))
+        (:type :Xform))
 
  (:prim ("hello" "world")
-        (:type Sphere)))
+        (:type :Sphere)))

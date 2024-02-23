@@ -63,9 +63,6 @@
     :documentation "..."))
   (:documentation "..."))
 
-(defun get-attr-type (ainfo table)
-  (gethash (attr-info-type-key ainfo) table))
-
 (defclass rel-info (prop-info)
   ()
   (:documentation "..."))

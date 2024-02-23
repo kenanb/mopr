@@ -8,15 +8,15 @@
   ("c"))
 
  (:prim ("c")
-        (:type Cube))
+        (:type :Cube))
 
  (:prim ("b")
-        (:type Xform))
+        (:type :Xform))
 
  (:prim ("b" "d")
-        (:type Xform))
+        (:type :Xform))
 
  (:prim x
-        (:type Sphere))
+        (:type :Sphere))
 
  (:prim ("a")))

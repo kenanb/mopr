@@ -11,5 +11,5 @@
    #:write-to-layer
    #:write-to-layer-call-enabled))
 
-(uiop:define-package #:usds-ns
-  (:use-reexport #:mopr-ns))
+(defpackage #:usds-ns
+  (:use))

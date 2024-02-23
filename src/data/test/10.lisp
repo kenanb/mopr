@@ -2,7 +2,7 @@
   ("a"))
 
  (:prim ("a")
-        (:type Sphere)
+        (:type :Sphere)
         (:attr "radius"
          :datum :double #0A 5.0d0
                (10 . #0A 4.0d0)

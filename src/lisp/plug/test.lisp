@@ -48,7 +48,7 @@
                   (rt-a (make-array 3 :initial-contents rt)))
              (mopr-sgt:make-prim-entry
               :data `((,prim-name)
-                      (:type mopr-ns:Cube)
+                      (:type :Cube)
                       (:attr "size" :datum :double #0A .5)
                       (:call ,tr-a ,rt-a :test-gen-xform-info))))))
 

@@ -60,7 +60,12 @@
   (:export
    #:*value-type-table*
    #:*isa-schema-table*
-   #:*api-schema-table*))
+   #:*api-schema-table*
+
+   #:get-attr-type
+   #:get-api-schema
+   #:get-prop-info-for-isa-schema
+   #:get-isa-schema))
 
 (defpackage :mopr-sgt
   (:use #:cl)
@@ -78,25 +83,3 @@
    #:prim-entry-data
    #:prop-entry-data
    #:prop-entry-info))
-
-(defpackage :mopr-ns
-  (:use)
-  (:export
-   ;; Generic ISA schemas: Standard reader case forms:
-   #:|PointInstancer|      #:PointInstancer
-   #:|Camera|              #:Camera
-   #:|Xform|               #:Xform
-   #:|Mesh|                #:Mesh
-   #:|NurbsPatch|          #:NurbsPatch
-   #:|BasisCurves|         #:BasisCurves
-   #:|NurbsCurves|         #:NurbsCurves
-   #:|Points|              #:Points
-   #:|Capsule|             #:Capsule
-   #:|Cone|                #:Cone
-   #:|Cube|                #:Cube
-   #:|Cylinder|            #:Cylinder
-   #:|Sphere|              #:Sphere
-
-   ;; Generic API schemas: Standard reader case forms:
-   #:|CollectionAPI|       #:CollectionAPI
-   #:|ClipsAPI|            #:ClipsAPI))

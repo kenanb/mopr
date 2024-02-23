@@ -4,4 +4,4 @@
   ("hello" :spec :def))
 
  (:prim ("hello")
-        (:type Xform)))
+        (:type :Xform)))

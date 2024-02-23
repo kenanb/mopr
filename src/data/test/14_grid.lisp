@@ -20,7 +20,7 @@
 
  (:prim ("Grid3x3")
 
-  (:type Mesh)
+  (:type :Mesh)
 
   (:attr "extent"
    :array :float3 #2A
