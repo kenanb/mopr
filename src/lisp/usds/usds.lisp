@@ -385,13 +385,13 @@
     (mopr:with-handle (stage-h :stage)
       (mopr:stage-open-layer stage-h layer-h)
       (mopr-reg:with-registry
-          (with-usds-variables (:enable-call nil)
-            (handle-data-subforms stage-h usds-data))))))
+        (with-usds-variables (:enable-call nil)
+          (handle-data-subforms stage-h usds-data))))))
 
 (defun write-to-layer-call-enabled (layer-h usds-data)
   (unless (zerop (mopr:layer-try-upgrade layer-h))
     (mopr:with-handle (stage-h :stage)
       (mopr:stage-open-layer stage-h layer-h)
       (mopr-reg:with-registry
-          (with-usds-variables (:enable-call t)
-            (handle-data-subforms stage-h usds-data))))))
+        (with-usds-variables (:enable-call t)
+          (handle-data-subforms stage-h usds-data))))))
