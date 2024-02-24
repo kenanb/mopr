@@ -3,6 +3,13 @@
 
 (in-package #:mopr-scm)
 
+(defconstant +ignored-schema-kinds+
+  (list
+   mopr:+mopr-schema-kind-invalid+
+   mopr:+mopr-schema-kind-abstract-base+
+   mopr:+mopr-schema-kind-abstract-typed+
+   mopr:+mopr-schema-kind-non-applied-api+))
+
 (defun generate-prop-info (prop-name prop-def-h)
   (let (info-type
         info-args)
@@ -104,7 +111,9 @@
      type-set-h)
     (loop for i below (mopr:schema-type-set-get-type-count type-set-h)
           do (mopr:schema-type-set-get-schema-info schema-info-h type-set-h i)
-          when (zerop (mopr:schema-info-is-empty-p schema-info-h))
+          when (and (zerop (mopr:schema-info-is-empty-p schema-info-h))
+                    (not (member (mopr:schema-info-get-kind schema-info-h)
+                                 +ignored-schema-kinds+)))
             do (progn
                  (mopr:schema-info-get-family family-token-h schema-info-h)
                  (mopr:schema-info-get-identifier id-token-h schema-info-h)
