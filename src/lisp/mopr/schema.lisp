@@ -3,25 +3,6 @@
 
 (in-package #:mopr-scm)
 
-(defconstant +isa-schema-list+
-  (list :|PointInstancer|
-        :|Camera|
-        :|Xform|
-        :|Mesh|
-        :|NurbsPatch|
-        :|BasisCurves|
-        :|NurbsCurves|
-        :|Points|
-        :|Capsule|
-        :|Cone|
-        :|Cube|
-        :|Cylinder|
-        :|Sphere|))
-
-(defconstant +api-schema-list+
-  (list :|CollectionAPI|
-        :|ClipsAPI|))
-
 (defun generate-prop-info (prop-name prop-def-h)
   (let (info-type
         info-args)
@@ -74,55 +55,76 @@
                          (gethash prop-name-kw-up table) info))))))
   table)
 
-(defstruct (schema (:type vector) :named
-                   (:constructor make-schema
-                       (schema-name
-                        schema-type
-                        &aux
-                          (name-token
-                           (let ((prim-token-h (mopr:create-token)))
-                             (mopr:token-ctor-cstr
-                              prim-token-h
-                              schema-name)
-                             prim-token-h))
-                          (prop-table (create-property-info-table
-                                       name-token schema-type)))))
+(defstruct (schema
+            (:constructor make-schema
+                (schema-name
+                 family
+                 type
+                 kind
+                 version
+                 &aux
+                   (name-token
+                    (let ((prim-token-h (mopr:create-token)))
+                      (mopr:token-ctor-cstr
+                       prim-token-h
+                       schema-name)
+                      prim-token-h))
+                   (prop-table (create-property-info-table
+                                name-token type)))))
   "..."
   (name-token
    (error "SCHEMA should have a NAME-TOKEN.")
    :type mopr:mopr-token-h)
-  (schema-type
-   (error "SCHEMA should have a SCHEMA-TYPE.")
+  (family
+   (error "SCHEMA should have a FAMILY.")
+   :type keyword)
+  (type
+   (error "SCHEMA should have a TYPE.")
    :type (member :isa :api))
+  (kind
+   (error "SCHEMA should have a KIND.")
+   :type fixnum)
+  (version
+   (error "SCHEMA should have a VERSION.")
+   :type fixnum)
   (prop-table
    (error "SCHEMA should have a PROP-TABLE.")
    :type hash-table))
 
-(defun create-generic-isa-schema-table (table)
-  (loop for s in +isa-schema-list+
-        for s-upcase = (alexandria:format-symbol "KEYWORD" "~:@(~A~)" s)
-        for s-name = (symbol-name s)
-        for val = (make-schema s-name :isa)
-        do (setf (gethash s table) val
-                 (gethash s-upcase table) val)))
+(defun create-generic-schema-table (schema-type table schemas)
+  (mopr:with-handles* ((type-set-h :schema-type-set)
+                       (schema-info-h :schema-info)
+                       (family-token-h :token)
+                       (id-token-h :token))
+    (funcall
+     (case schema-type
+       (:api #'mopr:schema-type-set-ctor-api-derived)
+       (:isa #'mopr:schema-type-set-ctor-isa-derived)
+       (otherwise (error "Unknown keyword for schema type!")))
+     type-set-h)
+    (loop for i below (mopr:schema-type-set-get-type-count type-set-h)
+          do (mopr:schema-type-set-get-schema-info schema-info-h type-set-h i)
+          when (zerop (mopr:schema-info-is-empty-p schema-info-h))
+            do (progn
+                 (mopr:schema-info-get-family family-token-h schema-info-h)
+                 (mopr:schema-info-get-identifier id-token-h schema-info-h)
+                 (let* ((id (mopr:token-cstr id-token-h))
+                        (n-sym (alexandria:format-symbol "KEYWORD" "~A" id))
+                        (u-sym (alexandria:format-symbol "KEYWORD" "~:@(~A~)" id))
+                        (val (make-schema id
+                                          (alexandria:format-symbol
+                                           "KEYWORD" "~A"
+                                           (mopr:token-cstr family-token-h))
+                                          schema-type
+                                          (mopr:schema-info-get-kind schema-info-h)
+                                          (mopr:schema-info-get-version schema-info-h))))
+                   (vector-push-extend n-sym schemas)
+                   (setf (gethash n-sym table) val
+                         (gethash u-sym table) val)))
+          end)))
 
-(defun delete-generic-isa-schema-table (table)
-  (loop for s in +isa-schema-list+
-        for val = (schema-name-token (gethash s table))
-        do (progn
-             (mopr:delete-token val)
-             (autowrap:invalidate val))))
-
-(defun create-generic-api-schema-table (table)
-  (loop for s in +api-schema-list+
-        for s-upcase = (alexandria:format-symbol "KEYWORD" "~:@(~A~)" s)
-        for s-name = (symbol-name s)
-        for val = (make-schema s-name :api)
-        do (setf (gethash s table) val
-                 (gethash s-upcase table) val)))
-
-(defun delete-generic-api-schema-table (table)
-  (loop for s in +api-schema-list+
+(defun delete-generic-schema-table (table schemas)
+  (loop for s across schemas
         for val = (schema-name-token (gethash s table))
         do (progn
              (mopr:delete-token val)

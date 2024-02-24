@@ -50,10 +50,8 @@
    #:schema-prop-table
 
    ;; Schema tables:
-   #:create-generic-api-schema-table
-   #:delete-generic-api-schema-table
-   #:create-generic-isa-schema-table
-   #:delete-generic-isa-schema-table))
+   #:create-generic-schema-table
+   #:delete-generic-schema-table))
 
 (defpackage :mopr-reg
   (:use #:cl)

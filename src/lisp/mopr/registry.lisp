@@ -3,10 +3,29 @@
 
 (in-package #:mopr-reg)
 
+(defconstant +isa-default-size+ 128)
+(defconstant +api-default-size+ 64)
+
 (defstruct registry
   (value-type-table
    (make-hash-table)
    :type hash-table)
+  (isa-schema-array
+   (make-array
+    +isa-default-size+
+    :adjustable t
+    :fill-pointer 0
+    :element-type 'symbol
+    :initial-element nil)
+   :type vector)
+  (api-schema-array
+   (make-array
+    +api-default-size+
+    :adjustable t
+    :fill-pointer 0
+    :element-type 'symbol
+    :initial-element nil)
+   :type vector)
   (isa-schema-table
    (make-hash-table)
    :type hash-table)
@@ -18,12 +37,22 @@
 
 (defun create-registry-tables ()
   (mopr-val:create-generic-value-type-table (registry-value-type-table *registry*))
-  (mopr-scm:create-generic-isa-schema-table (registry-isa-schema-table *registry*))
-  (mopr-scm:create-generic-api-schema-table (registry-api-schema-table *registry*)))
+
+  (mopr-scm:create-generic-schema-table :isa
+                                        (registry-isa-schema-table *registry*)
+                                        (registry-isa-schema-array *registry*))
+
+  (mopr-scm:create-generic-schema-table :api
+                                        (registry-api-schema-table *registry*)
+                                        (registry-api-schema-array *registry*)))
 
 (defun delete-registry-tables ()
-  (mopr-scm:delete-generic-api-schema-table (registry-api-schema-table *registry*))
-  (mopr-scm:delete-generic-isa-schema-table (registry-isa-schema-table *registry*))
+  (mopr-scm:delete-generic-schema-table (registry-api-schema-table *registry*)
+                                        (registry-api-schema-array *registry*))
+
+  (mopr-scm:delete-generic-schema-table (registry-isa-schema-table *registry*)
+                                        (registry-isa-schema-array *registry*))
+
   (mopr-val:delete-generic-value-type-table (registry-value-type-table *registry*)))
 
 (defmacro with-registry (&body body)
