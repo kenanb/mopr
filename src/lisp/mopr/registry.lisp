@@ -28,9 +28,11 @@
 
 (defmacro with-registry (&body body)
   `(let ((*registry* (make-registry)))
-     (create-registry-tables)
-     ,@body
-     (delete-registry-tables)))
+     (prog2
+         (create-registry-tables)
+         (progn
+           ,@body)
+       (delete-registry-tables))))
 
 (declaim (inline get-value-type-table
                  get-schema-table))
