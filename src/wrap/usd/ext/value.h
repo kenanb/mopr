@@ -5,6 +5,7 @@
 #include "wrap/_base/ext/common.h"
 #include "wrap/_base/ext/prolog.h"
 #include "wrap/_base/ext/types.h"
+
 #include "wrap/usd/ext/array.h"
 #include "wrap/usd/ext/datum.h"
 

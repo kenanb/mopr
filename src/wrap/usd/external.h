@@ -13,6 +13,8 @@
 #include "ext/prim.h"
 #include "ext/primDefinition.h"
 #include "ext/propertyDefinition.h"
+#include "ext/schemaInfo.h"
+#include "ext/schemaTypeSet.h"
 #include "ext/stage.h"
 #include "ext/timecode.h"
 #include "ext/token.h"

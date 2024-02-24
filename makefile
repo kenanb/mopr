@@ -148,6 +148,8 @@ WRAP_USD_CPP_OBJ ::= src/wrap/usd/ext/._test.cpp.o \
 	src/wrap/usd/ext/.prim.cpp.o \
 	src/wrap/usd/ext/.primDefinition.cpp.o \
 	src/wrap/usd/ext/.propertyDefinition.cpp.o \
+	src/wrap/usd/ext/.schemaInfo.cpp.o \
+	src/wrap/usd/ext/.schemaTypeSet.cpp.o \
 	src/wrap/usd/ext/.stage.cpp.o
 
 WRAP_USD_CPP_DEP ::= $(WRAP_USD_CPP_OBJ:.o=.d)
