@@ -67,6 +67,7 @@
    #:get-schema
    #:get-value-type-for-attr-info
    #:get-prop-info-for-schema
+   #:get-value-type-for-attr
    #:get-element-type-for-attr))
 
 (defpackage :mopr-sgt

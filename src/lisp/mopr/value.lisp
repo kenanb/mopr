@@ -7,13 +7,13 @@
   (defconstant +value-type-list+
     (list
      ;; misc
-     '(:|bool| ((unsigned-byte 1)) :bool :bool)
-     '(:|uchar| ((unsigned-byte 8)) :uchar :unsigned-char)
-     '(:|uint| ((unsigned-byte 32)) :uint :unsigned-int)
-     '(:|int64| ((signed-byte 64)) :int64 :int64)
-     '(:|uint64| ((unsigned-byte 64)) :uint64 :uint64)
+     '(:|bool| ((unsigned-byte 1)) :bool)
+     '(:|uchar| ((unsigned-byte 8)) :unsigned-char)
+     '(:|uint| ((unsigned-byte 32)) :unsigned-int)
+     '(:|int64| ((signed-byte 64)) :int64)
+     '(:|uint64| ((unsigned-byte 64)) :uint64)
 
-     '(:|timecode| (double-float) :timecode :double)
+     '(:|timecode| (double-float) :double)
      '(:|string| (string))
      '(:|token| (keyword))
      '(:|asset| ((or pathname string)))
@@ -21,22 +21,22 @@
      '(:|pathExpression| (string))
 
      ;; int
-     '(:|int| ((signed-byte 32)) :int :int)
-     '(:|int2| ((signed-byte 32) (2)) :int2 :int)
-     '(:|int3| ((signed-byte 32) (3)) :int3 :int)
-     '(:|int4| ((signed-byte 32) (4)) :int4 :int)
+     '(:|int| ((signed-byte 32)) :int)
+     '(:|int2| ((signed-byte 32) (2)) :int)
+     '(:|int3| ((signed-byte 32) (3)) :int)
+     '(:|int4| ((signed-byte 32) (4)) :int)
 
      ;; double
-     '(:|double| (double-float) :double :double)
-     '(:|double2| (double-float (2)) :double2 :double)
-     '(:|double3| (double-float (3)) :double3 :double)
-     '(:|double4| (double-float (4)) :double4 :double)
+     '(:|double| (double-float) :double)
+     '(:|double2| (double-float (2)) :double)
+     '(:|double3| (double-float (3)) :double)
+     '(:|double4| (double-float (4)) :double)
 
      ;; float
-     '(:|float| (single-float) :float :float)
-     '(:|float2| (single-float (2)) :float2 :float)
-     '(:|float3| (single-float (3)) :float3 :float)
-     '(:|float4| (single-float (4)) :float4 :float)
+     '(:|float| (single-float) :float)
+     '(:|float2| (single-float (2)) :float)
+     '(:|float3| (single-float (3)) :float)
+     '(:|float4| (single-float (4)) :float)
 
      ;; half
      '(:|half| (short-float))
@@ -45,19 +45,19 @@
      '(:|half4| (short-float (4)))
 
      ;; quat
-     '(:|quatd| (double-float (4)) :quatd :double)
-     '(:|quatf| (single-float (4)) :quatf :float)
+     '(:|quatd| (double-float (4)) :double)
+     '(:|quatf| (single-float (4)) :float)
      '(:|quath| (short-float (4)))
 
      ;; matrix
-     '(:|matrix2d| (double-float (2 2)) :matrix2d :double)
-     '(:|matrix3d| (double-float (3 3)) :matrix3d :double)
-     '(:|matrix4d| (double-float (4 4)) :matrix4d :double)))
+     '(:|matrix2d| (double-float (2 2)) :double)
+     '(:|matrix3d| (double-float (3 3)) :double)
+     '(:|matrix4d| (double-float (4 4)) :double)))
 
   "Value type list data format:
   - real-type
   - (elt-type &optional dims)
-  - &optional format-type primitive-type")
+  - &optional primitive-type format-type")
 
 (defconstant +value-role-list+
   (list
@@ -196,29 +196,29 @@
   (defun get-aref-fn-symbol (value-kind x)
     (alexandria:format-symbol "MOPR" "~A-~A-AREF" value-kind x)))
 
-(defmacro %get-transfer-for-type-fn (category elt-type format-type primitive-type)
-  (let ((datum-h-sym (gensym (format nil "~A-~A-H-G" category format-type)))
+(defmacro %get-transfer-for-type-fn (category elt-type primitive-type type-string)
+  (let ((datum-h-sym (gensym (format nil "~A-~A-H-G" category type-string)))
         (value-array-sym (gensym "VALUE-ARRAY-G"))
         (value-h-sym (gensym "VALUE-H-G")))
     `(lambda ,(list value-array-sym value-h-sym)
-       (mopr:with-handles* ((,datum-h-sym ,(format nil "~A-~A" category format-type)))
-         (,(get-ctor-fn-symbol category format-type) ,datum-h-sym)
+       (mopr:with-handles* ((,datum-h-sym ,(format nil "~A-~A" category type-string)))
+         (,(get-ctor-fn-symbol category type-string) ,datum-h-sym)
          ,(when (eq category :array)
             ;; For now, we just resize and accept value-initialization cost.
             ;; It seems value-init ctor of Gf types don't initialize members anyway.
             ;; (mopr:array-float3-reserve ,datum-h-sym (array-dimension ,value-array-sym 0))
-            `(,(get-resize-fn-symbol category format-type)
+            `(,(get-resize-fn-symbol category type-string)
               ,datum-h-sym
               (array-dimension ,value-array-sym 0)))
          (loop for i below (array-total-size ,value-array-sym)
-               for elt = (,(get-row-major-aref-fn-symbol category format-type) ,datum-h-sym i)
+               for elt = (,(get-row-major-aref-fn-symbol category type-string) ,datum-h-sym i)
                ;; do (format t "WRITING for ~A: ~S ~%" i (row-major-aref ,value-array-sym i))
                ;; NOTE: CFFI API is more suitable here.
                ;; Autowrap style access (autowrap:c-aref) does extra stuff we don't need,
                ;; and it doesn't support all primitive types, like ":bool".
                do (setf (cffi:mem-ref elt ,primitive-type)
                         (coerce (row-major-aref ,value-array-sym i) ',elt-type)))
-         (,(get-value-assign-fn-symbol category format-type) ,value-h-sym ,datum-h-sym)))))
+         (,(get-value-assign-fn-symbol category type-string) ,value-h-sym ,datum-h-sym)))))
 
 (defun token-transfer-datum-handler (value-array value-h)
   (mopr:with-handles* ((datum-h "DATUM-TOKEN"))
@@ -252,13 +252,12 @@
 
 (defmacro %transfer-for-type (category real-type)
   `(case ,real-type
-     ,@(loop for type-info in +value-type-list+
-             for real-type = (car type-info)
-             for elt-type = (caadr type-info)
-             for ffi-info = (cddr type-info)
-             when ffi-info
+     ,@(loop for (real-type (elt-type dims) primitive-type format-type) in +value-type-list+
+             for type-string = (format nil "~:@(~A~)" (or format-type real-type))
+             when primitive-type
                collect (list real-type
-                             `(%get-transfer-for-type-fn ,category ,elt-type ,@ffi-info)))
+                             (list '%get-transfer-for-type-fn
+                                   category elt-type primitive-type type-string)))
      (:|token|
       #',(alexandria:symbolicate "TOKEN-TRANSFER-" category "-HANDLER"))
      (otherwise nil)))

@@ -60,12 +60,19 @@
            (mopr-scm:schema-prop-table
             (get-schema schema-type schema-name))))
 
+(defun get-value-type-for-attr (schema-type schema-name attr-name
+                                &aux
+                                  (prop-info (get-prop-info-for-schema
+                                              schema-type
+                                              schema-name
+                                              attr-name)))
+  (when (typep prop-info 'mopr-scm:attr-info)
+    (get-value-type-for-attr-info prop-info)))
+
 (defun get-element-type-for-attr (schema-type schema-name attr-name
                                   &aux
-                                    (prop-info (get-prop-info-for-schema
-                                                schema-type
-                                                schema-name
-                                                attr-name)))
-  (when (typep prop-info 'mopr-scm:attr-info)
-    (mopr-val:value-type-elt-type
-     (get-value-type-for-attr-info prop-info))))
+                                    (value-type (get-value-type-for-attr
+                                                 schema-type
+                                                 schema-name
+                                                 attr-name)))
+  (when value-type (mopr-val:value-type-elt-type value-type)))
