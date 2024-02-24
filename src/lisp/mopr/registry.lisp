@@ -26,16 +26,44 @@
   (mopr-scm:delete-generic-isa-schema-table (registry-isa-schema-table *registry*))
   (mopr-val:delete-generic-value-type-table (registry-value-type-table *registry*)))
 
-(defun get-attr-type (attr-info)
-  (gethash (mopr-scm:attr-info-type-key attr-info) (registry-value-type-table *registry*)))
+(defmacro with-registry (&body body)
+  `(let ((*registry* (make-registry)))
+     (create-registry-tables)
+     ,@body
+     (delete-registry-tables)))
 
-(defun get-isa-schema (prim-type)
-  (gethash prim-type (registry-isa-schema-table *registry*)))
+(declaim (inline get-value-type-table
+                 get-schema-table))
 
-(defun get-prop-info-for-isa-schema (schema-type prop-name)
+(defun get-value-type-table ()
+  (registry-value-type-table *registry*))
+
+(defun get-schema-table (schema-type)
+  (funcall
+   (case schema-type
+     (:isa #'registry-isa-schema-table)
+     (:api #'registry-api-schema-table)
+     (otherwise (error "Unknown keyword for schema type!")))
+   *registry*))
+
+(defun get-schema (schema-type schema-name)
+  (gethash schema-name (get-schema-table schema-type)))
+
+(defun get-value-type-for-attr-info (attr-info)
+  (gethash (mopr-scm:attr-info-type-key attr-info)
+           (get-value-type-table)))
+
+(defun get-prop-info-for-schema (schema-type schema-name prop-name)
   (gethash prop-name
            (mopr-scm:schema-prop-table
-            (gethash schema-type (registry-isa-schema-table *registry*)))))
+            (get-schema schema-type schema-name))))
 
-(defun get-api-schema (prim-type)
-  (gethash prim-type (registry-api-schema-table *registry*)))
+(defun get-element-type-for-attr (schema-type schema-name attr-name
+                                  &aux
+                                    (prop-info (get-prop-info-for-schema
+                                                schema-type
+                                                schema-name
+                                                attr-name)))
+  (when (typep prop-info 'mopr-scm:attr-info)
+    (mopr-val:value-type-elt-type
+     (get-value-type-for-attr-info prop-info))))

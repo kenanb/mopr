@@ -63,10 +63,11 @@
    #:make-registry
    #:create-registry-tables
    #:delete-registry-tables
-   #:get-attr-type
-   #:get-api-schema
-   #:get-prop-info-for-isa-schema
-   #:get-isa-schema))
+   #:with-registry
+   #:get-schema
+   #:get-value-type-for-attr-info
+   #:get-prop-info-for-schema
+   #:get-element-type-for-attr))
 
 (defpackage :mopr-sgt
   (:use #:cl)
