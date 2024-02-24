@@ -95,3 +95,14 @@ _Bool
     token_h->d = this_ch->d.GetAsToken( );
     return true;
 }
+
+unsigned char
+ mopr_value_type_name_get_dimension( MoprValueTypeName_ch this_ch, int index )
+{
+    if ( mopr_value_type_name_is_empty_p( this_ch ) )
+    {
+        return 0;
+    }
+
+    return this_ch->d.GetDimensions( ).d[ index ];
+}

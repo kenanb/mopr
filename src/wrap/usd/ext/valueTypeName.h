@@ -74,6 +74,10 @@ extern "C"
      mopr_value_type_name_get_as_token( MoprToken_h token_h,
                                         MoprValueTypeName_ch this_ch );
 
+    MOPR_API
+    unsigned char
+     mopr_value_type_name_get_dimension( MoprValueTypeName_ch this_ch, int index );
+
 #ifdef __cplusplus
 }
 #endif

@@ -7,57 +7,57 @@
   (defconstant +value-type-list+
     (list
      ;; misc
-     '(:|bool| ((unsigned-byte 1)) :bool)
-     '(:|uchar| ((unsigned-byte 8)) :unsigned-char)
-     '(:|uint| ((unsigned-byte 32)) :unsigned-int)
-     '(:|int64| ((signed-byte 64)) :int64)
-     '(:|uint64| ((unsigned-byte 64)) :uint64)
+     '(:|bool| (unsigned-byte 1) :bool)
+     '(:|uchar| (unsigned-byte 8) :unsigned-char)
+     '(:|uint| (unsigned-byte 32) :unsigned-int)
+     '(:|int64| (signed-byte 64) :int64)
+     '(:|uint64| (unsigned-byte 64) :uint64)
 
-     '(:|timecode| (double-float) :double)
-     '(:|string| (string))
-     '(:|token| (keyword))
-     '(:|asset| ((or pathname string)))
-     '(:|opaque| (null)) ; Only scalar allowed.
-     '(:|pathExpression| (string))
+     '(:|timecode| double-float :double)
+     '(:|string| string)
+     '(:|token| keyword)
+     '(:|asset| (or pathname string))
+     '(:|opaque| null) ; Only scalar allowed.
+     '(:|pathExpression| string) ; :path-expression
 
      ;; int
-     '(:|int| ((signed-byte 32)) :int)
-     '(:|int2| ((signed-byte 32) (2)) :int)
-     '(:|int3| ((signed-byte 32) (3)) :int)
-     '(:|int4| ((signed-byte 32) (4)) :int)
+     '(:|int|  (signed-byte 32) :int)
+     '(:|int2| (signed-byte 32) :int)
+     '(:|int3| (signed-byte 32) :int)
+     '(:|int4| (signed-byte 32) :int)
 
      ;; double
-     '(:|double| (double-float) :double)
-     '(:|double2| (double-float (2)) :double)
-     '(:|double3| (double-float (3)) :double)
-     '(:|double4| (double-float (4)) :double)
+     '(:|double|  double-float :double)
+     '(:|double2| double-float :double)
+     '(:|double3| double-float :double)
+     '(:|double4| double-float :double)
 
      ;; float
-     '(:|float| (single-float) :float)
-     '(:|float2| (single-float (2)) :float)
-     '(:|float3| (single-float (3)) :float)
-     '(:|float4| (single-float (4)) :float)
+     '(:|float|  single-float :float)
+     '(:|float2| single-float :float)
+     '(:|float3| single-float :float)
+     '(:|float4| single-float :float)
 
      ;; half
-     '(:|half| (short-float))
-     '(:|half2| (short-float (2)))
-     '(:|half3| (short-float (3)))
-     '(:|half4| (short-float (4)))
+     '(:|half|  short-float)
+     '(:|half2| short-float)
+     '(:|half3| short-float)
+     '(:|half4| short-float)
 
      ;; quat
-     '(:|quatd| (double-float (4)) :double)
-     '(:|quatf| (single-float (4)) :float)
-     '(:|quath| (short-float (4)))
+     '(:|quatd| double-float :double)
+     '(:|quatf| single-float :float)
+     '(:|quath| short-float)
 
      ;; matrix
-     '(:|matrix2d| (double-float (2 2)) :double)
-     '(:|matrix3d| (double-float (3 3)) :double)
-     '(:|matrix4d| (double-float (4 4)) :double)))
+     '(:|matrix2d| double-float :double)
+     '(:|matrix3d| double-float :double)
+     '(:|matrix4d| double-float :double)))
 
   "Value type list data format:
   - real-type
   - (elt-type &optional dims)
-  - &optional primitive-type format-type")
+  - &optional cffi-type format-type")
 
 (defconstant +value-role-list+
   (list
@@ -104,18 +104,30 @@
 (defun get-real-type (type-key)
   (or (cdr (assoc type-key +value-role-list+)) type-key))
 
-(defstruct (value-type (:type vector) :named
-                       (:constructor make-value-type
-                           (real-type
-                            elt-type
-                            &optional
-                              (dims nil)
-                            &aux
-                              (scalar-type-name (mopr:create-value-type-name))
-                              (vector-type-name (mopr:create-value-type-name))
-                              (rank (length dims))
-                              (nof-elt (apply #'* dims)))))
-  "The VALUE-TYPE struct consisting  of :REAL-TYPE :ELT-TYPE :SCALAR-TYPE-NAME :VECTOR-TYPE-NAME :DIMS :RANK and :NOF-ELT information."
+(defun build-value-type-name (tn &aux (tn-h (mopr:create-value-type-name)))
+  (mopr:value-type-name-find-cstr tn-h tn)
+  tn-h)
+
+(defun calculate-value-type-dims (scalar-tn-h &aux dims)
+  (let ((dim-0 (mopr:value-type-name-get-dimension scalar-tn-h 0))
+        (dim-1 (mopr:value-type-name-get-dimension scalar-tn-h 1)))
+    (unless (zerop dim-1) (push dim-1 dims))
+    (unless (zerop dim-0) (push dim-0 dims))
+    dims))
+
+(defstruct (value-type
+            (:constructor make-value-type
+                (tname
+                 &aux
+                   (real-type (get-real-type tname))
+                   (elt-type (cadr (assoc real-type +value-type-list+)))
+                   (scalar-type-name (build-value-type-name (format nil "~A" tname)))
+                   (vector-type-name (build-value-type-name (format nil "~A[]" tname)))
+                   (dims (calculate-value-type-dims scalar-type-name))
+                   (rank (length dims))
+                   (nof-elt (apply #'* dims)))))
+  "The VALUE-TYPE struct consisting  of :REAL-TYPE :ELT-TYPE :SCALAR-TYPE-NAME :VECTOR-TYPE-NAME
+:DIMS :RANK and :NOF-ELT information."
   (real-type
    (error "VALUE-TYPE should have a REAL-TYPE.")
    :type (or list symbol class)
@@ -126,11 +138,11 @@
    :read-only t)
   (scalar-type-name
    (error "VALUE-TYPE should have a SCALAR-TYPE-NAME.")
-   :type t
+   :type mopr:mopr-value-type-name-h
    :read-only t)
   (vector-type-name
    (error "VALUE-TYPE should have a VECTOR-TYPE-NAME.")
-   :type t
+   :type mopr:mopr-value-type-name-h
    :read-only t)
   (dims
    nil
@@ -156,18 +168,9 @@
 (defun create-generic-value-type-table (table)
   (loop for s in (get-complete-type-list)
         for s-upcase = (alexandria:format-symbol "KEYWORD" "~:@(~A~)" s)
-        for real-type = (get-real-type s)
-        for type-info = (assoc real-type +value-type-list+)
-        for val = (apply #'make-value-type (car type-info) (cadr type-info))
-        for s-name = (symbol-name s)
-        ;; Value: ( [scalar form] . [vector form] )
-        do (progn
-             (mopr:value-type-name-find-cstr (value-type-scalar-type-name val)
-                                             s-name)
-             (mopr:value-type-name-find-cstr (value-type-vector-type-name val)
-                                             (format nil "~A[]" s-name))
-             (setf (gethash s table) val)
-             (setf (gethash s-upcase table) val))))
+        for val = (make-value-type s)
+        do (setf (gethash s table) val)
+        do (setf (gethash s-upcase table) val)))
 
 (defun delete-generic-value-type-table (table)
   (loop for s in (get-complete-type-list)
@@ -196,7 +199,7 @@
   (defun get-aref-fn-symbol (value-kind x)
     (alexandria:format-symbol "MOPR" "~A-~A-AREF" value-kind x)))
 
-(defmacro %get-transfer-for-type-fn (category elt-type primitive-type type-string)
+(defmacro %get-transfer-for-type-fn (category elt-type cffi-type type-string)
   (let ((datum-h-sym (gensym (format nil "~A-~A-H-G" category type-string)))
         (value-array-sym (gensym "VALUE-ARRAY-G"))
         (value-h-sym (gensym "VALUE-H-G")))
@@ -216,7 +219,7 @@
                ;; NOTE: CFFI API is more suitable here.
                ;; Autowrap style access (autowrap:c-aref) does extra stuff we don't need,
                ;; and it doesn't support all primitive types, like ":bool".
-               do (setf (cffi:mem-ref elt ,primitive-type)
+               do (setf (cffi:mem-ref elt ,cffi-type)
                         (coerce (row-major-aref ,value-array-sym i) ',elt-type)))
          (,(get-value-assign-fn-symbol category type-string) ,value-h-sym ,datum-h-sym)))))
 
@@ -252,12 +255,12 @@
 
 (defmacro %transfer-for-type (category real-type)
   `(case ,real-type
-     ,@(loop for (real-type (elt-type dims) primitive-type format-type) in +value-type-list+
+     ,@(loop for (real-type elt-type cffi-type format-type) in +value-type-list+
              for type-string = (format nil "~:@(~A~)" (or format-type real-type))
-             when primitive-type
+             when cffi-type
                collect (list real-type
                              (list '%get-transfer-for-type-fn
-                                   category elt-type primitive-type type-string)))
+                                   category elt-type cffi-type type-string)))
      (:|token|
       #',(alexandria:symbolicate "TOKEN-TRANSFER-" category "-HANDLER"))
      (otherwise nil)))
