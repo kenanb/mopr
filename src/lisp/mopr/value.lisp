@@ -59,10 +59,10 @@
    :type (unsigned-byte 7)
    :read-only t))
 
-(defmethod mopr-reg:teardown-entry ((val value-type)
-                                  &aux
-                                    (val-scalar (value-type-scalar-type-name val))
-                                    (val-vector (value-type-vector-type-name val)))
+(defmethod mopr-info:teardown-entry ((val value-type)
+                                     &aux
+                                       (val-scalar (value-type-scalar-type-name val))
+                                       (val-vector (value-type-vector-type-name val)))
   ;; (format t "DELETING VTYPE : ~A~%" val)
   (mopr:delete-value-type-name val-scalar)
   (autowrap:invalidate val-scalar)

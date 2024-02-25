@@ -48,9 +48,9 @@
                  (mopr:prim-definition-get-property prop-def-h prim-def-h prop-token-h)
                  (let* ((prop-name (mopr:token-cstr prop-token-h))
                         (info (generate-prop-info prop-name prop-def-h)))
-                   (mopr-reg:write-mapping-with-case table
-                                                     (intern prop-name :keyword)
-                                                     info))))))
+                   (mopr-info:write-mapping-with-case table
+                                                      (intern prop-name :keyword)
+                                                      info))))))
   table)
 
 (defstruct (schema
@@ -89,8 +89,8 @@
    (error "SCHEMA should have a PROP-TABLE.")
    :type hash-table))
 
-(defmethod mopr-reg:teardown-entry ((val schema)
-                                  &aux (tok (schema-name-token val)))
+(defmethod mopr-info:teardown-entry ((val schema)
+                                     &aux (tok (schema-name-token val)))
   ;; (format t "DELETING SCHEMA: ~A~%" val)
   (mopr:delete-token tok)
   (autowrap:invalidate tok))

@@ -178,7 +178,7 @@
 (defun handle-prim-type-form (prim-h form &aux (schema-name (car form)))
   ;; (format t "~%Called handle-prim-type-form!~%: ~S~%" form)
   (when schema-name
-    (alexandria:if-let ((s (mopr-reg:get-schema :isa schema-name)))
+    (alexandria:if-let ((s (mopr-info:get-schema :isa schema-name)))
       (mopr:prim-set-type-name prim-h (mopr-scm:schema-name-token s))
       (unknown-form-error schema-name :debug))))
 
@@ -234,7 +234,7 @@
                         :array-p (member attr-category '(:array :|array|))
                         :type-key attr-type-key
                         (extract-prop-info prop-data ns-rlist)))
-           (attr-type (mopr-reg:get-value-type-for-attr-info info)))
+           (attr-type (mopr-info:get-value-type-for-attr-info info)))
         form
 
       ;; TODO: We don't handle metadata yet.
@@ -384,7 +384,7 @@
   (unless (zerop (mopr:layer-try-upgrade layer-h))
     (mopr:with-handle (stage-h :stage)
       (mopr:stage-open-layer stage-h layer-h)
-      (mopr-reg:with-registry (:supported-cases '(:upcase))
+      (mopr-info:with-registry (:supported-cases '(:upcase))
         (with-usds-variables (:enable-call nil)
           (handle-data-subforms stage-h usds-data))))))
 
@@ -392,6 +392,6 @@
   (unless (zerop (mopr:layer-try-upgrade layer-h))
     (mopr:with-handle (stage-h :stage)
       (mopr:stage-open-layer stage-h layer-h)
-      (mopr-reg:with-registry (:supported-cases '(:upcase))
+      (mopr-info:with-registry (:supported-cases '(:upcase))
         (with-usds-variables (:enable-call t)
           (handle-data-subforms stage-h usds-data))))))

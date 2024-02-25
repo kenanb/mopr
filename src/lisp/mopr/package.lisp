@@ -50,7 +50,7 @@
    #:schema-schema-type
    #:schema-prop-table))
 
-(defpackage :mopr-reg
+(defpackage :mopr-info
   (:use #:cl)
   (:export
    #:*registry-supported-cases*

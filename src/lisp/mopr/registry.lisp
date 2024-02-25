@@ -1,7 +1,7 @@
 ;;;; -*- Mode: LISP; Syntax: COMMON-LISP; Package: CL-USER -*-
 ;;
 
-(in-package #:mopr-reg)
+(in-package #:mopr-info)
 
 (defconstant +ignored-schema-kinds+
   (list
