@@ -1,10 +1,7 @@
 ;;;; -*- Mode: LISP; Syntax: COMMON-LISP; Package: CL-USER -*-
 ;;
 
-(in-package #:mopr-val)
-
-(defun get-real-type (type-key)
-  (or (cdr (assoc type-key +value-role-list+)) type-key))
+(in-package #:mopr-info)
 
 (defun build-value-type-name (tn &aux (tn-h (mopr:create-value-type-name)))
   (mopr:value-type-name-find-cstr tn-h tn)
@@ -21,8 +18,8 @@
             (:constructor make-value-type
                 (tname
                  &aux
-                   (real-type (get-real-type tname))
-                   (elt-type (cadr (assoc real-type +value-type-list+)))
+                   (real-type (mopr-val:get-real-type tname))
+                   (elt-type (cadr (assoc real-type mopr-val:+value-type-list+)))
                    (scalar-type-name (build-value-type-name (format nil "~A" tname)))
                    (vector-type-name (build-value-type-name (format nil "~A[]" tname)))
                    (dims (calculate-value-type-dims scalar-type-name))

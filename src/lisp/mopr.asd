@@ -26,7 +26,7 @@
                 :components
                 ((:file "package")
                  (:file "types" :depends-on ("package"))
-                 (:file "roles" :depends-on ("package"))
+                 (:file "roles" :depends-on ("package" "types"))
                  (:file "raii" :depends-on ("package"))
                  (:file "util" :depends-on ("package"))
                  (:file "prop" :depends-on ("package" "types"))

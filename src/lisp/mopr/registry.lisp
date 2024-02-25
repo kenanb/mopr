@@ -105,7 +105,7 @@
 (defmethod populate-entries ((ob value-types))
   (loop for sym in (mapcar #'car (append mopr-val:+value-type-list+
                                          mopr-val:+value-role-list+))
-        do (add-entry ob sym (mopr-val:make-value-type sym))))
+        do (add-entry ob sym (make-value-type sym))))
 
 (defgeneric teardown-entry (ob)
   (:method ((ob t)) (error "Couldn't find specialized teardown!")))
@@ -183,4 +183,4 @@
                                                  schema-type
                                                  schema-name
                                                  attr-name)))
-  (when value-type (mopr-val:value-type-elt-type value-type)))
+  (when value-type (value-type-elt-type value-type)))

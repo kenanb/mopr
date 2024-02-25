@@ -13,15 +13,7 @@
   (:export
    #:+value-type-list+
    #:+value-role-list+
-   #:value-type
-   #:make-value-type
-   #:value-type-p
-   #:value-type-dims
-   #:value-type-rank
-   #:value-type-nof-elt
-   #:value-type-elt-type
-   #:value-type-real-type
-   #:value-type-name
+   #:get-real-type
    #:transfer-for-type
    #:get-transfer-for-type-function))
 
@@ -31,6 +23,16 @@
 
    ;; Utilities:
    #:*registry-supported-cases*
+
+   ;; Value types:
+   #:value-type
+   #:value-type-p
+   #:value-type-dims
+   #:value-type-rank
+   #:value-type-nof-elt
+   #:value-type-elt-type
+   #:value-type-real-type
+   #:value-type-name
 
    ;; Properties:
    #:prop-name-string

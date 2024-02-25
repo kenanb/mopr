@@ -43,3 +43,6 @@
     (:|frame4d| . :|matrix4d|)
 
     (:|group| . :|opaque|)))
+
+(defun get-real-type (type-key)
+  (or (cdr (assoc type-key mopr-val:+value-role-list+)) type-key))

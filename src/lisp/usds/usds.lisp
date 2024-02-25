@@ -248,7 +248,7 @@
             (mopr:prim-create-attribute attribute-h
                                         prim-h
                                         prop-name-h
-                                        (mopr-val:value-type-name
+                                        (mopr-info:value-type-name
                                          attr-type
                                          (mopr-info:attr-info-array-p info))
                                         0 ; bool custom
@@ -256,7 +256,7 @@
             (alexandria:if-let
                 ((transfer-for-type-fn
                   (mopr-val:get-transfer-for-type-function
-                   (mopr-val:value-type-real-type attr-type)
+                   (mopr-info:value-type-real-type attr-type)
                    (mopr-info:attr-info-array-p info))))
               (set-attr-for-all-timecodes transfer-for-type-fn attribute-h value-h values)
               (format t "SKIPPED UNSUPPORTED ATTRIBUTE: ~A~%"
