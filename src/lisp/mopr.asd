@@ -38,11 +38,11 @@
                 :depends-on ("mopr")
                 :components
                 ((:file "package")
-                 (:file "util" :depends-on ("package"))
+                 (:file "shared" :depends-on ("package"))
                  (:file "prop" :depends-on ("package"))
                  (:file "value" :depends-on ("package"))
-                 (:file "schema" :depends-on ("package" "util" "prop"))
-                 (:file "registry" :depends-on ("package" "util" "prop" "value" "schema"))))
+                 (:file "schema" :depends-on ("package" "shared" "prop"))
+                 (:file "registry" :depends-on ("package" "shared" "prop" "value" "schema"))))
                (:module "sgt"
                 :depends-on ("mopr" "info")
                 :components

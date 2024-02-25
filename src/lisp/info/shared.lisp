@@ -19,3 +19,6 @@
 
   (when (member :downcase *registry-supported-cases*)
     (setf (gethash (intern (string-downcase sym) pkg) table) val)))
+
+(defgeneric teardown-entry (ob)
+  (:method ((ob t)) (error "Couldn't find specialized teardown!")))

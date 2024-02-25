@@ -107,9 +107,6 @@
                                          mopr-val:+value-role-list+))
         do (add-entry ob sym (make-value-type sym))))
 
-(defgeneric teardown-entry (ob)
-  (:method ((ob t)) (error "Couldn't find specialized teardown!")))
-
 (defun teardown-entries (bundle)
   (loop for s across (entry-array bundle)
         do (teardown-entry (gethash s (entry-table bundle)))))
