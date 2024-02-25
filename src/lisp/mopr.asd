@@ -31,13 +31,10 @@
                  (:file "transfer" :depends-on ("package" "types" "raii"))
                  (:file "value" :depends-on ("package" "types" "roles"))
                  (:file "prop" :depends-on ("package" "types"))
-                 (:file "schema" :depends-on ("package" "prop"))
-                 (:file "registry" :depends-on ("package"
-                                                "value"
-                                                "prop"
-                                                "schema"))
+                 (:file "schema" :depends-on ("package" "raii" "prop"))
+                 (:file "registry" :depends-on ("package" "value" "prop" "schema"))
                  (:file "sgt" :depends-on ("package" "schema"))
-                 (:file "describe" :depends-on ("package"))))
+                 (:file "describe" :depends-on ("package" "raii"))))
                (:module "plug"
                 :depends-on ("mopr")
                 :components
