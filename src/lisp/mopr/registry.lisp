@@ -56,17 +56,10 @@
 (defgeneric populate-entries (ob)
   (:method ((ob t)) (error "Couldn't find specialized populator!")))
 
-(defun create-generic-schemas (schema-type bundle)
-  (mopr:with-handles* ((type-set-h :schema-type-set)
-                       (schema-info-h :schema-info)
+(defun create-generic-schemas (bundle type-set-h schema-type)
+  (mopr:with-handles* ((schema-info-h :schema-info)
                        (family-token-h :token)
                        (id-token-h :token))
-    (funcall
-     (case schema-type
-       (:api #'mopr:schema-type-set-ctor-api-derived)
-       (:isa #'mopr:schema-type-set-ctor-isa-derived)
-       (otherwise (error "Unknown keyword for schema type!")))
-     type-set-h)
     (loop for i below (mopr:schema-type-set-get-type-count type-set-h)
           do (mopr:schema-type-set-get-schema-info schema-info-h type-set-h i)
           when (and (zerop (mopr:schema-info-is-empty-p schema-info-h))
@@ -89,10 +82,14 @@
           end)))
 
 (defmethod populate-entries ((ob isa-schemas))
-  (create-generic-schemas :isa ob))
+  (mopr:with-handle (type-set-h :schema-type-set)
+    (mopr:schema-type-set-ctor-isa-derived type-set-h)
+    (create-generic-schemas ob type-set-h :isa)))
 
 (defmethod populate-entries ((ob api-schemas))
-  (create-generic-schemas :api ob))
+  (mopr:with-handle (type-set-h :schema-type-set)
+    (mopr:schema-type-set-ctor-api-derived type-set-h)
+    (create-generic-schemas ob type-set-h :api)))
 
 (defmethod populate-entries ((ob value-types))
   (loop for n-sym in (mapcar #'car (append mopr-val:+value-type-list+
