@@ -77,7 +77,7 @@
     (intern (mopr:token-cstr token-h) :keyword)))
 
 (defun create-schema (id schema-type schema-info-h)
-  (mopr-scm:make-schema
+  (make-schema
    (symbol-name id)
    (get-schema-family schema-info-h)
    schema-type
@@ -104,7 +104,7 @@
 
 (defmethod populate-entries ((ob value-types))
   (loop for sym in (mapcar #'car (append mopr-val:+value-type-list+
-                                           mopr-val:+value-role-list+))
+                                         mopr-val:+value-role-list+))
         do (add-entry ob sym (mopr-val:make-value-type sym))))
 
 (defgeneric teardown-entry (ob)
@@ -161,13 +161,12 @@
   (gethash schema-name (get-schema-table schema-type)))
 
 (defun get-value-type-for-attr-info (attr-info)
-  (gethash (mopr-scm:attr-info-type-key attr-info)
+  (gethash (attr-info-type-key attr-info)
            (get-value-type-table)))
 
 (defun get-prop-info-for-schema (schema-type schema-name prop-name)
   (gethash prop-name
-           (mopr-scm:schema-prop-table
-            (get-schema schema-type schema-name))))
+           (schema-prop-table (get-schema schema-type schema-name))))
 
 (defun get-value-type-for-attr (schema-type schema-name attr-name
                                 &aux
@@ -175,7 +174,7 @@
                                               schema-type
                                               schema-name
                                               attr-name)))
-  (when (typep prop-info 'mopr-scm:attr-info)
+  (when (typep prop-info 'attr-info)
     (get-value-type-for-attr-info prop-info)))
 
 (defun get-element-type-for-attr (schema-type schema-name attr-name

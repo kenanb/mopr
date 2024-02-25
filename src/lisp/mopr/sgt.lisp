@@ -13,5 +13,5 @@
   (data nil))
 
 (defstruct prop-entry
-  (info (error "...") :type mopr-scm:prop-info :read-only t)
+  (info (error "...") :type mopr-info:prop-info :read-only t)
   (data nil))

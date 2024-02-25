@@ -25,11 +25,14 @@
    #:transfer-for-type
    #:get-transfer-for-type-function))
 
-(defpackage :mopr-scm
+(defpackage :mopr-info
   (:use #:cl)
   (:export
 
-   ;; Propery information:
+   ;; Utilities:
+   #:*registry-supported-cases*
+
+   ;; Properties:
    #:prop-name-string
    #:prop-info
    #:attr-info
@@ -43,18 +46,16 @@
    #:attr-info-type-key
    #:get-attr-type
 
-   ;; Schema class:
+   ;; Schemas:
    #:schema
-   #:make-schema
    #:schema-name-token
-   #:schema-schema-type
-   #:schema-prop-table))
+   #:schema-type
+   #:schema-family
+   #:schema-kind
+   #:schema-version
+   #:schema-prop-table
 
-(defpackage :mopr-info
-  (:use #:cl)
-  (:export
-   #:*registry-supported-cases*
-   #:write-mapping-with-case
+   ;; Registry:
    #:*registry*
    #:registry
    #:teardown-entry

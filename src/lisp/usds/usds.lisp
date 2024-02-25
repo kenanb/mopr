@@ -34,19 +34,19 @@
 
   (:documentation "...")
 
-  (:method ((ob mopr-scm:attr-info))
-    (with-accessors ((name mopr-scm:prop-info-base-name)
-                     (meta mopr-scm:prop-info-meta)
-                     (array-p mopr-scm:attr-info-array-p)
-                     (t-key mopr-scm:attr-info-type-key)) ob
+  (:method ((ob mopr-info:attr-info))
+    (with-accessors ((name mopr-info:prop-info-base-name)
+                     (meta mopr-info:prop-info-meta)
+                     (array-p mopr-info:attr-info-array-p)
+                     (t-key mopr-info:attr-info-type-key)) ob
       (list :attr
             (if meta (cons name meta) name)
             (if array-p :array :datum)
             t-key)))
 
-  (:method ((ob mopr-scm:rel-info))
-    (with-accessors ((name mopr-scm:prop-info-base-name)
-                     (meta mopr-scm:prop-info-meta)) ob
+  (:method ((ob mopr-info:rel-info))
+    (with-accessors ((name mopr-info:prop-info-base-name)
+                     (meta mopr-info:prop-info-meta)) ob
       (list :rel (if meta (cons name meta) name)))))
 
 (defgeneric serialize (ob)
@@ -70,7 +70,7 @@
     ;; (format t "~%~S~%" ob)
     (list (loop with x = (append (serialize-prop-info info)
                                  (mopr-sgt:prop-entry-data ob))
-                for n in (mopr-scm:prop-info-namespace info)
+                for n in (mopr-info:prop-info-namespace info)
                 do (setf x (list :ns n x))
                 finally (return x))))
 
@@ -179,7 +179,7 @@
   ;; (format t "~%Called handle-prim-type-form!~%: ~S~%" form)
   (when schema-name
     (alexandria:if-let ((s (mopr-info:get-schema :isa schema-name)))
-      (mopr:prim-set-type-name prim-h (mopr-scm:schema-name-token s))
+      (mopr:prim-set-type-name prim-h (mopr-info:schema-name-token s))
       (unknown-form-error schema-name :debug))))
 
 (defun handle-prim-meta-form (prim-h form)
@@ -230,7 +230,7 @@
          &rest
            values
          &aux
-           (info (apply #'make-instance 'mopr-scm:attr-info
+           (info (apply #'make-instance 'mopr-info:attr-info
                         :array-p (member attr-category '(:array :|array|))
                         :type-key attr-type-key
                         (extract-prop-info prop-data ns-rlist)))
@@ -238,31 +238,31 @@
         form
 
       ;; TODO: We don't handle metadata yet.
-      ;; (mopr-scm:print-prop-info info)
+      ;; (mopr-info:print-prop-info info)
 
       (if attr-type
           (mopr:with-handles* ((attribute-h :attribute)
                                (prop-name-h :token)
                                (value-h :value))
-            (mopr:token-ctor-cstr prop-name-h (mopr-scm:prop-info-full-name info))
+            (mopr:token-ctor-cstr prop-name-h (mopr-info:prop-info-full-name info))
             (mopr:prim-create-attribute attribute-h
                                         prim-h
                                         prop-name-h
                                         (mopr-val:value-type-name
                                          attr-type
-                                         (mopr-scm:attr-info-array-p info))
+                                         (mopr-info:attr-info-array-p info))
                                         0 ; bool custom
                                         mopr:+mopr-property-variability-varying+)
             (alexandria:if-let
                 ((transfer-for-type-fn
                   (mopr-val:get-transfer-for-type-function
                    (mopr-val:value-type-real-type attr-type)
-                   (mopr-scm:attr-info-array-p info))))
+                   (mopr-info:attr-info-array-p info))))
               (set-attr-for-all-timecodes transfer-for-type-fn attribute-h value-h values)
               (format t "SKIPPED UNSUPPORTED ATTRIBUTE: ~A~%"
-                      (mopr-scm:prop-info-full-name info))))
+                      (mopr-info:prop-info-full-name info))))
           (format t "SKIPPED UNRECOGNIZED ATTRIBUTE: ~A~%"
-                  (mopr-scm:prop-info-full-name info))))))
+                  (mopr-info:prop-info-full-name info))))))
 
 (defun handle-prim-rel-form (prim-h form &optional ns-rlist)
   ;; (format t "~%Called handle-prim-rel-form!~%: ~S~%" form)
@@ -275,14 +275,14 @@
          &rest
            targets
          &aux
-           (info (apply #'make-instance 'mopr-scm:rel-info
+           (info (apply #'make-instance 'mopr-info:rel-info
                         (extract-prop-info prop-data ns-rlist))))
         form
 
       (declare (ignorable targets))
 
       ;; TODO: We don't handle rel yet.
-      (mopr-scm:print-prop-info info))))
+      (mopr-info:print-prop-info info))))
 
 (defun handle-prim-ns-form (prim-h form &optional ns-rlist)
   ;; (format t "~%Called handle-prim-ns-form!~%: ~S~%" form)

@@ -1,7 +1,7 @@
 ;;;; -*- Mode: LISP; Syntax: COMMON-LISP; Package: CL-USER -*-
 ;;
 
-(in-package #:mopr-scm)
+(in-package #:mopr-info)
 
 (defun prop-name-string (r-prop-name &key reverse-p)
   (format nil "~{~A~^:~}" (if reverse-p
