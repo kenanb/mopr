@@ -59,15 +59,10 @@
    :type (unsigned-byte 7)
    :read-only t))
 
-(defun create-generic-value-types (table vtypes)
+(defun create-generic-value-types (bundle)
   (loop for n-sym in (mapcar #'car (append +value-type-list+
                                            +value-role-list+))
-        for u-sym = (alexandria:format-symbol "KEYWORD" "~:@(~A~)" n-sym)
-        for val = (make-value-type n-sym)
-        do (progn
-             (vector-push-extend n-sym vtypes)
-             (setf (gethash n-sym table) val)
-             (setf (gethash u-sym table) val))))
+        do (mopr-reg:add-entry bundle n-sym (make-value-type n-sym))))
 
 (defmethod mopr-reg:teardown-entry ((val value-type)
                                   &aux

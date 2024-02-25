@@ -56,6 +56,7 @@
    #:*registry*
    #:registry
    #:teardown-entry
+   #:add-entry
    #:make-registry
    #:populate-registry
    #:teardown-registry

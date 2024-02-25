@@ -98,7 +98,7 @@
    (error "SCHEMA should have a PROP-TABLE.")
    :type hash-table))
 
-(defun create-generic-schemas (schema-type table schemas)
+(defun create-generic-schemas (schema-type bundle)
   (mopr:with-handles* ((type-set-h :schema-type-set)
                        (schema-info-h :schema-info)
                        (family-token-h :token)
@@ -117,19 +117,17 @@
             do (progn
                  (mopr:schema-info-get-family family-token-h schema-info-h)
                  (mopr:schema-info-get-identifier id-token-h schema-info-h)
-                 (let* ((id (mopr:token-cstr id-token-h))
-                        (n-sym (alexandria:format-symbol "KEYWORD" "~A" id))
-                        (u-sym (alexandria:format-symbol "KEYWORD" "~:@(~A~)" id))
-                        (val (make-schema id
-                                          (alexandria:format-symbol
-                                           "KEYWORD" "~A"
-                                           (mopr:token-cstr family-token-h))
-                                          schema-type
-                                          (mopr:schema-info-get-kind schema-info-h)
-                                          (mopr:schema-info-get-version schema-info-h))))
-                   (vector-push-extend n-sym schemas)
-                   (setf (gethash n-sym table) val
-                         (gethash u-sym table) val)))
+                 (let ((id (mopr:token-cstr id-token-h)))
+                   (mopr-reg:add-entry
+                    bundle
+                    (alexandria:format-symbol "KEYWORD" "~A" id)
+                    (make-schema id
+                                 (alexandria:format-symbol
+                                  "KEYWORD" "~A"
+                                  (mopr:token-cstr family-token-h))
+                                 schema-type
+                                 (mopr:schema-info-get-kind schema-info-h)
+                                 (mopr:schema-info-get-version schema-info-h)))))
           end)))
 
 (defmethod mopr-reg:teardown-entry ((val schema)

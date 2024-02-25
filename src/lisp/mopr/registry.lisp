@@ -40,19 +40,11 @@
 (defgeneric populate-entries (ob)
   (:method ((ob t)) (error "Couldn't find specialized populator!"))
   (:method ((ob value-types))
-    (mopr-val:create-generic-value-types
-     (entry-table ob)
-     (entry-array ob)))
+    (mopr-val:create-generic-value-types ob))
   (:method ((ob isa-schemas))
-    (mopr-scm:create-generic-schemas
-     :isa
-     (entry-table ob)
-     (entry-array ob)))
+    (mopr-scm:create-generic-schemas :isa ob))
   (:method ((ob api-schemas))
-    (mopr-scm:create-generic-schemas
-     :api
-     (entry-table ob)
-     (entry-array ob))))
+    (mopr-scm:create-generic-schemas :api ob)))
 
 (defgeneric teardown-entry (ob)
   (:method ((ob t)) (error "Couldn't find specialized teardown!")))
@@ -77,6 +69,15 @@
   (teardown-entries (registry-api-schemas *registry*))
   (teardown-entries (registry-isa-schemas *registry*))
   (teardown-entries (registry-value-types *registry*)))
+
+(defun add-entry (ob n-sym val
+                  &aux
+                    (array (entry-array ob))
+                    (table (entry-table ob))
+                    (u-sym (alexandria:format-symbol "KEYWORD" "~:@(~A~)" n-sym)))
+  (vector-push-extend n-sym array)
+  (setf (gethash n-sym table) val
+        (gethash u-sym table) val))
 
 (defmacro with-registry (&body body)
   `(let ((*registry* (make-registry)))
