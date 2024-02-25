@@ -42,7 +42,20 @@
                  (:file "prop" :depends-on ("package"))
                  (:file "value" :depends-on ("package"))
                  (:file "schema" :depends-on ("package" "shared" "prop"))
-                 (:file "registry" :depends-on ("package" "shared" "prop" "value" "schema"))))
+                 (:file "bundle" :depends-on ("package"
+                                              "shared"
+                                              "value"
+                                              "schema"))
+                 (:file "registry" :depends-on ("package"
+                                                "value"
+                                                "schema"
+                                                "bundle"))
+                 (:file "util" :depends-on ("package"
+                                            "prop"
+                                            "value"
+                                            "schema"
+                                            "bundle"
+                                            "registry"))))
                (:module "sgt"
                 :depends-on ("mopr" "info")
                 :components

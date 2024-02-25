@@ -43,11 +43,12 @@
    ;; Registry:
    #:*registry*
    #:registry
-   #:teardown-entry
    #:make-registry
    #:populate-registry
    #:teardown-registry
    #:with-registry
+
+   ;; Utilities:
    #:get-schema
    #:get-value-type-for-attr-info
    #:get-prop-info-for-schema
