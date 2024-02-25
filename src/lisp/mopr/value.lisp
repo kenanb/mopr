@@ -134,8 +134,8 @@ to call in value transfer handler. Otherwise, the real-type is used."))
                    (dims (calculate-value-type-dims scalar-type-name))
                    (rank (length dims))
                    (nof-elt (apply #'* dims)))))
-  "The VALUE-TYPE struct consisting  of :REAL-TYPE :ELT-TYPE :SCALAR-TYPE-NAME :VECTOR-TYPE-NAME
-:DIMS :RANK and :NOF-ELT information."
+  "The VALUE-TYPE struct consisting  of :REAL-TYPE :ELT-TYPE :SCALAR-TYPE-NAME
+:VECTOR-TYPE-NAME :DIMS :RANK and :NOF-ELT information."
   (real-type
    (error "VALUE-TYPE should have a REAL-TYPE.")
    :type (or list symbol class)
@@ -165,23 +165,18 @@ to call in value transfer handler. Otherwise, the real-type is used."))
    :type (unsigned-byte 7)
    :read-only t))
 
-(defun value-type-name (value-type value-type-array-p)
-  (if value-type-array-p
-      (value-type-vector-type-name value-type)
-      (value-type-scalar-type-name value-type)))
+(defun create-generic-value-type-table (table vtypes)
+  (loop for n-sym in (mapcar #'car (append +value-type-list+
+                                           +value-role-list+))
+        for u-sym = (alexandria:format-symbol "KEYWORD" "~:@(~A~)" n-sym)
+        for val = (make-value-type n-sym)
+        do (progn
+             (vector-push-extend n-sym vtypes)
+             (setf (gethash n-sym table) val)
+             (setf (gethash u-sym table) val))))
 
-(defun get-complete-type-list ()
-  (mapcar #'car (append +value-type-list+ +value-role-list+)))
-
-(defun create-generic-value-type-table (table)
-  (loop for s in (get-complete-type-list)
-        for s-upcase = (alexandria:format-symbol "KEYWORD" "~:@(~A~)" s)
-        for val = (make-value-type s)
-        do (setf (gethash s table) val)
-        do (setf (gethash s-upcase table) val)))
-
-(defun delete-generic-value-type-table (table)
-  (loop for s in (get-complete-type-list)
+(defun delete-generic-value-type-table (table vtypes)
+  (loop for s across vtypes
         for val = (gethash s table)
         for val-scalar = (value-type-scalar-type-name val)
         for val-vector = (value-type-vector-type-name val)
@@ -190,6 +185,11 @@ to call in value transfer handler. Otherwise, the real-type is used."))
              (autowrap:invalidate val-scalar)
              (mopr:delete-value-type-name val-vector)
              (autowrap:invalidate val-vector))))
+
+(defun value-type-name (value-type value-type-array-p)
+  (if value-type-array-p
+      (value-type-vector-type-name value-type)
+      (value-type-scalar-type-name value-type)))
 
 (eval-when (:compile-toplevel :load-toplevel :execute)
   (defun get-ctor-fn-symbol (value-kind x)

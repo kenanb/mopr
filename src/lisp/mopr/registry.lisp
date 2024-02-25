@@ -3,6 +3,7 @@
 
 (in-package #:mopr-reg)
 
+(defconstant +val-default-size+ 128)
 (defconstant +isa-default-size+ 128)
 (defconstant +api-default-size+ 64)
 
@@ -10,6 +11,14 @@
   (value-type-table
    (make-hash-table)
    :type hash-table)
+  (value-type-array
+   (make-array
+    +val-default-size+
+    :adjustable t
+    :fill-pointer 0
+    :element-type 'symbol
+    :initial-element nil)
+   :type vector)
   (isa-schema-array
    (make-array
     +isa-default-size+
@@ -36,24 +45,32 @@
 (defvar *registry* nil)
 
 (defun create-registry-tables ()
-  (mopr-val:create-generic-value-type-table (registry-value-type-table *registry*))
+  (mopr-val:create-generic-value-type-table
+   (registry-value-type-table *registry*)
+   (registry-value-type-array *registry*))
 
-  (mopr-scm:create-generic-schema-table :isa
-                                        (registry-isa-schema-table *registry*)
-                                        (registry-isa-schema-array *registry*))
+  (mopr-scm:create-generic-schema-table
+   :isa
+   (registry-isa-schema-table *registry*)
+   (registry-isa-schema-array *registry*))
 
-  (mopr-scm:create-generic-schema-table :api
-                                        (registry-api-schema-table *registry*)
-                                        (registry-api-schema-array *registry*)))
+  (mopr-scm:create-generic-schema-table
+   :api
+   (registry-api-schema-table *registry*)
+   (registry-api-schema-array *registry*)))
 
 (defun delete-registry-tables ()
-  (mopr-scm:delete-generic-schema-table (registry-api-schema-table *registry*)
-                                        (registry-api-schema-array *registry*))
+  (mopr-scm:delete-generic-schema-table
+   (registry-api-schema-table *registry*)
+   (registry-api-schema-array *registry*))
 
-  (mopr-scm:delete-generic-schema-table (registry-isa-schema-table *registry*)
-                                        (registry-isa-schema-array *registry*))
+  (mopr-scm:delete-generic-schema-table
+   (registry-isa-schema-table *registry*)
+   (registry-isa-schema-array *registry*))
 
-  (mopr-val:delete-generic-value-type-table (registry-value-type-table *registry*)))
+  (mopr-val:delete-generic-value-type-table
+   (registry-value-type-table *registry*)
+   (registry-value-type-array *registry*)))
 
 (defmacro with-registry (&body body)
   `(let ((*registry* (make-registry)))
