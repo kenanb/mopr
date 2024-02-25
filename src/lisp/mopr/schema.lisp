@@ -21,8 +21,7 @@
                   (mopr:value-type-name-get-as-token scalar-token-h scalar-vtn-h))
                 (mopr:value-type-name-get-as-token scalar-token-h this-vtn-h))
             (setf (getf info-args :type-key)
-                  (alexandria:format-symbol
-                   "KEYWORD" "~A" (mopr:token-cstr scalar-token-h))))))
+                  (intern (mopr:token-cstr scalar-token-h) :keyword)))))
     (apply #'make-instance info-type
            :base-name prop-name
            :variability (mopr:property-definition-get-variability prop-def-h)
@@ -48,11 +47,11 @@
                  (mopr:prim-definition-get-property-name prop-token-h prim-def-h i)
                  (mopr:prim-definition-get-property prop-def-h prim-def-h prop-token-h)
                  (let* ((prop-name (mopr:token-cstr prop-token-h))
-                        (prop-name-kw (alexandria:format-symbol "KEYWORD" "~A" prop-name))
-                        (prop-name-kw-up (alexandria:format-symbol "KEYWORD" "~:@(~A~)" prop-name))
                         (info (generate-prop-info prop-name prop-def-h)))
-                   (setf (gethash prop-name-kw table) info
-                         (gethash prop-name-kw-up table) info))))))
+                   (setf (gethash (intern prop-name :keyword) table)
+                         info
+                         (gethash (intern (string-upcase prop-name) :keyword) table)
+                         info))))))
   table)
 
 (defstruct (schema

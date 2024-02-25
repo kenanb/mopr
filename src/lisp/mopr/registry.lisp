@@ -48,7 +48,7 @@
                   &aux
                     (array (entry-array ob))
                     (table (entry-table ob))
-                    (u-sym (alexandria:format-symbol "KEYWORD" "~:@(~A~)" n-sym)))
+                    (u-sym (intern (string-upcase n-sym) :keyword)))
   (vector-push-extend n-sym array)
   (setf (gethash n-sym table) val
         (gethash u-sym table) val))
@@ -56,30 +56,36 @@
 (defgeneric populate-entries (ob)
   (:method ((ob t)) (error "Couldn't find specialized populator!")))
 
+(defun schema-valid-p (schema-info-h)
+  (and (zerop (mopr:schema-info-is-empty-p schema-info-h))
+       (not (member (mopr:schema-info-get-kind schema-info-h)
+                    +ignored-schema-kinds+))))
+
+(defun get-schema-family (schema-info-h)
+  (mopr:with-handle (token-h :token)
+    (mopr:schema-info-get-family token-h schema-info-h)
+    (intern (mopr:token-cstr token-h) :keyword)))
+
+(defun get-schema-id (schema-info-h)
+  (mopr:with-handle (token-h :token)
+    (mopr:schema-info-get-identifier token-h schema-info-h)
+    (intern (mopr:token-cstr token-h) :keyword)))
+
+(defun create-schema (id schema-type schema-info-h)
+  (mopr-scm:make-schema
+   (symbol-name id)
+   (get-schema-family schema-info-h)
+   schema-type
+   (mopr:schema-info-get-kind schema-info-h)
+   (mopr:schema-info-get-version schema-info-h)))
+
 (defun create-generic-schemas (bundle type-set-h schema-type)
-  (mopr:with-handles* ((schema-info-h :schema-info)
-                       (family-token-h :token)
-                       (id-token-h :token))
+  (mopr:with-handle (schema-info-h :schema-info)
     (loop for i below (mopr:schema-type-set-get-type-count type-set-h)
           do (mopr:schema-type-set-get-schema-info schema-info-h type-set-h i)
-          when (and (zerop (mopr:schema-info-is-empty-p schema-info-h))
-                    (not (member (mopr:schema-info-get-kind schema-info-h)
-                                 +ignored-schema-kinds+)))
-            do (progn
-                 (mopr:schema-info-get-family family-token-h schema-info-h)
-                 (mopr:schema-info-get-identifier id-token-h schema-info-h)
-                 (let ((id (mopr:token-cstr id-token-h)))
-                   (add-entry
-                    bundle
-                    (alexandria:format-symbol "KEYWORD" "~A" id)
-                    (mopr-scm:make-schema id
-                                          (alexandria:format-symbol
-                                           "KEYWORD" "~A"
-                                           (mopr:token-cstr family-token-h))
-                                          schema-type
-                                          (mopr:schema-info-get-kind schema-info-h)
-                                          (mopr:schema-info-get-version schema-info-h)))))
-          end)))
+          when (schema-valid-p schema-info-h)
+            do (let ((id (get-schema-id schema-info-h)))
+                 (add-entry bundle id (create-schema id schema-type schema-info-h))))))
 
 (defmethod populate-entries ((ob isa-schemas))
   (mopr:with-handle (type-set-h :schema-type-set)
