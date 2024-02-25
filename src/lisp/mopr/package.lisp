@@ -18,8 +18,7 @@
    #:value-type-elt-type
    #:value-type-real-type
    #:value-type-name
-   #:create-generic-value-type-table
-   #:delete-generic-value-type-table
+   #:create-generic-value-types
    #:transfer-for-type
    #:get-transfer-for-type-function))
 
@@ -49,17 +48,17 @@
    #:schema-prop-table
 
    ;; Schema tables:
-   #:create-generic-schema-table
-   #:delete-generic-schema-table))
+   #:create-generic-schemas))
 
 (defpackage :mopr-reg
   (:use #:cl)
   (:export
    #:*registry*
    #:registry
+   #:teardown-entry
    #:make-registry
-   #:create-registry-tables
-   #:delete-registry-tables
+   #:populate-registry
+   #:teardown-registry
    #:with-registry
    #:get-schema
    #:get-value-type-for-attr-info

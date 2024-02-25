@@ -98,7 +98,7 @@
    (error "SCHEMA should have a PROP-TABLE.")
    :type hash-table))
 
-(defun create-generic-schema-table (schema-type table schemas)
+(defun create-generic-schemas (schema-type table schemas)
   (mopr:with-handles* ((type-set-h :schema-type-set)
                        (schema-info-h :schema-info)
                        (family-token-h :token)
@@ -132,9 +132,8 @@
                          (gethash u-sym table) val)))
           end)))
 
-(defun delete-generic-schema-table (table schemas)
-  (loop for s across schemas
-        for val = (schema-name-token (gethash s table))
-        do (progn
-             (mopr:delete-token val)
-             (autowrap:invalidate val))))
+(defmethod mopr-reg:teardown-entry ((val schema)
+                                  &aux (tok (schema-name-token val)))
+  ;; (format t "DELETING SCHEMA: ~A~%" val)
+  (mopr:delete-token tok)
+  (autowrap:invalidate tok))

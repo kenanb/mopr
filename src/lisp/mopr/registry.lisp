@@ -3,96 +3,103 @@
 
 (in-package #:mopr-reg)
 
-(defconstant +val-default-size+ 128)
-(defconstant +isa-default-size+ 128)
-(defconstant +api-default-size+ 64)
+(defclass registry-entry-bundle ()
+  ((array
+    :reader entry-array
+    :type vector)
+   (table
+    :reader entry-table
+    :initform (make-hash-table)
+    :type hash-table))
+  (:documentation "..."))
+
+(defmethod initialize-instance :after ((ob registry-entry-bundle)
+                                       &key (default-array-size 16))
+  (setf (slot-value ob 'array)
+        (make-array
+         default-array-size
+         :adjustable t
+         :fill-pointer 0
+         :element-type 'symbol
+         :initial-element nil)))
+
+(defclass schema-entry-bundle (registry-entry-bundle) ())
+
+(defclass isa-schemas (schema-entry-bundle)
+  ()
+  (:default-initargs :default-array-size 128))
+
+(defclass api-schemas (schema-entry-bundle)
+  ()
+  (:default-initargs :default-array-size 64))
+
+(defclass value-types (registry-entry-bundle)
+  ()
+  (:default-initargs :default-array-size 128))
+
+(defgeneric populate-entries (ob)
+  (:method ((ob t)) (error "Couldn't find specialized populator!"))
+  (:method ((ob value-types))
+    (mopr-val:create-generic-value-types
+     (entry-table ob)
+     (entry-array ob)))
+  (:method ((ob isa-schemas))
+    (mopr-scm:create-generic-schemas
+     :isa
+     (entry-table ob)
+     (entry-array ob)))
+  (:method ((ob api-schemas))
+    (mopr-scm:create-generic-schemas
+     :api
+     (entry-table ob)
+     (entry-array ob))))
+
+(defgeneric teardown-entry (ob)
+  (:method ((ob t)) (error "Couldn't find specialized teardown!")))
+
+(defun teardown-entries (bundle)
+  (loop for s across (entry-array bundle)
+        do (teardown-entry (gethash s (entry-table bundle)))))
 
 (defstruct registry
-  (value-type-table
-   (make-hash-table)
-   :type hash-table)
-  (value-type-array
-   (make-array
-    +val-default-size+
-    :adjustable t
-    :fill-pointer 0
-    :element-type 'symbol
-    :initial-element nil)
-   :type vector)
-  (isa-schema-array
-   (make-array
-    +isa-default-size+
-    :adjustable t
-    :fill-pointer 0
-    :element-type 'symbol
-    :initial-element nil)
-   :type vector)
-  (api-schema-array
-   (make-array
-    +api-default-size+
-    :adjustable t
-    :fill-pointer 0
-    :element-type 'symbol
-    :initial-element nil)
-   :type vector)
-  (isa-schema-table
-   (make-hash-table)
-   :type hash-table)
-  (api-schema-table
-   (make-hash-table)
-   :type hash-table))
+  (value-types (make-instance 'value-types) :type value-types)
+  (isa-schemas (make-instance 'isa-schemas) :type isa-schemas)
+  (api-schemas (make-instance 'api-schemas) :type api-schemas))
 
 (defvar *registry* nil)
 
-(defun create-registry-tables ()
-  (mopr-val:create-generic-value-type-table
-   (registry-value-type-table *registry*)
-   (registry-value-type-array *registry*))
+(defun populate-registry ()
+  (populate-entries (registry-api-schemas *registry*))
+  (populate-entries (registry-isa-schemas *registry*))
+  (populate-entries (registry-value-types *registry*)))
 
-  (mopr-scm:create-generic-schema-table
-   :isa
-   (registry-isa-schema-table *registry*)
-   (registry-isa-schema-array *registry*))
-
-  (mopr-scm:create-generic-schema-table
-   :api
-   (registry-api-schema-table *registry*)
-   (registry-api-schema-array *registry*)))
-
-(defun delete-registry-tables ()
-  (mopr-scm:delete-generic-schema-table
-   (registry-api-schema-table *registry*)
-   (registry-api-schema-array *registry*))
-
-  (mopr-scm:delete-generic-schema-table
-   (registry-isa-schema-table *registry*)
-   (registry-isa-schema-array *registry*))
-
-  (mopr-val:delete-generic-value-type-table
-   (registry-value-type-table *registry*)
-   (registry-value-type-array *registry*)))
+(defun teardown-registry ()
+  (teardown-entries (registry-api-schemas *registry*))
+  (teardown-entries (registry-isa-schemas *registry*))
+  (teardown-entries (registry-value-types *registry*)))
 
 (defmacro with-registry (&body body)
   `(let ((*registry* (make-registry)))
      (prog2
-         (create-registry-tables)
+         (populate-registry)
          (progn
            ,@body)
-       (delete-registry-tables))))
+       (teardown-registry))))
 
 (declaim (inline get-value-type-table
                  get-schema-table))
 
 (defun get-value-type-table ()
-  (registry-value-type-table *registry*))
+  (entry-table (registry-value-types *registry*)))
 
 (defun get-schema-table (schema-type)
-  (funcall
-   (case schema-type
-     (:isa #'registry-isa-schema-table)
-     (:api #'registry-api-schema-table)
-     (otherwise (error "Unknown keyword for schema type!")))
-   *registry*))
+  (entry-table
+   (funcall
+    (case schema-type
+      (:isa #'registry-isa-schemas)
+      (:api #'registry-api-schemas)
+      (otherwise (error "Unknown keyword for schema type!")))
+    *registry*)))
 
 (defun get-schema (schema-type schema-name)
   (gethash schema-name (get-schema-table schema-type)))

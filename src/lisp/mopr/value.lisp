@@ -59,7 +59,7 @@
    :type (unsigned-byte 7)
    :read-only t))
 
-(defun create-generic-value-type-table (table vtypes)
+(defun create-generic-value-types (table vtypes)
   (loop for n-sym in (mapcar #'car (append +value-type-list+
                                            +value-role-list+))
         for u-sym = (alexandria:format-symbol "KEYWORD" "~:@(~A~)" n-sym)
@@ -69,16 +69,15 @@
              (setf (gethash n-sym table) val)
              (setf (gethash u-sym table) val))))
 
-(defun delete-generic-value-type-table (table vtypes)
-  (loop for s across vtypes
-        for val = (gethash s table)
-        for val-scalar = (value-type-scalar-type-name val)
-        for val-vector = (value-type-vector-type-name val)
-        do (progn
-             (mopr:delete-value-type-name val-scalar)
-             (autowrap:invalidate val-scalar)
-             (mopr:delete-value-type-name val-vector)
-             (autowrap:invalidate val-vector))))
+(defmethod mopr-reg:teardown-entry ((val value-type)
+                                  &aux
+                                    (val-scalar (value-type-scalar-type-name val))
+                                    (val-vector (value-type-vector-type-name val)))
+  ;; (format t "DELETING VTYPE : ~A~%" val)
+  (mopr:delete-value-type-name val-scalar)
+  (autowrap:invalidate val-scalar)
+  (mopr:delete-value-type-name val-vector)
+  (autowrap:invalidate val-vector))
 
 (defun value-type-name (value-type value-type-array-p)
   (if value-type-array-p
