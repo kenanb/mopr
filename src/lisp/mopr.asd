@@ -25,9 +25,12 @@
                 :depends-on ("ffi")
                 :components
                 ((:file "package")
+                 (:file "types" :depends-on ("package"))
+                 (:file "roles" :depends-on ("package"))
                  (:file "raii" :depends-on ("package"))
-                 (:file "value" :depends-on ("package" "raii"))
-                 (:file "prop" :depends-on ("package" "value"))
+                 (:file "transfer" :depends-on ("package" "types" "raii"))
+                 (:file "value" :depends-on ("package" "types" "roles"))
+                 (:file "prop" :depends-on ("package" "types"))
                  (:file "schema" :depends-on ("package" "prop"))
                  (:file "registry" :depends-on ("package"
                                                 "value"

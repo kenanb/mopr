@@ -11,7 +11,6 @@
 (defpackage :mopr-val
   (:use #:cl)
   (:export
-   #:get-real-type
    #:value-type-p
    #:value-type-dims
    #:value-type-rank
