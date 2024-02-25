@@ -3,13 +3,6 @@
 
 (in-package #:mopr-scm)
 
-(defconstant +ignored-schema-kinds+
-  (list
-   mopr:+mopr-schema-kind-invalid+
-   mopr:+mopr-schema-kind-abstract-base+
-   mopr:+mopr-schema-kind-abstract-typed+
-   mopr:+mopr-schema-kind-non-applied-api+))
-
 (defun generate-prop-info (prop-name prop-def-h)
   (let (info-type
         info-args)
@@ -97,38 +90,6 @@
   (prop-table
    (error "SCHEMA should have a PROP-TABLE.")
    :type hash-table))
-
-(defun create-generic-schemas (schema-type bundle)
-  (mopr:with-handles* ((type-set-h :schema-type-set)
-                       (schema-info-h :schema-info)
-                       (family-token-h :token)
-                       (id-token-h :token))
-    (funcall
-     (case schema-type
-       (:api #'mopr:schema-type-set-ctor-api-derived)
-       (:isa #'mopr:schema-type-set-ctor-isa-derived)
-       (otherwise (error "Unknown keyword for schema type!")))
-     type-set-h)
-    (loop for i below (mopr:schema-type-set-get-type-count type-set-h)
-          do (mopr:schema-type-set-get-schema-info schema-info-h type-set-h i)
-          when (and (zerop (mopr:schema-info-is-empty-p schema-info-h))
-                    (not (member (mopr:schema-info-get-kind schema-info-h)
-                                 +ignored-schema-kinds+)))
-            do (progn
-                 (mopr:schema-info-get-family family-token-h schema-info-h)
-                 (mopr:schema-info-get-identifier id-token-h schema-info-h)
-                 (let ((id (mopr:token-cstr id-token-h)))
-                   (mopr-reg:add-entry
-                    bundle
-                    (alexandria:format-symbol "KEYWORD" "~A" id)
-                    (make-schema id
-                                 (alexandria:format-symbol
-                                  "KEYWORD" "~A"
-                                  (mopr:token-cstr family-token-h))
-                                 schema-type
-                                 (mopr:schema-info-get-kind schema-info-h)
-                                 (mopr:schema-info-get-version schema-info-h)))))
-          end)))
 
 (defmethod mopr-reg:teardown-entry ((val schema)
                                   &aux (tok (schema-name-token val)))

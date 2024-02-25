@@ -59,11 +59,6 @@
    :type (unsigned-byte 7)
    :read-only t))
 
-(defun create-generic-value-types (bundle)
-  (loop for n-sym in (mapcar #'car (append +value-type-list+
-                                           +value-role-list+))
-        do (mopr-reg:add-entry bundle n-sym (make-value-type n-sym))))
-
 (defmethod mopr-reg:teardown-entry ((val value-type)
                                   &aux
                                     (val-scalar (value-type-scalar-type-name val))

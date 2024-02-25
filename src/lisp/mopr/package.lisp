@@ -11,6 +11,10 @@
 (defpackage :mopr-val
   (:use #:cl)
   (:export
+   #:+value-type-list+
+   #:+value-role-list+
+   #:value-type
+   #:make-value-type
    #:value-type-p
    #:value-type-dims
    #:value-type-rank
@@ -18,7 +22,6 @@
    #:value-type-elt-type
    #:value-type-real-type
    #:value-type-name
-   #:create-generic-value-types
    #:transfer-for-type
    #:get-transfer-for-type-function))
 
@@ -45,10 +48,7 @@
    #:make-schema
    #:schema-name-token
    #:schema-schema-type
-   #:schema-prop-table
-
-   ;; Schema tables:
-   #:create-generic-schemas))
+   #:schema-prop-table))
 
 (defpackage :mopr-reg
   (:use #:cl)
@@ -56,7 +56,6 @@
    #:*registry*
    #:registry
    #:teardown-entry
-   #:add-entry
    #:make-registry
    #:populate-registry
    #:teardown-registry
