@@ -53,6 +53,8 @@
 (defpackage :mopr-reg
   (:use #:cl)
   (:export
+   #:*registry-supported-cases*
+   #:write-mapping-with-case
    #:*registry*
    #:registry
    #:teardown-entry

@@ -48,10 +48,9 @@
                  (mopr:prim-definition-get-property prop-def-h prim-def-h prop-token-h)
                  (let* ((prop-name (mopr:token-cstr prop-token-h))
                         (info (generate-prop-info prop-name prop-def-h)))
-                   (setf (gethash (intern prop-name :keyword) table)
-                         info
-                         (gethash (intern (string-upcase prop-name) :keyword) table)
-                         info))))))
+                   (mopr-reg:write-mapping-with-case table
+                                                     (intern prop-name :keyword)
+                                                     info))))))
   table)
 
 (defstruct (schema

@@ -384,7 +384,7 @@
   (unless (zerop (mopr:layer-try-upgrade layer-h))
     (mopr:with-handle (stage-h :stage)
       (mopr:stage-open-layer stage-h layer-h)
-      (mopr-reg:with-registry
+      (mopr-reg:with-registry (:supported-cases '(:upcase))
         (with-usds-variables (:enable-call nil)
           (handle-data-subforms stage-h usds-data))))))
 
@@ -392,6 +392,6 @@
   (unless (zerop (mopr:layer-try-upgrade layer-h))
     (mopr:with-handle (stage-h :stage)
       (mopr:stage-open-layer stage-h layer-h)
-      (mopr-reg:with-registry
+      (mopr-reg:with-registry (:supported-cases '(:upcase))
         (with-usds-variables (:enable-call t)
           (handle-data-subforms stage-h usds-data))))))

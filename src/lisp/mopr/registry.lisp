@@ -44,17 +44,22 @@
   ()
   (:default-initargs :default-array-size 128))
 
-(defun add-entry (ob n-sym val
+(declaim (inline add-entry))
+
+(defun add-entry (ob sym val
                   &aux
                     (array (entry-array ob))
-                    (table (entry-table ob))
-                    (u-sym (intern (string-upcase n-sym) :keyword)))
-  (vector-push-extend n-sym array)
-  (setf (gethash n-sym table) val
-        (gethash u-sym table) val))
+                    (table (entry-table ob)))
+  (vector-push-extend sym array)
+  (write-mapping-with-case table sym val))
 
 (defgeneric populate-entries (ob)
   (:method ((ob t)) (error "Couldn't find specialized populator!")))
+
+(declaim (inline schema-valid-p
+                 get-schema-family
+                 get-schema-id
+                 create-schema))
 
 (defun schema-valid-p (schema-info-h)
   (and (zerop (mopr:schema-info-is-empty-p schema-info-h))
@@ -98,9 +103,9 @@
     (create-generic-schemas ob type-set-h :api)))
 
 (defmethod populate-entries ((ob value-types))
-  (loop for n-sym in (mapcar #'car (append mopr-val:+value-type-list+
+  (loop for sym in (mapcar #'car (append mopr-val:+value-type-list+
                                            mopr-val:+value-role-list+))
-        do (add-entry ob n-sym (mopr-val:make-value-type n-sym))))
+        do (add-entry ob sym (mopr-val:make-value-type sym))))
 
 (defgeneric teardown-entry (ob)
   (:method ((ob t)) (error "Couldn't find specialized teardown!")))
@@ -114,6 +119,7 @@
   (isa-schemas (make-instance 'isa-schemas) :type isa-schemas)
   (api-schemas (make-instance 'api-schemas) :type api-schemas))
 
+;; Variable dynamically bound within the with-registry macro.
 (defvar *registry* nil)
 
 (defun populate-registry ()
@@ -126,8 +132,10 @@
   (teardown-entries (registry-isa-schemas *registry*))
   (teardown-entries (registry-value-types *registry*)))
 
-(defmacro with-registry (&body body)
-  `(let ((*registry* (make-registry)))
+(defmacro with-registry ((&key supported-cases)
+                         &body body)
+  `(let ((*registry* (make-registry))
+         (*registry-supported-cases* ,supported-cases))
      (prog2
          (populate-registry)
          (progn
