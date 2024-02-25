@@ -25,19 +25,31 @@
                 :depends-on ("ffi")
                 :components
                 ((:file "package")
+                 (:file "raii" :depends-on ("package"))
+                 (:file "describe" :depends-on ("package" "raii"))))
+               (:module "val"
+                :depends-on ("mopr")
+                :components
+                ((:file "package")
                  (:file "types" :depends-on ("package"))
                  (:file "roles" :depends-on ("package" "types"))
-                 (:file "raii" :depends-on ("package"))
-                 (:file "util" :depends-on ("package"))
-                 (:file "prop" :depends-on ("package" "types"))
-                 (:file "transfer" :depends-on ("package" "types" "raii"))
-                 (:file "value" :depends-on ("package" "types" "roles"))
-                 (:file "schema" :depends-on ("package" "raii" "prop" "util"))
-                 (:file "registry" :depends-on ("package" "raii" "prop" "value" "schema" "util"))
-                 (:file "sgt" :depends-on ("package" "schema"))
-                 (:file "describe" :depends-on ("package" "raii"))))
-               (:module "plug"
+                 (:file "transfer" :depends-on ("package" "types"))))
+               (:module "info"
                 :depends-on ("mopr")
+                :components
+                ((:file "package")
+                 (:file "util" :depends-on ("package"))
+                 (:file "prop" :depends-on ("package"))
+                 (:file "value" :depends-on ("package"))
+                 (:file "schema" :depends-on ("package" "util" "prop"))
+                 (:file "registry" :depends-on ("package" "util" "prop" "value" "schema"))))
+               (:module "sgt"
+                :depends-on ("mopr" "info")
+                :components
+                ((:file "package")
+                 (:file "sgt" :depends-on ("package"))))
+               (:module "plug"
+                :depends-on ("mopr" "info" "sgt")
                 :components
                 ((:file "package")
                  (:file "grid" :depends-on ("package"))
@@ -45,7 +57,7 @@
                  (:file "call" :depends-on ("package" "grid" "test"))
                  (:file "plug" :depends-on ("package" "call"))))
                (:module "usds"
-                :depends-on ("mopr" "plug")
+                :depends-on ("mopr" "val" "info" "sgt" "plug")
                 :components
                 ((:file "package")
                  (:file "usds" :depends-on ("package"))))
