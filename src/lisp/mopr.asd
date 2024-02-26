@@ -35,7 +35,7 @@
                  (:file "roles" :depends-on ("package" "types"))
                  (:file "transfer" :depends-on ("package" "types"))))
                (:module "info"
-                :depends-on ("mopr")
+                :depends-on ("mopr" "val")
                 :components
                 ((:file "package")
                  (:file "shared" :depends-on ("package"))
