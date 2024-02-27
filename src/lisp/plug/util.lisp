@@ -1,7 +1,13 @@
 ;;;; -*- Mode: LISP; Syntax: COMMON-LISP; Package: CL-USER -*-
 ;;
 
-(in-package #:mopr-util)
+(in-package :cl-user)
+
+(defpackage :mopr-plug/util
+  (:use #:cl #:mopr :mopr-plug/usds)
+  (:export))
+
+(in-package :mopr-plug/util)
 
 (defun test-mopr ()
   (let ((core-ret (mopr:test-core))
@@ -10,6 +16,8 @@
     (format t "CORE LIBRARY CALL RETURN VALUE: ~A~%" core-ret)
     (format t "WRAP-STD LIBRARY CALL RETURN VALUE: ~A~%" wrap-std-ret)
     (format t "WRAP-USD LIBRARY CALL RETURN VALUE: ~A~%" wrap-usd-ret)))
+
+;; TODO [2023-02-27]: Consider using uiop/stream:with-safe-io-syntax
 
 (defun populate-from-lisp-file-read-eval-disabled (layer-h filepath call-enabled)
   "Only to be used for repository tests! Even though READ-EVAL is disabled,

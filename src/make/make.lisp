@@ -24,7 +24,10 @@
 (asdf:oos 'asdf:load-op :cffi)
 (asdf:oos 'asdf:load-op :cl-autowrap)
 
-(asdf:make-build :mopr
+(asdf:oos 'asdf:load-op :mopr)
+(asdf:oos 'asdf:load-op :mopr-plug)
+
+(asdf:make-build :mopr-user
                  :type :shared-library
                  :monolithic t
                  :move-here "./"

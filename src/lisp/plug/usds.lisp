@@ -1,7 +1,20 @@
 ;;;; -*- Mode: LISP; Syntax: COMMON-LISP; Package: CL-USER -*-
 ;;
 
-(in-package #:usds)
+(in-package :cl-user)
+
+(defpackage :mopr-plug/usds
+  (:use #:cl #:cffi)
+  (:export
+   #:*usds-ns-package*
+   #:unknown-form-error
+   #:write-to-layer
+   #:write-to-layer-call-enabled))
+
+(defpackage #:usds-ns
+  (:use))
+
+(in-package :mopr-plug/usds)
 
 (defvar *debug-mode* t)
 

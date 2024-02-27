@@ -5,6 +5,14 @@
 
 (defpackage :mopr-plug
   (:use #:cl #:mopr)
+
+  ;; CONFIG
+  (:export
+   #:*default-config-system*
+   #:*config*
+   #:configuration
+   #:configure)
+
   (:export
    #:process-call-stack
    #:create-data-call-table

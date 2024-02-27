@@ -50,7 +50,7 @@ static bool
     MoprLayer sLayer;
     sLayer.SetRefPtr( layer );
     cl_object hLayer_l = ecl_make_pointer( &sLayer );
-    cl_object pkgMoprUtil_l = ecl_find_package( "MOPR-UTIL" );
+    cl_object pkgMoprUtil_l = ecl_find_package( "MOPR-PLUG/UTIL" );
     cl_object symFn_l =
      getSymbol( "POPULATE-FROM-LISP-FILE-READ-EVAL-DISABLED", pkgMoprUtil_l );
     cl_object strFileName_l = ecl_make_constant_base_string( resolvedPath.c_str( ), -1 );

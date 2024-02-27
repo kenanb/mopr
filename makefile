@@ -176,16 +176,16 @@ $(wrap_usd): $(WRAP_USD_CPP_OBJ) $(wrap_std)
 wrap: $(wrap_std) $(wrap_usd)
 
 #
-## Target: mopr--all-systems.so
+## Target: mopr-user--all-systems.so
 #
 
 MOPR_LISP_CF ::= $(COMMON_CFLAGS)
 
-MOPR_LISP_FILE ::= mopr--all-systems.so
+MOPR_LISP_FILE ::= mopr-user--all-systems.so
 
 mopr_lisp ::= $(MOPR_LIB_DIR)/$(MOPR_LISP_FILE)
 
-MOPR_LISP_DEP ::= src/lisp/.mopr.asd.d
+MOPR_LISP_DEP ::= src/lisp/.mopr-user.asd.d
 $(MOPR_LISP_DEP): CFLAGS = $(MOPR_LISP_CF) $(CSTD)
 include $(MOPR_LISP_DEP)
 
