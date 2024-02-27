@@ -14,6 +14,7 @@
    #:configure)
 
   (:export
+   #:callable
    #:process-call-stack
    #:create-data-call-table
    #:create-prim-call-table))

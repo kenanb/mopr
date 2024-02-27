@@ -3,10 +3,15 @@
 
 (in-package #:mopr-plug)
 
-(defstruct (callable (:constructor make-callable (fn in out)))
-  (fn nil :read-only t)
-  (in nil :read-only t)
-  (out nil :read-only t))
+(eval-when (:compile-toplevel :load-toplevel :execute)
+  (defstruct callable
+    (fn nil :read-only t)
+    (i nil :read-only t)
+    (o nil :read-only t))
+
+  (defmethod make-load-form ((s callable) &optional environment)
+    (declare (ignore environment))
+    (make-load-form-saving-slots s)))
 
 (defun process-call-stack (form table)
   (loop with stack = nil
@@ -14,7 +19,7 @@
         for c = (gethash e table)
         if c
           do (let (args)
-               (loop for i below (length (callable-in c))
+               (loop for i below (length (callable-i c))
                      do (push (pop stack) args))
                (push (apply (callable-fn c) args) stack))
         else
@@ -26,52 +31,55 @@
 
 ;; Call table generation.
 
+(defconstant +call-table-prim+
+  '(;; Grid generation functions.
+    :grid-extent
+    #S(mopr-plug:callable :fn mopr-plug::prim-fn-grid-extent
+                          :i (:size :x :y :z)
+                          :o (:prop-entry))
+
+    :grid-fv-counts
+    #S(mopr-plug:callable :fn mopr-plug::prim-fn-grid-fv-counts
+                          :i (:w :h)
+                          :o (:prop-entry))
+
+    :grid-fv-indices
+    #S(mopr-plug:callable :fn mopr-plug::prim-fn-grid-fv-indices
+                          :i (:w :h :dir)
+                          :o (:prop-entry))
+
+    :grid-points
+    #S(mopr-plug:callable :fn mopr-plug::prim-fn-grid-points
+                          :i (:size :dims :order)
+                          :o (:point-based))
+
+    ;; Test functions.
+    :test-grid-oscillate
+    #S(mopr-plug:callable :fn mopr-plug::prim-fn-grid-oscillate
+                          :i (:pbg :length :dim)
+                          :o (:point-based))
+
+    :test-gen-xform-info
+    #S(mopr-plug:callable :fn mopr-plug::prim-fn-test-gen-xform-info
+                          :i (:tr-array :rt-array)
+                          :o (:data-group))))
+
+(defconstant +call-table-data+
+  '(;; Test functions.
+    :test-gen-cubes
+    #S(mopr-plug:callable :fn mopr-plug::data-fn-test-gen-cubes
+                          :i (:r)
+                          :o (:data-group))
+
+    :test-tree-gen
+    #S(mopr-plug:callable :fn mopr-plug::data-fn-test-tree-gen
+                          :i ()
+                          :o (:tree-entry))))
+
 (defun create-prim-call-table (table)
-
-  ;; Grid generation functions.
-
-  (setf (gethash :grid-extent table)
-        (make-callable #'prim-fn-grid-extent
-                       '(:size :x :y :z)
-                       '(:prop-entry)))
-
-  (setf (gethash :grid-fv-counts table)
-        (make-callable #'prim-fn-grid-fv-counts
-                       '(:w :h)
-                       '(:prop-entry)))
-
-  (setf (gethash :grid-fv-indices table)
-        (make-callable #'prim-fn-grid-fv-indices
-                       '(:w :h :dir)
-                       '(:prop-entry)))
-
-  (setf (gethash :grid-points table)
-        (make-callable #'prim-fn-grid-points
-                       '(:size :dims :order)
-                       '(:point-based)))
-
-  ;; Test functions.
-
-  (setf (gethash :test-grid-oscillate table)
-        (make-callable #'prim-fn-grid-oscillate
-                       '(:pbg :length :dim)
-                       '(:point-based)))
-
-  (setf (gethash :test-gen-xform-info table)
-        (make-callable #'prim-fn-test-gen-xform-info
-                       '(:tr-array :rt-array)
-                       '(:data-group))))
+  (loop for (k v . rest) on +call-table-prim+ by #'cddr
+        do (setf (gethash k table) v)))
 
 (defun create-data-call-table (table)
-
-  ;; Test functions.
-
-  (setf (gethash :test-gen-cubes table)
-        (make-callable #'data-fn-test-gen-cubes
-                       '(:r)
-                       '(:data-group)))
-
-  (setf (gethash :test-tree-gen table)
-        (make-callable #'data-fn-test-tree-gen
-                       '()
-                       '(:tree-entry))))
+  (loop for (k v . rest) on +call-table-data+ by #'cddr
+        do (setf (gethash k table) v)))
