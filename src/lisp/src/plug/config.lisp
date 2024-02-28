@@ -30,7 +30,7 @@
     :initform nil
     :reader data-callables
     :documentation "Property list that will be looked up for data callable definitions."))
-  (:documentation "System definition class for MOPR configuration."))
+  (:documentation "MOPR configuration."))
 
 (defun configure (&aux (config-var
                         (multiple-value-list (find-symbol "+CONFIGURATION+" :mopr-user))))
