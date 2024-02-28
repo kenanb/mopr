@@ -4,6 +4,7 @@
 (in-package :cl-user)
 
 (defpackage :mopr-ext/test
+  (:import-from :mopr)
   (:use #:cl #:mopr-ext/grid)
   (:export))
 

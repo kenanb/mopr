@@ -4,6 +4,7 @@
 (in-package :cl-user)
 
 (defpackage :mopr-ext/usds
+  (:import-from :mopr)
   (:use :cl)
   (:export
    #:*usds-ns-package*
@@ -237,7 +238,7 @@
            values
          &aux
            (info (apply #'make-instance 'mopr-info:attr-info
-                        :array-p (member attr-category '(:array :|array|))
+                        :array-p (not (null (member attr-category '(:array :|array|))))
                         :type-key attr-type-key
                         (extract-prop-info prop-data ns-rlist)))
            (attr-type (mopr-info:get-value-type-for-attr-info info)))

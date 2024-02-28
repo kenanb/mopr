@@ -4,6 +4,7 @@
 (in-package :cl-user)
 
 (defpackage :mopr-ext/util
+  (:import-from :mopr)
   (:use #:cl #:mopr-ext/usds)
   (:export))
 
