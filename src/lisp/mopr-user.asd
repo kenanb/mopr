@@ -12,8 +12,21 @@
   :version "0.0.1"
   :author "Kenan Bölükbaşı"
   :license "BSD-3-Clause"
+  :components
+  ((:file "mopr-user"))
   :depends-on
   (#:mopr
-   #:mopr-ext)
-  :components
-  ((:file "mopr-user")))
+   ;; ENABLED PLUGIN LIST:
+   ;;
+   ;; Begin
+   ;;
+
+   "mopr-ext/grid"
+   "mopr-ext/test"
+   "mopr-ext/usds"
+   "mopr-ext/util"
+
+   ;;
+   ;; End
+   ;;
+   ))
