@@ -5,7 +5,6 @@
 (in-package :cl-user)
 
 (defpackage :mopr-ext/grid
-  (:use #:cl #:mopr)
   (:export
    #:aref-point
    #:make-extent-array

@@ -4,15 +4,11 @@
 (in-package :cl-user)
 
 (defpackage :mopr-ext/usds
-  (:use #:cl #:cffi #:mopr-plug)
   (:export
    #:*usds-ns-package*
    #:unknown-form-error
    #:write-to-layer
    #:write-to-layer-call-enabled))
-
-(defpackage #:usds-ns
-  (:use))
 
 (in-package :mopr-ext/usds)
 
@@ -39,7 +35,7 @@
 
 (defvar *bind-table* nil)
 (defvar *alias-table* nil)
-(defvar *usds-ns-package* (find-package "USDS-NS"))
+(defvar *usds-ns-package* (defpackage #:usds-ns (:use)))
 
 (defgeneric serialize-prop-info (ob)
 
