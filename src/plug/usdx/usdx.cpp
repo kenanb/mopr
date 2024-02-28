@@ -51,11 +51,11 @@ bool
     // sLayer.SetRefPtr( tmpLayer );
     // cl_object hLayer_l = ecl_make_pointer( &sLayer );
 
-    const cl_object pkgMoprUser_l = ecl_find_package( "MOPR-PLUG/UTIL" );
+    const cl_object pkgMoprExtUtil_l = ecl_find_package( "MOPR-EXT/UTIL" );
     const cl_object strTestMopr_l = ecl_make_constant_base_string( "TEST-MOPR", -1 );
     int symTestMoprIf = 0;
     const cl_object symTestMopr_l =
-     ecl_find_symbol( strTestMopr_l, pkgMoprUser_l, &symTestMoprIf );
+     ecl_find_symbol( strTestMopr_l, pkgMoprExtUtil_l, &symTestMoprIf );
     cl_funcall( 1, symTestMopr_l );
 
     layer->TransferContent( tmpLayer );

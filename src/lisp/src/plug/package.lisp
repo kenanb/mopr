@@ -8,13 +8,14 @@
 
   ;; CONFIG
   (:export
-   #:*default-config-system*
    #:*config*
    #:configuration
-   #:configure)
+   #:configure
+   #:create-data-call-table
+   #:create-prim-call-table
+   #:with-configuration)
 
   (:export
    #:callable
-   #:process-call-stack
-   #:create-data-call-table
-   #:create-prim-call-table))
+   #:process-data-call-stack
+   #:process-prim-call-stack))

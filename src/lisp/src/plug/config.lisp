@@ -8,40 +8,57 @@
 ;;
 ;;
 
-(declaim (type (or symbol string) *default-config-system*))
-
-(defvar *default-config-system* '#:mopr-user
-  "Configuration system name to be used when no system name is supplied
-as an argument to the SYSTEM parameter in a call to CONFIGURE.")
-
 (declaim (type (or null configuration) *config*))
 
 (defvar *config* nil
   "System object that holds configuration data.")
 
-(defvar *repository* nil
-  "Directory containing the MOPR package. It is used to load extra data
-distributed with the source. Its value is computed from the location
-of the MOPR system.")
+(defvar *data-call-table* nil)
 
-(defvar *default-resource-root* (uiop/pathname:ensure-directory-pathname "res")
-  "The relative directory path default resource hierarchy resides in.")
+(defvar *prim-call-table* nil)
 
-(defclass configuration (asdf:package-inferred-system)
-  ((resource-root
-    :initarg :resource-root
-    :type pathname-designator
-    :initform (uiop/pathname:merge-pathnames* *default-resource-root* *repository*)
-    :accessor resource-root
-    :documentation "Pathname of the resource root directory to look for sources."))
+(defclass configuration ()
+  ((prim-callables
+    :initarg :prim-callables
+    :type list
+    :initform nil
+    :reader prim-callables
+    :documentation "Property list that will be looked up for prim callable definitions.")
+   (data-callables
+    :initarg :data-callables
+    :type list
+    :initform nil
+    :reader data-callables
+    :documentation "Property list that will be looked up for data callable definitions."))
   (:documentation "System definition class for MOPR configuration."))
 
-(defun configure (&key (system *default-config-system*) force)
-  "Loads the configuration system."
-  (check-type system (or symbol string))
-  (asdf:clear-system system)
-  ;; Set the repository before to initialize RESOURCE-ROOT slot of *CONFIG*.
-  (setf *repository* (asdf:system-source-directory '#:mopr))
-  (if force
-      (asdf:load-system system :force force))
-  (setf *config* (asdf:find-system system)))
+(defun configure (&aux (config-var
+                        (multiple-value-list (find-symbol "+CONFIGURATION+" :mopr-user))))
+  "Loads the configuration."
+  (when (member (cadr config-var) '(:internal :external))
+    (let* ((args (symbol-value (car config-var)))
+           (key-args
+             (loop with pl = nil
+                   for (k v) in args
+                   do (setf (getf pl k) (append v (getf pl k)))
+                   finally (return pl))))
+      (when (listp key-args)
+        (setf *config* (apply #'make-instance 'configuration key-args))))))
+
+(defun create-prim-call-table (table)
+  (loop for (k v . rest) on (prim-callables *config*) by #'cddr
+        do (setf (gethash k table) v)))
+
+(defun create-data-call-table (table)
+  (loop for (k v . rest) on (data-callables *config*) by #'cddr
+        do (setf (gethash k table) v)))
+
+(defmacro with-configuration ((&key)
+                              &body body)
+  `(let* ((*config* nil)
+          (*data-call-table* (make-hash-table))
+          (*prim-call-table* (make-hash-table)))
+     (configure)
+     (create-data-call-table *data-call-table*)
+     (create-prim-call-table *prim-call-table*)
+     ,@body))

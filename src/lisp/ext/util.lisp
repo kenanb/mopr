@@ -3,11 +3,11 @@
 
 (in-package :cl-user)
 
-(defpackage :mopr-plug/util
-  (:use #:cl #:mopr :mopr-plug/usds)
+(defpackage :mopr-ext/util
+  (:use #:cl #:mopr :mopr-ext/usds)
   (:export))
 
-(in-package :mopr-plug/util)
+(in-package :mopr-ext/util)
 
 (defun test-mopr ()
   (let ((core-ret (mopr:test-core))

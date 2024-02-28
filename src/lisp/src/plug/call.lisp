@@ -27,59 +27,8 @@
         end
         finally (return (reverse stack))))
 
-;; TODO [2024-02-17] : Move this logic behind user-driven plugin registration.
+(defun process-data-call-stack (form)
+  (process-call-stack form *data-call-table*))
 
-;; Call table generation.
-
-(defconstant +call-table-prim+
-  '(;; Grid generation functions.
-    :grid-extent
-    #S(mopr-plug:callable :fn mopr-plug::prim-fn-grid-extent
-                          :i (:size :x :y :z)
-                          :o (:prop-entry))
-
-    :grid-fv-counts
-    #S(mopr-plug:callable :fn mopr-plug::prim-fn-grid-fv-counts
-                          :i (:w :h)
-                          :o (:prop-entry))
-
-    :grid-fv-indices
-    #S(mopr-plug:callable :fn mopr-plug::prim-fn-grid-fv-indices
-                          :i (:w :h :dir)
-                          :o (:prop-entry))
-
-    :grid-points
-    #S(mopr-plug:callable :fn mopr-plug::prim-fn-grid-points
-                          :i (:size :dims :order)
-                          :o (:point-based))
-
-    ;; Test functions.
-    :test-grid-oscillate
-    #S(mopr-plug:callable :fn mopr-plug::prim-fn-grid-oscillate
-                          :i (:pbg :length :dim)
-                          :o (:point-based))
-
-    :test-gen-xform-info
-    #S(mopr-plug:callable :fn mopr-plug::prim-fn-test-gen-xform-info
-                          :i (:tr-array :rt-array)
-                          :o (:data-group))))
-
-(defconstant +call-table-data+
-  '(;; Test functions.
-    :test-gen-cubes
-    #S(mopr-plug:callable :fn mopr-plug::data-fn-test-gen-cubes
-                          :i (:r)
-                          :o (:data-group))
-
-    :test-tree-gen
-    #S(mopr-plug:callable :fn mopr-plug::data-fn-test-tree-gen
-                          :i ()
-                          :o (:tree-entry))))
-
-(defun create-prim-call-table (table)
-  (loop for (k v . rest) on +call-table-prim+ by #'cddr
-        do (setf (gethash k table) v)))
-
-(defun create-data-call-table (table)
-  (loop for (k v . rest) on +call-table-data+ by #'cddr
-        do (setf (gethash k table) v)))
+(defun process-prim-call-stack (form)
+  (process-call-stack form *prim-call-table*))

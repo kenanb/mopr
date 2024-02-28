@@ -3,8 +3,8 @@
 
 (in-package :cl-user)
 
-(defpackage :mopr-plug/usds
-  (:use #:cl #:cffi)
+(defpackage :mopr-ext/usds
+  (:use #:cl #:cffi #:mopr-plug)
   (:export
    #:*usds-ns-package*
    #:unknown-form-error
@@ -14,7 +14,7 @@
 (defpackage #:usds-ns
   (:use))
 
-(in-package :mopr-plug/usds)
+(in-package :mopr-ext/usds)
 
 (defvar *debug-mode* t)
 
@@ -39,8 +39,6 @@
 
 (defvar *bind-table* nil)
 (defvar *alias-table* nil)
-(defvar *data-call-table* nil)
-(defvar *prim-call-table* nil)
 (defvar *usds-ns-package* (find-package "USDS-NS"))
 
 (defgeneric serialize-prop-info (ob)
@@ -95,8 +93,7 @@
   ;; (format t "~%Called handle-prim-call-form!~%: ~S~%" form)
   (if *enable-call*
       (when form
-        (loop for s in (mopr-plug:process-call-stack
-                        form *prim-call-table*)
+        (loop for s in (mopr-plug:process-prim-call-stack form)
               do (handle-prim-subforms
                   prim-h
                   (serialize s))))
@@ -106,8 +103,7 @@
   ;; (format t "~%Called handle-call-form!~%: ~S~%" form)
   (if *enable-call*
       (when form
-        (loop for s in (mopr-plug:process-call-stack
-                        form *data-call-table*)
+        (loop for s in (mopr-plug:process-data-call-stack form)
               do (handle-data-subforms
                   stage-h
                   (serialize s))))
@@ -386,11 +382,7 @@
                                &body body)
   `(let* ((*enable-call* ,enable-call)
           (*bind-table* (make-hash-table))
-          (*alias-table* (make-hash-table))
-          (*data-call-table* (make-hash-table))
-          (*prim-call-table* (make-hash-table)))
-     (mopr-plug:create-data-call-table *data-call-table*)
-     (mopr-plug:create-prim-call-table *prim-call-table*)
+          (*alias-table* (make-hash-table)))
      ,@body))
 
 (defun write-to-layer (layer-h usds-data)
@@ -398,13 +390,15 @@
     (mopr:with-handle (stage-h :stage)
       (mopr:stage-open-layer stage-h layer-h)
       (mopr-info:with-registry (:supported-cases '(:upcase))
-        (with-usds-variables (:enable-call nil)
-          (handle-data-subforms stage-h usds-data))))))
+        (mopr-plug:with-configuration ()
+          (with-usds-variables (:enable-call nil)
+            (handle-data-subforms stage-h usds-data)))))))
 
 (defun write-to-layer-call-enabled (layer-h usds-data)
   (unless (zerop (mopr:layer-try-upgrade layer-h))
     (mopr:with-handle (stage-h :stage)
       (mopr:stage-open-layer stage-h layer-h)
       (mopr-info:with-registry (:supported-cases '(:upcase))
-        (with-usds-variables (:enable-call t)
-          (handle-data-subforms stage-h usds-data))))))
+        (mopr-plug:with-configuration ()
+          (with-usds-variables (:enable-call t)
+            (handle-data-subforms stage-h usds-data)))))))

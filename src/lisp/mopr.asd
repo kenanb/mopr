@@ -89,13 +89,14 @@ mainly in Lisp. UNTESTED. DO NOT USE!"
     :depends-on ("mopr" "info" "sgt")
     :components
     ((:file "package")
-     (:file "grid"
-      :depends-on ("package"))
      (:file "config"
       :depends-on ("package"))
-     (:file "test"
-      :depends-on ("package"))
      (:file "call"
-      :depends-on ("package" "grid" "test"))
-     (:file "plug"
-      :depends-on ("package" "call"))))))
+      :depends-on ("package" "config"))))))
+
+(register-system-packages "mopr"
+                          '(:mopr-ffi
+                            :mopr-info
+                            :mopr-plug
+                            :mopr-sgt
+                            :mopr-val))

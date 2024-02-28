@@ -1,7 +1,41 @@
 ;;;; -*- Mode: LISP; Syntax: COMMON-LISP; Package: CL-USER -*-
 ;;
 
-(in-package #:mopr-plug)
+
+(in-package :cl-user)
+
+(defpackage :mopr-ext/grid
+  (:use #:cl #:mopr)
+  (:export
+   #:aref-point
+   #:make-extent-array
+   #:make-points-array
+   #:compute-extent))
+
+(in-package :mopr-ext/grid)
+
+;; Call table generation.
+
+(defconstant +prim-callables+
+  '(:grid-extent
+    #S(mopr-plug:callable :fn prim-fn-grid-extent
+                          :i (:size :x :y :z)
+                          :o (:prop-entry))
+
+    :grid-fv-counts
+    #S(mopr-plug:callable :fn prim-fn-grid-fv-counts
+                          :i (:w :h)
+                          :o (:prop-entry))
+
+    :grid-fv-indices
+    #S(mopr-plug:callable :fn prim-fn-grid-fv-indices
+                          :i (:w :h :dir)
+                          :o (:prop-entry))
+
+    :grid-points
+    #S(mopr-plug:callable :fn prim-fn-grid-points
+                          :i (:size :dims :order)
+                          :o (:point-based))))
 
 ;; Grid generation functions.
 

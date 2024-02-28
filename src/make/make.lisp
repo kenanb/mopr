@@ -25,7 +25,7 @@
 (asdf:oos 'asdf:load-op :cl-autowrap)
 
 (asdf:oos 'asdf:load-op :mopr)
-(asdf:oos 'asdf:load-op :mopr-plug)
+(asdf:oos 'asdf:load-op :mopr-ext)
 
 (asdf:make-build :mopr-user
                  :type :shared-library

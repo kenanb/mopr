@@ -14,6 +14,6 @@
   :license "BSD-3-Clause"
   :depends-on
   (#:mopr
-   #:mopr-plug)
+   #:mopr-ext)
   :components
   ((:file "mopr-user")))

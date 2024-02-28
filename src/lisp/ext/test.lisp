@@ -1,7 +1,37 @@
 ;;;; -*- Mode: LISP; Syntax: COMMON-LISP; Package: CL-USER -*-
 ;;
 
-(in-package #:mopr-plug)
+(in-package :cl-user)
+
+(defpackage :mopr-ext/test
+  (:use #:cl #:mopr :mopr-ext/grid)
+  (:export))
+
+(in-package :mopr-ext/test)
+
+;; Call table generation.
+
+(defconstant +prim-callables+
+  '(:test-grid-oscillate
+    #S(mopr-plug:callable :fn prim-fn-grid-oscillate
+                          :i (:pbg :length :dim)
+                          :o (:point-based))
+
+    :test-gen-xform-info
+    #S(mopr-plug:callable :fn prim-fn-test-gen-xform-info
+                          :i (:tr-array :rt-array)
+                          :o (:data-group))))
+
+(defconstant +data-callables+
+  '(:test-gen-cubes
+    #S(mopr-plug:callable :fn data-fn-test-gen-cubes
+                          :i (:r)
+                          :o (:data-group))
+
+    :test-tree-gen
+    #S(mopr-plug:callable :fn data-fn-test-tree-gen
+                          :i ()
+                          :o (:tree-entry))))
 
 (defvar *attr-info-xform-op-order*
   (make-instance 'mopr-info:attr-info
