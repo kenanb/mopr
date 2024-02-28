@@ -4,6 +4,7 @@
 (in-package :cl-user)
 
 (defpackage :mopr-ext/usds
+  (:use :cl)
   (:export
    #:*usds-ns-package*
    #:unknown-form-error
