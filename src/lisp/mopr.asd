@@ -92,7 +92,9 @@ mainly in Lisp. UNTESTED. DO NOT USE!"
      (:file "config"
       :depends-on ("package"))
      (:file "call"
-      :depends-on ("package" "config"))))))
+      :depends-on ("package" "config"))
+     (:file "generic"
+      :depends-on ("package" "config" "call"))))))
 
 (register-system-packages "mopr"
                           '(:mopr-ffi

@@ -47,8 +47,14 @@ TEST_CASE( "USDS Callable Output", "[usds]" )
 {
     registerPlugins( );
 
-    const std::string i = GENERATE(
-     "08_call", "09_call", "11_call", "12_call", "13_call", "14_call", "15_call" );
+    const std::string i = GENERATE( "08_call",
+                                    "09_call",
+                                    "11_call",
+                                    "12_call",
+                                    "13_call",
+                                    "14_call",
+                                    "15_call",
+                                    "15_call-gen" );
 
     const auto & config = Config::GetInstance( );
     const std::string & iFile = config.FromDataset( i, "lisp" );

@@ -11,8 +11,7 @@
    #:*config*
    #:configuration
    #:configure
-   #:create-data-call-table
-   #:create-prim-call-table
+   #:create-call-tables
    #:with-configuration)
 
   (:export

@@ -13,12 +13,21 @@
 (defvar *config* nil
   "System object that holds configuration data.")
 
+(defvar *generic-call-table* nil)
+
 (defvar *data-call-table* nil)
 
 (defvar *prim-call-table* nil)
 
 (defclass configuration ()
-  ((prim-callables
+  ((generic-callables
+    :initarg :generic-callables
+    :type list
+    :initform nil
+    :reader generic-callables
+    :documentation "Property list that will be looked up for callable definitions,
+regardles of object type.")
+   (prim-callables
     :initarg :prim-callables
     :type list
     :initform nil
@@ -36,7 +45,7 @@
                         (multiple-value-list (find-symbol "+CONFIGURATION+" :mopr-user))))
   "Loads the configuration."
   (when (member (cadr config-var) '(:internal :external))
-    (let* ((args (symbol-value (car config-var)))
+    (let* ((args (append +configuration+ (symbol-value (car config-var))))
            (key-args
              (loop with pl = nil
                    for (k v) in args
@@ -45,20 +54,21 @@
       (when (listp key-args)
         (setf *config* (apply #'make-instance 'configuration key-args))))))
 
-(defun create-prim-call-table (table)
-  (loop for (k v . rest) on (prim-callables *config*) by #'cddr
+(defun create-call-table (callable-plist table)
+  (loop for (k v . rest) on callable-plist by #'cddr
         do (setf (gethash k table) v)))
 
-(defun create-data-call-table (table)
-  (loop for (k v . rest) on (data-callables *config*) by #'cddr
-        do (setf (gethash k table) v)))
+(defun create-call-tables ()
+  (create-call-table (generic-callables *config*) *generic-call-table*)
+  (create-call-table (data-callables *config*) *data-call-table*)
+  (create-call-table (prim-callables *config*) *prim-call-table*))
 
 (defmacro with-configuration ((&key)
                               &body body)
   `(let* ((*config* nil)
+          (*generic-call-table* (make-hash-table))
           (*data-call-table* (make-hash-table))
           (*prim-call-table* (make-hash-table)))
      (configure)
-     (create-data-call-table *data-call-table*)
-     (create-prim-call-table *prim-call-table*)
+     (create-call-tables)
      ,@body))
