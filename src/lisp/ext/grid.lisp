@@ -18,10 +18,20 @@
 ;; Call table generation.
 
 (defconstant +prim-callables+
-  '(:grid-extent
-    #S(mopr-plug:callable :fn prim-fn-grid-extent
-                          :i (:size :x :y :z)
-                          :o (:prop-entry))
+  '(:make-prop
+    #S(mopr-plug:callable :fn make-prop
+                          :i (:type :schema :attr :data :time)
+                          :o (:attr))
+
+    :make-point-based
+    #S(mopr-plug:callable :fn make-point-based
+                          :i (:points :extent :time)
+                          :o (:group))
+
+    :compute-extent
+    #S(mopr-plug:callable :fn compute-extent
+                          :i (:points)
+                          :o (:extent))
 
     :grid-fv-counts
     #S(mopr-plug:callable :fn prim-fn-grid-fv-counts
@@ -33,10 +43,34 @@
                           :i (:w :h :dir)
                           :o (:prop-entry))
 
+    :grid-extent
+    #S(mopr-plug:callable :fn prim-fn-grid-extent
+                          :i (:size :x :y :z)
+                          :o (:prop-entry))
+
     :grid-points
     #S(mopr-plug:callable :fn prim-fn-grid-points
                           :i (:size :dims :order)
-                          :o (:point-based))))
+                          :o (:points :extent))))
+
+(defun make-prop (schema-type schema attr data &optional (time nil))
+  (mopr-sgt:make-prop-entry
+   :info (mopr-info:get-prop-info-for-schema schema-type schema attr)
+   :data (list (if time (cons time data) data))))
+
+(defstruct
+    (point-based
+     (:include mopr-sgt:data-group)
+     (:constructor make-point-based
+         (points-data
+          &optional
+            (extent-data (compute-extent points-data))
+            (time nil)
+          &aux
+            (mopr-sgt::data
+             (list
+              (make-prop :isa :Mesh :extent extent-data time)
+              (make-prop :isa :Mesh :points points-data time)))))))
 
 ;; Grid generation functions.
 
@@ -59,53 +93,28 @@
           do (setf max-a (map 'vector #'max max-a p)))
     (make-extent-array min-a max-a)))
 
-(defstruct
-    (point-based
-     (:include mopr-sgt:data-group)
-     (:constructor make-point-based
-         (points-data
-          &optional
-            (extent-data (compute-extent points-data))
-          &aux
-            (mopr-sgt::data
-             (list
-              (mopr-sgt:make-prop-entry
-               :info (mopr-info:get-prop-info-for-schema :isa :Mesh :extent)
-               :data (list extent-data))
-              (mopr-sgt:make-prop-entry
-               :info (mopr-info:get-prop-info-for-schema :isa :Mesh :points)
-               :data (list points-data))))))))
-
 (defun prim-fn-grid-extent (size x y z
                             &aux (s (coerce size 'single-float)))
-  (mopr-sgt:make-prop-entry
-   :info (mopr-info:get-prop-info-for-schema :isa :Mesh :extent)
-   :data (list (make-extent-array '(0.0 0.0 0.0)
-                                  (list (* s x) (* s y) (* s z))))))
+  (make-extent-array '(0.0 0.0 0.0)
+                     (list (* s x) (* s y) (* s z))))
 
 (defun prim-fn-grid-fv-counts (w h)
-  (mopr-sgt:make-prop-entry
-   :info (mopr-info:get-prop-info-for-schema :isa :Mesh :faceVertexCounts)
-   :data (list (make-array
-                (* w h)
-                :element-type '(signed-byte 32)
-                :initial-element 4))))
+  (make-array
+   (* w h)
+   :element-type '(signed-byte 32)
+   :initial-element 4))
 
 (defun prim-fn-grid-fv-indices (w h dir
                                 &aux (p (if (eq dir :ccw)
                                             (list 0 1 (+ w 2) (+ w 1))
                                             (list 0 (+ w 1) (+ w 2) 1))))
-  (let ((contents
-          (make-array
-           (list (* w h 4))
-           :element-type '(signed-byte 32)
-           :initial-contents
-           (loop for y below h
-                 nconc (loop for x below w
-                             nconc (mapcar (lambda (s) (+ x s (* y (+ 1 w)))) p))))))
-    (mopr-sgt:make-prop-entry
-     :info (mopr-info:get-prop-info-for-schema :isa :Mesh :faceVertexIndices)
-     :data (list contents))))
+  (make-array
+   (list (* w h 4))
+   :element-type '(signed-byte 32)
+   :initial-contents
+   (loop for y below h
+         nconc (loop for x below w
+                     nconc (mapcar (lambda (s) (+ x s (* y (+ 1 w)))) p)))))
 
 (defun make-points-array (dims contents)
   (make-array
@@ -128,6 +137,6 @@
                                          do (setf min-a (map 'vector #'min min-a shuffled))
                                          do (setf max-a (map 'vector #'max max-a shuffled))
                                          collect shuffled)))))
-    (make-point-based
+    (values
      (make-points-array dims contents)
      (make-extent-array min-a max-a))))
