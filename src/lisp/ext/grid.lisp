@@ -41,7 +41,12 @@
     :grid-points
     #S(mopr-plug:callable :fn prim-fn-grid-points
                           :i (:size :dims :order)
-                          :o (:points :extent))))
+                          :o (:points :extent))
+
+    :grid-oscillate-y
+    #S(mopr-plug:callable :fn prim-fn-grid-oscillate-y
+                          :i (:p-data :dim :len :val)
+                          :o (:data-group))))
 
 ;; Grid generation functions.
 
@@ -111,3 +116,15 @@
     (values
      (make-points-array dims contents)
      (make-extent-array min-a max-a))))
+
+(defun prim-fn-grid-oscillate-y (p-data dim len val
+                                 &aux
+                                   (len-t (coerce len 'single-float))
+                                   (val-t (coerce val 'single-float)))
+  (loop for p-sub below (array-dimension p-data 0)
+        for p = (aref-point p-data p-sub)
+        unless (eq 0 (mod p-sub dim))
+          do (setf val-t (if (eq 0.0 val-t) len-t 0.0))
+        end
+        do (setf (aref p 1) val-t))
+  p-data)

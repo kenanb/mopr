@@ -67,7 +67,13 @@
   '(:1list #S(callable :fn 1list :i (:a) :o (:list))
     :2list #S(callable :fn 2list :i (:a :b) :o (:list))
     :3list #S(callable :fn 3list :i (:a :b :c) :o (:list))
-    :4list #S(callable :fn 4list :i (:a :b :c :d) :o (:list))))
+    :4list #S(callable :fn 4list :i (:a :b :c :d) :o (:list))
+
+    ;; Custom array operators.
+    :copy-array
+    #S(mopr-plug:callable :fn alexandria:copy-array
+                          :i (:ref-array)
+                          :o (:new-array))))
 
 (defconstant +configuration+
   `((:generic-callables ,+arith-op-callables+)
