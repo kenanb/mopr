@@ -1,6 +1,6 @@
 ((:meta :upAxis "Y")
 
- (:call :test-tree-gen)
+ (:call () :test-tree-gen)
 
  (:prim :x
         (:type :Sphere)

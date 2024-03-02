@@ -43,16 +43,21 @@
 
 (defun process-call-stack (form special-table generic-table)
   (loop with stack = nil
-        for e in form
-        for c = (or (gethash e special-table)
-                    (gethash e generic-table))
-        if c do (let (args)
-                  (loop for i below (length (callable-i c))
-                        do (push (pop stack) args))
-                  (dolist (x (multiple-value-list
-                              (apply (callable-fn c) args)))
-                    (push x stack)))
-          else do (push e stack)
+        with params = (car form)
+        for e in (cdr form)
+        for p = (getf params e :param-not-found)
+        if (eq p :param-not-found)
+          do (alexandria:if-let ((c (or (gethash e special-table)
+                                        (gethash e generic-table))))
+               (let (args)
+                 (loop for i below (length (callable-i c))
+                       do (push (pop stack) args))
+                 (dolist (x (multiple-value-list
+                             (apply (callable-fn c) args)))
+                   (push x stack)))
+               (push e stack))
+        else
+          do (push p stack)
         end
         finally (return (reverse stack))))
 
