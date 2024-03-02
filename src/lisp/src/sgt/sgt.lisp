@@ -16,11 +16,11 @@
 
 (defstruct (prop-entry
             (:constructor make-prop-entry)
-            (:constructor make-prop (schema-type schema attr datum
+            (:constructor make-prop (info-args datum
                                      &optional (time nil)
                                      &aux
-                                       (info (mopr-info:get-prop-info-for-schema
-                                              schema-type schema attr))
+                                       (info (apply #'mopr-info:get-prop-info-for-schema
+                                              info-args))
                                        (data (list (if time (cons time datum) datum))))))
   (info (error "...") :type mopr-info:prop-info :read-only t)
   (data nil))
@@ -28,7 +28,7 @@
 (defconstant +sgt-op-callables+
   '(:make-prop
     #S(mopr-plug:callable :fn make-prop
-                          :i (:type :schema :attr :data :time)
+                          :i (:info-args :data :time)
                           :o (:attr))
 
     :make-group

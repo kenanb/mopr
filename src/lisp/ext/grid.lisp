@@ -18,12 +18,7 @@
 ;; Call table generation.
 
 (defconstant +prim-callables+
-  '(:make-point-based
-    #S(mopr-plug:callable :fn make-point-based
-                          :i (:points :extent :time)
-                          :o (:group))
-
-    :compute-extent
+  '(:compute-extent
     #S(mopr-plug:callable :fn compute-extent
                           :i (:points)
                           :o (:extent))
@@ -47,20 +42,6 @@
     #S(mopr-plug:callable :fn prim-fn-grid-points
                           :i (:size :dims :order)
                           :o (:points :extent))))
-
-(defstruct
-    (point-based
-     (:include mopr-sgt:data-group)
-     (:constructor make-point-based
-         (points-data
-          &optional
-            (extent-data (compute-extent points-data))
-            (time nil)
-          &aux
-            (mopr-sgt::data
-             (list
-              (mopr-sgt:make-prop :isa :Mesh :extent extent-data time)
-              (mopr-sgt:make-prop :isa :Mesh :points points-data time)))))))
 
 ;; Grid generation functions.
 

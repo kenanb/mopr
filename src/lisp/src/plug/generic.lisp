@@ -37,6 +37,7 @@
 (defun swap  (x y  ) (values y x))
 (defun swapd (x y z) (values y x z))
 (defun rot   (x y z) (values y z x))
+(defun -rot  (x y z) (values z x y))
 
 (defconstant +stack-op-callables+
   '(:dup   #S(callable :fn dup   :i (:x)       :o (:x :x))
@@ -53,8 +54,22 @@
 
     :swap  #S(callable :fn swap  :i (:x :y)    :o (:y :x))
     :swapd #S(callable :fn swapd :i (:x :y :z) :o (:y :x :z))
-    :rot   #S(callable :fn rot   :i (:x :y :z) :o (:y :z :x))))
+    :rot   #S(callable :fn rot   :i (:x :y :z) :o (:y :z :x))
+    :-rot  #S(callable :fn -rot  :i (:x :y :z) :o (:z :x :y))))
+
+;; Sequence operators. Based on Factor naming conventions.
+(defun 1list (a      ) (list a))
+(defun 2list (a b    ) (list a b))
+(defun 3list (a b c  ) (list a b c))
+(defun 4list (a b c d) (list a b c d))
+
+(defconstant +seq-op-callables+
+  '(:1list #S(callable :fn 1list :i (:a) :o (:list))
+    :2list #S(callable :fn 2list :i (:a :b) :o (:list))
+    :3list #S(callable :fn 3list :i (:a :b :c) :o (:list))
+    :4list #S(callable :fn 4list :i (:a :b :c :d) :o (:list))))
 
 (defconstant +configuration+
   `((:generic-callables ,+arith-op-callables+)
-    (:generic-callables ,+stack-op-callables+)))
+    (:generic-callables ,+stack-op-callables+)
+    (:generic-callables ,+seq-op-callables+)))
