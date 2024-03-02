@@ -41,18 +41,17 @@ regardles of object type.")
     :documentation "Property list that will be looked up for data callable definitions."))
   (:documentation "MOPR configuration."))
 
-(defun configure (&aux (config-var
-                        (multiple-value-list (find-symbol "+CONFIGURATION+" :mopr-user))))
+(defun configure ()
   "Loads the configuration."
-  (when (member (cadr config-var) '(:internal :external))
-    (let* ((args (append +configuration+ (symbol-value (car config-var))))
-           (key-args
-             (loop with pl = nil
-                   for (k v) in args
-                   do (setf (getf pl k) (append v (getf pl k)))
-                   finally (return pl))))
-      (when (listp key-args)
-        (setf *config* (apply #'make-instance 'configuration key-args))))))
+  (let ((args (loop for pkg in '(:mopr-plug :mopr-sgt :mopr-user)
+                    for cfg = (multiple-value-list (find-symbol "+CONFIGURATION+" pkg))
+                    when (member (cadr cfg) '(:internal :external))
+                      append (symbol-value (car cfg)))))
+    (setf *config* (apply #'make-instance 'configuration
+                          (loop with pl = nil
+                                for (k v) in args
+                                do (setf (getf pl k) (append v (getf pl k)))
+                                finally (return pl))))))
 
 (defun create-call-table (callable-plist table)
   (loop for (k v . rest) on callable-plist by #'cddr

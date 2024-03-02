@@ -76,17 +76,9 @@ mainly in Lisp. UNTESTED. DO NOT USE!"
      (:file "util"
       :depends-on ("package" "prop" "value" "schema" "bundle" "registry"))))
 
-   (:module #:sgt
-    :pathname "src/sgt"
-    :depends-on ("mopr" "info")
-    :components
-    ((:file "package")
-     (:file "sgt"
-      :depends-on ("package"))))
-
    (:module #:plug
     :pathname "src/plug"
-    :depends-on ("mopr" "info" "sgt")
+    :depends-on ("mopr" "info")
     :components
     ((:file "package")
      (:file "config"
@@ -94,7 +86,15 @@ mainly in Lisp. UNTESTED. DO NOT USE!"
      (:file "call"
       :depends-on ("package" "config"))
      (:file "generic"
-      :depends-on ("package" "config" "call"))))))
+      :depends-on ("package" "config" "call"))))
+
+   (:module #:sgt
+    :pathname "src/sgt"
+    :depends-on ("mopr" "info" "plug")
+    :components
+    ((:file "package")
+     (:file "sgt"
+      :depends-on ("package"))))))
 
 (register-system-packages "mopr"
                           '(:mopr-ffi
