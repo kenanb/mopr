@@ -29,8 +29,7 @@ extern "C"
 
     /* Query */
 
-    MOPR_API
-    _Bool
+    MOPR_API MOPR_BOOL
      mopr_path_is_empty_p( MoprPath_ch this_ch );
 
     //
@@ -39,98 +38,75 @@ extern "C"
 
     /* Constructor */
 
-    MOPR_API
-    void
+    MOPR_API void
      mopr_path_ctor( MoprPath_h this_h );
 
-    MOPR_API
-    void
+    MOPR_API void
      mopr_path_ctor_cstr( MoprPath_h this_h, char const * path_cstr );
 
     /* Query */
 
-    MOPR_API
-    size_t
+    MOPR_API size_t
      mopr_path_get_path_element_count( MoprPath_ch this_ch );
 
-    MOPR_API
-    _Bool
+    MOPR_API MOPR_BOOL
      mopr_path_is_absolute_path_p( MoprPath_ch this_ch );
 
-    MOPR_API
-    _Bool
+    MOPR_API MOPR_BOOL
      mopr_path_is_absolute_root_path_p( MoprPath_ch this_ch );
 
-    MOPR_API
-    _Bool
+    MOPR_API MOPR_BOOL
      mopr_path_is_prim_path_p( MoprPath_ch this_ch );
 
-    MOPR_API
-    _Bool
+    MOPR_API MOPR_BOOL
      mopr_path_is_absolute_root_or_prim_path_p( MoprPath_ch this_ch );
 
-    MOPR_API
-    _Bool
+    MOPR_API MOPR_BOOL
      mopr_path_is_root_prim_path_p( MoprPath_ch this_ch );
 
-    MOPR_API
-    _Bool
+    MOPR_API MOPR_BOOL
      mopr_path_is_property_path_p( MoprPath_ch this_ch );
 
-    MOPR_API
-    _Bool
+    MOPR_API MOPR_BOOL
      mopr_path_is_prim_property_path_p( MoprPath_ch this_ch );
 
-    MOPR_API
-    _Bool
+    MOPR_API MOPR_BOOL
      mopr_path_is_namespaced_property_path_p( MoprPath_ch this_ch );
 
-    MOPR_API
-    _Bool
+    MOPR_API MOPR_BOOL
      mopr_path_is_prim_variant_selection_path_p( MoprPath_ch this_ch );
 
-    MOPR_API
-    _Bool
+    MOPR_API MOPR_BOOL
      mopr_path_is_prim_or_prim_variant_selection_path_p( MoprPath_ch this_ch );
 
-    MOPR_API
-    _Bool
+    MOPR_API MOPR_BOOL
      mopr_path_contains_prim_variant_selection_p( MoprPath_ch this_ch );
 
-    MOPR_API
-    _Bool
+    MOPR_API MOPR_BOOL
      mopr_path_contains_property_elements_p( MoprPath_ch this_ch );
 
-    MOPR_API
-    _Bool
+    MOPR_API MOPR_BOOL
      mopr_path_contains_target_path_p( MoprPath_ch this_ch );
 
-    MOPR_API
-    _Bool
+    MOPR_API MOPR_BOOL
      mopr_path_is_relational_attribute_path_p( MoprPath_ch this_ch );
 
-    MOPR_API
-    _Bool
+    MOPR_API MOPR_BOOL
      mopr_path_is_target_path_p( MoprPath_ch this_ch );
 
-    MOPR_API
-    _Bool
+    MOPR_API MOPR_BOOL
      mopr_path_is_mapper_path_p( MoprPath_ch this_ch );
 
-    MOPR_API
-    _Bool
+    MOPR_API MOPR_BOOL
      mopr_path_is_mapper_arg_path_p( MoprPath_ch this_ch );
 
-    MOPR_API
-    _Bool
+    MOPR_API MOPR_BOOL
      mopr_path_is_expression_path_p( MoprPath_ch this_ch );
 
-    MOPR_API
-    void
+    MOPR_API void
      mopr_path_get_as_string( MoprString_h string_h, MoprPath_ch this_ch );
 
-    MOPR_API
-    void
+    MOPR_API void
      mopr_path_get_as_token( MoprToken_h token_h, MoprPath_ch this_ch );
 
 #ifdef __cplusplus

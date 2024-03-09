@@ -7,7 +7,8 @@
 
 #include <iostream>
 
-struct MOPR_API MoprStage : public MoprPairedSmartPtr< pxr::UsdStage >
+struct MOPR_API MoprStage
+    : public MoprPairedSmartPtr< pxr::UsdStage >
 {
 };
 

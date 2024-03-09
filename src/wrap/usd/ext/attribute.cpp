@@ -17,13 +17,13 @@ void
 
 /* Query */
 
-_Bool
+MOPR_BOOL
  mopr_attribute_is_empty_p( MoprAttribute_ch this_ch )
 {
     return this_ch->d.IsValid( );
 }
 
-_Bool
+MOPR_BOOL
  mopr_attribute_set_value( MoprAttribute_ch this_ch,
                            MoprValue_ch value_ch,
                            MoprTimecode_ch timecode_ch )

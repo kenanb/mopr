@@ -57,7 +57,7 @@ void
     family_h->d = this_ch->p->family;
 }
 
-_Bool
+MOPR_BOOL
  mopr_schema_info_is_empty_p( MoprSchemaInfo_ch this_ch )
 {
     return !this_ch->p;

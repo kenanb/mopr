@@ -33,19 +33,19 @@ void
 
 /* Query */
 
-_Bool
+MOPR_BOOL
  mopr_timecode_is_empty_p( MoprTimecode_ch this_ch )
 {
     return this_ch->d.IsDefault( );
 }
 
-_Bool
+MOPR_BOOL
  mopr_timecode_is_default_p( MoprTimecode_ch this_ch )
 {
     return this_ch->d.IsDefault( );
 }
 
-_Bool
+MOPR_BOOL
  mopr_timecode_is_earliest_time_p( MoprTimecode_ch this_ch )
 {
     return this_ch->d.IsEarliestTime( );

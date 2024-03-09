@@ -43,7 +43,8 @@ struct MOPR_API MoprDatumBase : public MoprGeneric
 };
 
 template <>
-struct MOPR_API MoprDatumBase< pxr::TfToken > : public MoprGeneric
+struct MOPR_API
+MoprDatumBase< pxr::TfToken > : public MoprGeneric
 {
     typedef pxr::TfToken source_primitive_type;
     typedef struct MoprToken target_primitive_type;
@@ -51,7 +52,8 @@ struct MOPR_API MoprDatumBase< pxr::TfToken > : public MoprGeneric
 };
 
 template <>
-struct MOPR_API MoprDatumBase< pxr::SdfTimeCode > : public MoprGeneric
+struct MOPR_API
+MoprDatumBase< pxr::SdfTimeCode > : public MoprGeneric
 {
     typedef pxr::SdfTimeCode source_primitive_type;
     typedef double target_primitive_type;
@@ -60,7 +62,7 @@ struct MOPR_API MoprDatumBase< pxr::SdfTimeCode > : public MoprGeneric
 
 template < typename T >
 struct MOPR_API
- MoprDatumBase< T, typename std::enable_if< pxr::GfIsGfVec< T >::value >::type >
+MoprDatumBase< T, typename std::enable_if< pxr::GfIsGfVec< T >::value >::type >
     : public MoprGeneric
 {
     typedef typename T::ScalarType source_primitive_type;
@@ -70,7 +72,7 @@ struct MOPR_API
 
 template < typename T >
 struct MOPR_API
- MoprDatumBase< T, typename std::enable_if< pxr::GfIsGfMatrix< T >::value >::type >
+MoprDatumBase< T, typename std::enable_if< pxr::GfIsGfMatrix< T >::value >::type >
     : public MoprGeneric
 {
     typedef typename T::ScalarType source_primitive_type;
@@ -82,7 +84,7 @@ struct MOPR_API
 
 template < typename T >
 struct MOPR_API
- MoprDatumBase< T, typename std::enable_if< pxr::GfIsGfQuat< T >::value >::type >
+MoprDatumBase< T, typename std::enable_if< pxr::GfIsGfQuat< T >::value >::type >
     : public MoprGeneric
 {
     typedef typename T::ScalarType source_primitive_type;
@@ -91,7 +93,8 @@ struct MOPR_API
 };
 
 template < typename T >
-struct MOPR_API MoprDatumGeneric : public MoprDatumBase< T >
+struct MOPR_API MoprDatumGeneric
+    : public MoprDatumBase< T >
 {
     typedef MoprDatumBase< T > base;
 

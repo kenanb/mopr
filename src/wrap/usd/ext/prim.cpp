@@ -18,7 +18,7 @@ void
 
 /* Query */
 
-_Bool
+MOPR_BOOL
  mopr_prim_is_empty_p( MoprPrim_ch this_ch )
 {
     return this_ch->d.IsValid( );
@@ -30,12 +30,12 @@ void
     this_h->d.SetTypeName( token_ch->d );
 }
 
-_Bool
+MOPR_BOOL
  mopr_prim_create_attribute( MoprAttribute_h attribute_h,
                              MoprPrim_ch this_ch,
                              MoprToken_ch name_token_ch,
                              MoprValueTypeName_ch value_type_name_ch,
-                             _Bool custom,
+                             MOPR_BOOL custom,
                              MoprPropertyVariability variability )
 {
     pxr::SdfVariability vr;

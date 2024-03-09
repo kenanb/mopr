@@ -22,7 +22,8 @@ extern "C"
 #define MOPR_APPLY_TYPE( T_name, T_text, T_type, T_dims, T_prim_h )                      \
     MOPR_DECLARE_HANDLE( MoprArray_##T_text )                                            \
     MOPR_DECLARE_RAII_FUNCTIONS( MoprArray_##T_text, array_##T_text )                    \
-    MOPR_API _Bool mopr_array_##T_text##_is_empty_p( MoprArray_##T_text##_ch this_ch );  \
+    MOPR_API MOPR_BOOL mopr_array_##T_text##_is_empty_p(                                 \
+     MoprArray_##T_text##_ch this_ch );                                                  \
     MOPR_API void mopr_array_##T_text##_ctor( MoprArray_##T_text##_h this_h );           \
     MOPR_API void mopr_array_##T_text##_reserve( MoprArray_##T_text##_h this_h,          \
                                                  int num );                              \

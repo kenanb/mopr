@@ -1,6 +1,8 @@
 #ifndef MOPR_WRAP__BASE_EXT_TYPES_H
 #define MOPR_WRAP__BASE_EXT_TYPES_H
 
+#include "wrap/_base/ext/prolog.h"
+
 /*
 #define MOPR_SCALAR_VALUE_TYPES                                                          \
     MOPR_APPLY_TYPE( Bool, bool, bool, ( ) )                                             \
@@ -44,7 +46,7 @@
 // TODO : Enable other types.
 
 #define MOPR_SCALAR_VALUE_TYPES                                                          \
-    MOPR_APPLY_TYPE( Bool, bool, bool, ( ), _Bool * )                                    \
+    MOPR_APPLY_TYPE( Bool, bool, bool, ( ), MOPR_BOOL * )                                \
     MOPR_APPLY_TYPE( UChar, uchar, unsigned char, ( ), unsigned char * )                 \
     MOPR_APPLY_TYPE( Int, int, int, ( ), int * )                                         \
     MOPR_APPLY_TYPE( UInt, uint, unsigned int, ( ), unsigned int * )                     \

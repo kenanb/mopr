@@ -26,12 +26,10 @@ extern "C"
 
     /* Query */
 
-    MOPR_API
-    _Bool
+    MOPR_API MOPR_BOOL
      mopr_token_is_empty_p( MoprToken_ch this_ch );
 
-    MOPR_API
-    char const *
+    MOPR_API char const *
      mopr_token_cstr( MoprToken_ch this_ch );
 
     //
@@ -40,16 +38,13 @@ extern "C"
 
     /* Constructor */
 
-    MOPR_API
-    void
+    MOPR_API void
      mopr_token_ctor( MoprToken_h this_h );
 
-    MOPR_API
-    void
+    MOPR_API void
      mopr_token_ctor_cstr( MoprToken_h this_h, char const * token_cstr );
 
-    MOPR_API
-    void
+    MOPR_API void
      mopr_token_ctor_string( MoprToken_h this_h, MoprString_ch string_ch );
 
 #ifdef __cplusplus

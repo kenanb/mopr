@@ -18,7 +18,7 @@ void
     this_h->d = { };
 }
 
-_Bool
+MOPR_BOOL
  mopr_property_definition_get_name( MoprToken_h token_h,
                                     MoprPropertyDefinition_ch this_ch )
 {
@@ -33,19 +33,19 @@ _Bool
     }
 }
 
-_Bool
+MOPR_BOOL
  mopr_property_definition_is_attribute_p( MoprPropertyDefinition_ch this_ch )
 {
     return this_ch->d.IsAttribute( );
 }
 
-_Bool
+MOPR_BOOL
  mopr_property_definition_is_relationship_p( MoprPropertyDefinition_ch this_ch )
 {
     return this_ch->d.IsRelationship( );
 }
 
-_Bool
+MOPR_BOOL
  mopr_property_definition_attribute_get_type_name( MoprValueTypeName_h value_tyne_name_h,
                                                    MoprPropertyDefinition_ch this_ch )
 {
@@ -59,7 +59,7 @@ _Bool
     return false;
 }
 
-_Bool
+MOPR_BOOL
  mopr_property_definition_attribute_get_type_name_token(
   MoprToken_h token_h, MoprPropertyDefinition_ch this_ch )
 {
@@ -75,7 +75,7 @@ _Bool
 
 /* Query */
 
-_Bool
+MOPR_BOOL
  mopr_property_definition_is_empty_p( MoprPropertyDefinition_ch this_ch )
 {
     return !this_ch->d;

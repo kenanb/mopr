@@ -5,7 +5,8 @@
 
 #include "pxr/usd/usd/primDefinition.h"
 
-struct MOPR_API MoprPrimDefinition : public MoprGeneric
+struct MOPR_API MoprPrimDefinition
+    : public MoprGeneric
 {
     const pxr::UsdPrimDefinition * p = nullptr;
 };

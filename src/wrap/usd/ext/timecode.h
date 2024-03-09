@@ -24,16 +24,13 @@ extern "C"
     /* Query */
 
     // NOTE : We use Default as the sentinel value to also mean "empty".
-    MOPR_API
-    _Bool
+    MOPR_API MOPR_BOOL
      mopr_timecode_is_empty_p( MoprTimecode_ch this_ch );
 
-    MOPR_API
-    _Bool
+    MOPR_API MOPR_BOOL
      mopr_timecode_is_default_p( MoprTimecode_ch this_ch );
 
-    MOPR_API
-    _Bool
+    MOPR_API MOPR_BOOL
      mopr_timecode_is_earliest_time_p( MoprTimecode_ch this_ch );
 
     //
@@ -42,20 +39,16 @@ extern "C"
 
     /* Constructor */
 
-    MOPR_API
-    void
+    MOPR_API void
      mopr_timecode_ctor( MoprTimecode_h this_h );
 
-    MOPR_API
-    void
+    MOPR_API void
      mopr_timecode_ctor_default( MoprTimecode_h this_h );
 
-    MOPR_API
-    void
+    MOPR_API void
      mopr_timecode_ctor_earliest_time( MoprTimecode_h this_h );
 
-    MOPR_API
-    void
+    MOPR_API void
      mopr_timecode_ctor_double( MoprTimecode_h this_h, double time );
 
 #ifdef __cplusplus

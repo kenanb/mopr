@@ -7,7 +7,8 @@
 
 #include <iostream>
 
-struct MOPR_API MoprLayer : public MoprPairedSmartPtr< pxr::SdfLayer >
+struct MOPR_API MoprLayer
+    : public MoprPairedSmartPtr< pxr::SdfLayer >
 {
 };
 

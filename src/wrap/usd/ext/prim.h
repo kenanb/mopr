@@ -32,8 +32,7 @@ extern "C"
 
     /* Query */
 
-    MOPR_API
-    _Bool
+    MOPR_API MOPR_BOOL
      mopr_prim_is_empty_p( MoprPrim_ch this_ch );
 
     //
@@ -42,23 +41,20 @@ extern "C"
 
     /* Constructor */
 
-    MOPR_API
-    void
+    MOPR_API void
      mopr_prim_ctor( MoprPrim_h this_h );
 
     /* Query */
 
-    MOPR_API
-    void
+    MOPR_API void
      mopr_prim_set_type_name( MoprPrim_h this_h, MoprToken_ch token_ch );
 
-    MOPR_API
-    _Bool
+    MOPR_API MOPR_BOOL
      mopr_prim_create_attribute( MoprAttribute_h attribute_h,
                                  MoprPrim_ch this_ch,
                                  MoprToken_ch name_token_ch,
                                  MoprValueTypeName_ch value_type_name_ch,
-                                 _Bool custom,
+                                 MOPR_BOOL custom,
                                  MoprPropertyVariability variability );
 
 #ifdef __cplusplus

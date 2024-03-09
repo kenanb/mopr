@@ -8,7 +8,8 @@
 #include "pxr/base/vt/array.h"
 
 template < typename T >
-struct MOPR_API MoprArray : public MoprDatumGeneric< T >
+struct MOPR_API MoprArray
+    : public MoprDatumGeneric< T >
 {
     pxr::VtArray< T > d;
     typedef MoprDatumBase< T > base;

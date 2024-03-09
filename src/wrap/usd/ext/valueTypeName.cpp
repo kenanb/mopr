@@ -28,25 +28,25 @@ void
 
 /* Query */
 
-_Bool
+MOPR_BOOL
  mopr_value_type_name_is_empty_p( MoprValueTypeName_ch this_ch )
 {
     return !this_ch->d;
 }
 
-_Bool
+MOPR_BOOL
  mopr_value_type_name_is_scalar_p( MoprValueTypeName_ch this_ch )
 {
     return this_ch->d.IsScalar( );
 }
 
-_Bool
+MOPR_BOOL
  mopr_value_type_name_is_array_p( MoprValueTypeName_ch this_ch )
 {
     return this_ch->d.IsArray( );
 }
 
-_Bool
+MOPR_BOOL
  mopr_value_type_name_get_scalar_type( MoprValueTypeName_h other_h,
                                        MoprValueTypeName_ch this_ch )
 {
@@ -59,7 +59,7 @@ _Bool
     return true;
 }
 
-_Bool
+MOPR_BOOL
  mopr_value_type_name_get_array_type( MoprValueTypeName_h other_h,
                                       MoprValueTypeName_ch this_ch )
 {
@@ -72,7 +72,7 @@ _Bool
     return true;
 }
 
-_Bool
+MOPR_BOOL
  mopr_value_type_name_get_role( MoprToken_h token_h, MoprValueTypeName_ch this_ch )
 {
     if ( mopr_value_type_name_is_empty_p( this_ch ) )
@@ -84,7 +84,7 @@ _Bool
     return true;
 }
 
-_Bool
+MOPR_BOOL
  mopr_value_type_name_get_as_token( MoprToken_h token_h, MoprValueTypeName_ch this_ch )
 {
     if ( mopr_value_type_name_is_empty_p( this_ch ) )

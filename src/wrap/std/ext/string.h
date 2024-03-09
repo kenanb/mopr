@@ -25,8 +25,7 @@ extern "C"
 
     /* Query */
 
-    MOPR_API
-    _Bool
+    MOPR_API MOPR_BOOL
      mopr_string_is_empty_p( MoprString_ch this_ch );
 
     //
@@ -35,18 +34,15 @@ extern "C"
 
     /* Constructor */
 
-    MOPR_API
-    void
+    MOPR_API void
      mopr_string_ctor( MoprString_h this_h );
 
-    MOPR_API
-    void
+    MOPR_API void
      mopr_string_ctor_cstr( MoprString_h this_h, char const * cstr );
 
     /* Query */
 
-    MOPR_API
-    char const *
+    MOPR_API char const *
      mopr_string_cstr( MoprString_ch this_ch );
 
 #ifdef __cplusplus

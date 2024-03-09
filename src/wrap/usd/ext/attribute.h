@@ -27,8 +27,7 @@ extern "C"
 
     /* Query */
 
-    MOPR_API
-    _Bool
+    MOPR_API MOPR_BOOL
      mopr_attribute_is_empty_p( MoprAttribute_ch this_ch );
 
     //
@@ -37,12 +36,10 @@ extern "C"
 
     /* Constructor */
 
-    MOPR_API
-    void
+    MOPR_API void
      mopr_attribute_ctor( MoprAttribute_h this_h );
 
-    MOPR_API
-    _Bool
+    MOPR_API MOPR_BOOL
      mopr_attribute_set_value( MoprAttribute_ch this_ch,
                                MoprValue_ch value_ch,
                                MoprTimecode_ch timecode_ch );

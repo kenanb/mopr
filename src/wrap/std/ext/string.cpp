@@ -21,7 +21,7 @@ void
 
 /* Query */
 
-_Bool
+MOPR_BOOL
  mopr_string_is_empty_p( MoprString_ch this_ch )
 {
     return this_ch->d.empty( );

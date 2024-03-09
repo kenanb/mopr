@@ -9,13 +9,12 @@
 
 MOPR_DEFINE_RAII_FUNCTIONS( MoprLayer, layer )
 
-_Bool
- mopr_layer_is_empty_p( MoprLayer_ch this_ch )
+MOPR_BOOL mopr_layer_is_empty_p( MoprLayer_ch this_ch )
 {
     return this_ch->IsEmpty( );
 }
 
-_Bool
+MOPR_BOOL
  mopr_layer_try_upgrade( MoprLayer_h this_h )
 {
     return this_h->TryUpgrade( );
@@ -27,7 +26,7 @@ void
     this_h->Downgrade( );
 }
 
-_Bool
+MOPR_BOOL
  mopr_layer_create_new( MoprLayer_h this_h,
                         char const * id_cstr   // ,
                         /* const FileFormatArguments &args=FileFormatArguments() */ )
@@ -36,7 +35,7 @@ _Bool
     return this_h->rp;
 }
 
-_Bool
+MOPR_BOOL
  mopr_layer_create_anonymous(
   MoprLayer_h this_h,
   char const * id_cstr   // ,
@@ -46,7 +45,7 @@ _Bool
     return this_h->rp;
 }
 
-_Bool
+MOPR_BOOL
  mopr_layer_export_to_string( MoprString_h o_string_h, MoprLayer_ch this_ch )
 {
     if ( !this_ch->AssertCallReady( ) ) return false;
@@ -56,7 +55,7 @@ _Bool
     return true;
 }
 
-_Bool
+MOPR_BOOL
  mopr_layer_get_identifier( MoprString_h id_string_h, MoprLayer_ch this_ch )
 {
     if ( !this_ch->AssertCallReady( ) ) return false;
@@ -66,7 +65,7 @@ _Bool
     return true;
 }
 
-_Bool
+MOPR_BOOL
  mopr_layer_save( MoprLayer_ch this_ch )
 {
     if ( !this_ch->AssertCallReady( ) ) return false;

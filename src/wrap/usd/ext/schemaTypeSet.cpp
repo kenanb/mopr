@@ -48,7 +48,7 @@ int
     return this_ch->d.size( );
 }
 
-_Bool
+MOPR_BOOL
  mopr_schema_type_set_get_schema_info( MoprSchemaInfo_h info_h,
                                        MoprSchemaTypeSet_ch this_ch,
                                        int index )
@@ -58,7 +58,7 @@ _Bool
     return info_h->p;
 }
 
-_Bool
+MOPR_BOOL
  mopr_schema_type_set_is_empty_p( MoprSchemaTypeSet_ch this_ch )
 {
     return this_ch->d.empty( );

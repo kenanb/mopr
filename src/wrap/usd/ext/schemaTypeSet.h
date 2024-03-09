@@ -28,32 +28,26 @@ extern "C"
 
     /* Constructor */
 
-    MOPR_API
-    void
+    MOPR_API void
      mopr_schema_type_set_ctor( MoprSchemaTypeSet_h this_h );
 
-    MOPR_API
-    void
+    MOPR_API void
      mopr_schema_type_set_ctor_isa_derived( MoprSchemaTypeSet_h this_h );
 
-    MOPR_API
-    void
+    MOPR_API void
      mopr_schema_type_set_ctor_api_derived( MoprSchemaTypeSet_h this_h );
 
     /* Query */
 
-    MOPR_API
-    int
+    MOPR_API int
      mopr_schema_type_set_get_type_count( MoprSchemaTypeSet_ch this_ch );
 
-    MOPR_API
-    _Bool
+    MOPR_API MOPR_BOOL
      mopr_schema_type_set_get_schema_info( MoprSchemaInfo_h info_h,
                                            MoprSchemaTypeSet_ch this_ch,
                                            int index );
 
-    MOPR_API
-    _Bool
+    MOPR_API MOPR_BOOL
      mopr_schema_type_set_is_empty_p( MoprSchemaTypeSet_ch this_ch );
 
 #ifdef __cplusplus

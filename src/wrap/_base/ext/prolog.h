@@ -3,12 +3,18 @@
 
 #ifdef __cplusplus
 
-// Bringing in stdbool in C++ to get _Bool recognized.  We avoid
-// introducing it into C header just to avoid extra definitions
-// showing up in the parsed file.
-#    include <stdbool.h>
 #    include <stddef.h>
 
+// A MOPR_BOOL macro is used for bool, because:
+//
+// - We avoid introducing stdbool.h (and using bool) in C, to avoid
+// - extra set of definitions showing up in parsed API files.
+//
+// - Including stdbool.h in C++ to get _Bool recognized doesn't seem
+// - to work for clang++ with standard C++. TODO: Check extensions.
+#    define MOPR_BOOL bool
+#else
+#    define MOPR_BOOL _Bool
 #endif
 
 #endif   // MOPR_WRAP__BASE_PROLOG_H

@@ -36,24 +36,19 @@ extern "C"
 
     /* Query */
 
-    MOPR_API
-    _Bool
+    MOPR_API MOPR_BOOL
      mopr_schema_info_is_empty_p( MoprSchemaInfo_ch this_ch );
 
-    MOPR_API
-    enum MoprSchemaKind
+    MOPR_API enum MoprSchemaKind
      mopr_schema_info_get_kind( MoprSchemaInfo_ch this_ch );
 
-    MOPR_API
-    unsigned int
+    MOPR_API unsigned int
      mopr_schema_info_get_version( MoprSchemaInfo_ch this_ch );
 
-    MOPR_API
-    void
+    MOPR_API void
      mopr_schema_info_get_identifier( MoprToken_h id_h, MoprSchemaInfo_ch this_ch );
 
-    MOPR_API
-    void
+    MOPR_API void
      mopr_schema_info_get_family( MoprToken_h family_h, MoprSchemaInfo_ch this_ch );
 
     //
@@ -62,8 +57,7 @@ extern "C"
 
     /* Constructor */
 
-    MOPR_API
-    void
+    MOPR_API void
      mopr_schema_info_ctor( MoprSchemaInfo_h this_h );
 
 #ifdef __cplusplus

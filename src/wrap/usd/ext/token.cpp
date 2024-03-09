@@ -31,7 +31,7 @@ void
 
 /* Query */
 
-_Bool
+MOPR_BOOL
  mopr_token_is_empty_p( MoprToken_ch this_ch )
 {
     return this_ch->d.IsEmpty( );

@@ -36,6 +36,9 @@ IndentFunctionDeclarationAfterType: true
 IndentPPDirectives: AfterHash
 KeepEmptyLinesAtTheStartOfBlocks: true
 Language: Cpp
+Macros:
+- MOPR_BOOL=bool
+- MOPR_API=__attribute__( ( visibility( "default" ) ) )
 MaxEmptyLinesToKeep: 1
 NamespaceIndentation: None
 PenaltyBreakBeforeFirstCallParameter: 19

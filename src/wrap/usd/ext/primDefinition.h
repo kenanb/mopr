@@ -27,8 +27,7 @@ extern "C"
 
     /* Query */
 
-    MOPR_API
-    _Bool
+    MOPR_API MOPR_BOOL
      mopr_prim_definition_is_empty_p( MoprPrimDefinition_ch this_ch );
 
     //
@@ -37,26 +36,21 @@ extern "C"
 
     /* Constructor */
 
-    MOPR_API
-    void
+    MOPR_API void
      mopr_prim_definition_ctor_api( MoprPrimDefinition_h this_h, MoprToken_ch token_ch );
 
-    MOPR_API
-    void
+    MOPR_API void
      mopr_prim_definition_ctor_isa( MoprPrimDefinition_h this_h, MoprToken_ch token_ch );
 
-    MOPR_API
-    int
+    MOPR_API int
      mopr_prim_definition_get_property_count( MoprPrimDefinition_ch this_ch );
 
-    MOPR_API
-    _Bool
+    MOPR_API MOPR_BOOL
      mopr_prim_definition_get_property_name( MoprToken_h token_h,
                                              MoprPrimDefinition_ch this_ch,
                                              int i );
 
-    MOPR_API
-    _Bool
+    MOPR_API MOPR_BOOL
      mopr_prim_definition_get_property( MoprPropertyDefinition_h property_h,
                                         MoprPrimDefinition_ch this_ch,
                                         MoprToken_ch token_ch );

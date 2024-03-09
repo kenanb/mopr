@@ -29,8 +29,7 @@ extern "C"
 
     /* Query */
 
-    MOPR_API
-    _Bool
+    MOPR_API MOPR_BOOL
      mopr_property_definition_is_empty_p( MoprPropertyDefinition_ch this_ch );
 
     //
@@ -39,35 +38,28 @@ extern "C"
 
     /* Constructor */
 
-    MOPR_API
-    void
+    MOPR_API void
      mopr_property_definition_ctor( MoprPropertyDefinition_h this_h );
 
-    MOPR_API
-    _Bool
+    MOPR_API MOPR_BOOL
      mopr_property_definition_get_name( MoprToken_h token_h,
                                         MoprPropertyDefinition_ch this_ch );
 
-    MOPR_API
-    _Bool
+    MOPR_API MOPR_BOOL
      mopr_property_definition_is_attribute_p( MoprPropertyDefinition_ch this_ch );
 
-    MOPR_API
-    _Bool
+    MOPR_API MOPR_BOOL
      mopr_property_definition_is_relationship_p( MoprPropertyDefinition_ch this_ch );
 
-    MOPR_API
-    _Bool
+    MOPR_API MOPR_BOOL
      mopr_property_definition_attribute_get_type_name(
       MoprValueTypeName_h value_tyne_name_h, MoprPropertyDefinition_ch this_ch );
 
-    MOPR_API
-    _Bool
+    MOPR_API MOPR_BOOL
      mopr_property_definition_attribute_get_type_name_token(
       MoprToken_h token_h, MoprPropertyDefinition_ch this_ch );
 
-    MOPR_API
-    enum MoprPropertyVariability
+    MOPR_API enum MoprPropertyVariability
      mopr_property_definition_get_variability( MoprPropertyDefinition_ch this_ch );
 
 #ifdef __cplusplus

@@ -15,8 +15,7 @@ extern "C"
 {
 #endif
 
-    MOPR_API
-    int
+    MOPR_API int
      mopr_test_wrap_std( );
 
 #ifdef __cplusplus

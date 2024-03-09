@@ -27,8 +27,7 @@ extern "C"
 
     /* Query */
 
-    MOPR_API
-    _Bool
+    MOPR_API MOPR_BOOL
      mopr_value_is_empty_p( MoprValue_ch this_ch );
 
     //
@@ -37,8 +36,7 @@ extern "C"
 
     /* Constructor */
 
-    MOPR_API
-    void
+    MOPR_API void
      mopr_value_ctor( MoprValue_h this_h );
 
 #define MOPR_APPLY_TYPE( T_name, T_text, T_type, T_dims, T_prim_h )                      \

@@ -33,7 +33,7 @@ int
     return pNames.size( );
 }
 
-_Bool
+MOPR_BOOL
  mopr_prim_definition_get_property_name( MoprToken_h token_h,
                                          MoprPrimDefinition_ch this_ch,
                                          int i )
@@ -50,7 +50,7 @@ _Bool
     }
 }
 
-_Bool
+MOPR_BOOL
  mopr_prim_definition_get_property( MoprPropertyDefinition_h property_h,
                                     MoprPrimDefinition_ch this_ch,
                                     MoprToken_ch token_ch )
@@ -61,7 +61,7 @@ _Bool
 
 /* Query */
 
-_Bool
+MOPR_BOOL
  mopr_prim_definition_is_empty_p( MoprPrimDefinition_ch this_ch )
 {
     return !this_ch->p;

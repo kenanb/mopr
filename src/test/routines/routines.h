@@ -5,16 +5,13 @@
 
 #include <string>
 
-MOPR_API
-std::string
+MOPR_API std::string
  generateUsdaString( const std::string & src, bool callEnabled = false );
 
-MOPR_API
-std::string
+MOPR_API std::string
  exportToUsdaString( const std::string & src );
 
-MOPR_API
-void
+MOPR_API void
  registerPlugins( );
 
 #endif

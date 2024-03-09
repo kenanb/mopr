@@ -5,7 +5,7 @@
 
 #define MOPR_APPLY_TYPE( T_name, T_text, T_type, T_dims, T_prim_h )                      \
     MOPR_DEFINE_RAII_FUNCTIONS( MoprArray_##T_text, array_##T_text )                     \
-    _Bool mopr_array_##T_text##_is_empty_p( MoprArray_##T_text##_ch this_ch )            \
+    MOPR_BOOL mopr_array_##T_text##_is_empty_p( MoprArray_##T_text##_ch this_ch )        \
     {                                                                                    \
         return this_ch->d.empty( );                                                      \
     }                                                                                    \

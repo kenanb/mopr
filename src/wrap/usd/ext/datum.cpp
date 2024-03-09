@@ -5,7 +5,7 @@
 
 #define MOPR_APPLY_TYPE( T_name, T_text, T_type, T_dims, T_prim_h )                      \
     MOPR_DEFINE_RAII_FUNCTIONS( MoprDatum_##T_text, datum_##T_text )                     \
-    _Bool mopr_datum_##T_text##_is_empty_p( MoprDatum_##T_text##_ch this_ch )            \
+    MOPR_BOOL mopr_datum_##T_text##_is_empty_p( MoprDatum_##T_text##_ch this_ch )        \
     {                                                                                    \
         return false;                                                                    \
     }                                                                                    \

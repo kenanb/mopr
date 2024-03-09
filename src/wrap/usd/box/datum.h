@@ -6,7 +6,8 @@
 #include "wrap/_base/ext/types.h"
 
 template < typename T >
-struct MOPR_API MoprDatum : public MoprDatumGeneric< T >
+struct MOPR_API MoprDatum
+    : public MoprDatumGeneric< T >
 {
     T d;
     typedef MoprDatumBase< T > base;

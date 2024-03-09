@@ -22,7 +22,8 @@ extern "C"
 #define MOPR_APPLY_TYPE( T_name, T_text, T_type, T_dims, T_prim_h )                      \
     MOPR_DECLARE_HANDLE( MoprDatum_##T_text )                                            \
     MOPR_DECLARE_RAII_FUNCTIONS( MoprDatum_##T_text, datum_##T_text )                    \
-    MOPR_API _Bool mopr_datum_##T_text##_is_empty_p( MoprDatum_##T_text##_ch this_ch );  \
+    MOPR_API MOPR_BOOL mopr_datum_##T_text##_is_empty_p(                                 \
+     MoprDatum_##T_text##_ch this_ch );                                                  \
     MOPR_API void mopr_datum_##T_text##_ctor( MoprDatum_##T_text##_h this_h );           \
     MOPR_API T_prim_h mopr_datum_##T_text##_row_major_aref(                              \
      MoprDatum_##T_text##_h this_h, int num );                                           \

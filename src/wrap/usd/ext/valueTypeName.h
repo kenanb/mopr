@@ -28,8 +28,7 @@ extern "C"
 
     /* Query */
 
-    MOPR_API
-    _Bool
+    MOPR_API MOPR_BOOL
      mopr_value_type_name_is_empty_p( MoprValueTypeName_ch this_ch );
 
     //
@@ -38,44 +37,35 @@ extern "C"
 
     /* Constructor */
 
-    MOPR_API
-    void
+    MOPR_API void
      mopr_value_type_name_ctor( MoprValueTypeName_h this_h );
 
-    MOPR_API
-    void
+    MOPR_API void
      mopr_value_type_name_find_cstr( MoprValueTypeName_h this_h,
                                      char const * type_name_cstr );
 
-    MOPR_API
-    _Bool
+    MOPR_API MOPR_BOOL
      mopr_value_type_name_is_scalar_p( MoprValueTypeName_ch this_ch );
 
-    MOPR_API
-    _Bool
+    MOPR_API MOPR_BOOL
      mopr_value_type_name_is_array_p( MoprValueTypeName_ch this_ch );
 
-    MOPR_API
-    _Bool
+    MOPR_API MOPR_BOOL
      mopr_value_type_name_get_scalar_type( MoprValueTypeName_h other_h,
                                            MoprValueTypeName_ch this_ch );
 
-    MOPR_API
-    _Bool
+    MOPR_API MOPR_BOOL
      mopr_value_type_name_get_array_type( MoprValueTypeName_h other_h,
                                           MoprValueTypeName_ch this_ch );
 
-    MOPR_API
-    _Bool
+    MOPR_API MOPR_BOOL
      mopr_value_type_name_get_role( MoprToken_h token_h, MoprValueTypeName_ch this_ch );
 
-    MOPR_API
-    _Bool
+    MOPR_API MOPR_BOOL
      mopr_value_type_name_get_as_token( MoprToken_h token_h,
                                         MoprValueTypeName_ch this_ch );
 
-    MOPR_API
-    unsigned char
+    MOPR_API unsigned char
      mopr_value_type_name_get_dimension( MoprValueTypeName_ch this_ch, int index );
 
 #ifdef __cplusplus

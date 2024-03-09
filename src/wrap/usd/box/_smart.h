@@ -10,7 +10,8 @@
 #include <iostream>
 
 template < class T >
-struct MOPR_API MoprPairedSmartPtr : public MoprGeneric
+struct MOPR_API MoprPairedSmartPtr
+    : public MoprGeneric
 {
     using value_type = T;
     using w_ptr = pxr::TfWeakPtr< value_type >;

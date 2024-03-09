@@ -17,7 +17,7 @@ void
 
 /* Query */
 
-_Bool
+MOPR_BOOL
  mopr_value_is_empty_p( MoprValue_ch this_ch )
 {
     return this_ch->d.IsEmpty( );

@@ -5,7 +5,8 @@
 
 #include "pxr/usd/usd/primDefinition.h"
 
-struct MOPR_API MoprPropertyDefinition : public MoprGeneric
+struct MOPR_API MoprPropertyDefinition
+    : public MoprGeneric
 {
     pxr::UsdPrimDefinition::Property d;
 };
