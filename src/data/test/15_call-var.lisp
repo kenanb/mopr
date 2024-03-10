@@ -8,13 +8,14 @@
  (:prim ("Grid3x3")
   (:type :Mesh)
   (:call (:prop (:isa :Mesh :faceVertexCounts))
-   :prop 3 3 :grid-fv-counts nil :make-prop)
+   3 3 :grid-fv-counts nil :prop :make-prop)
   (:call (:prop (:isa :Mesh :faceVertexIndices))
-   :prop 3 3 :cw :grid-fv-indices nil :make-prop)
+   3 3 :cw :grid-fv-indices nil :prop :make-prop)
   (:call (:len 7 :val-0 0 :val-1 7 :time 00)
-   :prop-pts :base-grid-points :dim :len :val-0 :grid-oscillate-y :time :make-prop)
+   :base-grid-points :dim :len :val-0 :grid-oscillate-y :time :prop-pts :make-prop)
   (:call (:len 7 :val-0 0 :val-1 7 :time 10)
-   :prop-pts :base-grid-points :dim :len :val-1 :grid-oscillate-y :time :make-prop)
+   :base-grid-points :dim :len :val-1 :grid-oscillate-y :time :prop-pts :make-prop)
   (:call (:len 7 :val-0 0 :val-1 7 :time 20)
-   :prop-pts :base-grid-points :dim :len :val-0 :grid-oscillate-y :2dup :time :make-prop
-   :-rot :compute-extent :nip :prop-ext :swap nil :make-prop)))
+   :base-grid-points
+   :dim :len :val-0 :grid-oscillate-y :dup :time :prop-pts :make-prop :swap
+   :compute-extent nil :prop-ext :make-prop)))

@@ -16,8 +16,7 @@
 
 (defstruct (prop-entry
             (:constructor make-prop-entry)
-            (:constructor make-prop (info-args datum
-                                     &optional (time nil)
+            (:constructor make-prop (datum time info-args
                                      &aux
                                        (info (apply #'mopr-info:get-prop-info-for-schema
                                               info-args))
