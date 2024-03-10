@@ -1,6 +1,7 @@
 ((:tree
   ("Grid3x3"))
  (:var :dim () 4)
+ (:var :len () 7)
  (:var :prop-pts () (:isa :Mesh :points))
  (:var :prop-ext () (:isa :Mesh :extent))
  (:var :base-grid-points ()
@@ -11,11 +12,13 @@
    3 3 :grid-fv-counts nil :prop :make-prop)
   (:call (:prop (:isa :Mesh :faceVertexIndices))
    3 3 :cw :grid-fv-indices nil :prop :make-prop)
-  (:call (:len 7 :val-0 0 :val-1 7 :time 00)
-   :base-grid-points :dim :len :val-0 :grid-oscillate-y :time :prop-pts :make-prop)
-  (:call (:len 7 :val-0 0 :val-1 7 :time 10)
-   :base-grid-points :dim :len :val-1 :grid-oscillate-y :time :prop-pts :make-prop)
-  (:call (:len 7 :val-0 0 :val-1 7 :time 20)
-   :base-grid-points
-   :dim :len :val-0 :grid-oscillate-y :dup :time :prop-pts :make-prop :swap
-   :compute-extent nil :prop-ext :make-prop)))
+  (:call (:val 0 :time 00)
+   :base-grid-points :dim :len :val :grid-oscillate-y
+   :time :prop-pts :make-prop)
+  (:call (:val 7 :time 10)
+   :base-grid-points :dim :len :val :grid-oscillate-y
+   :time :prop-pts :make-prop)
+  (:call (:val 0 :time 20)
+   :base-grid-points :dim :len :val :grid-oscillate-y :dup
+   :time :prop-pts :make-prop
+   :swap :compute-extent nil :prop-ext :make-prop)))
