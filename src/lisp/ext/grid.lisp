@@ -17,7 +17,7 @@
 
 ;; Call table generation.
 
-(defconstant +prim-callables+
+(defconstant +callables+
   '(:compute-extent
     #S(mopr-plug:callable :fn compute-extent
                           :i (:points)

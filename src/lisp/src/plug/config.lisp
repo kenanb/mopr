@@ -13,32 +13,15 @@
 (defvar *config* nil
   "System object that holds configuration data.")
 
-(defvar *generic-call-table* nil)
-
-(defvar *data-call-table* nil)
-
-(defvar *prim-call-table* nil)
+(defvar *call-table* nil)
 
 (defclass configuration ()
-  ((generic-callables
-    :initarg :generic-callables
+  ((callables
+    :initarg :callables
     :type list
     :initform nil
-    :reader generic-callables
-    :documentation "Property list that will be looked up for callable definitions,
-regardles of object type.")
-   (prim-callables
-    :initarg :prim-callables
-    :type list
-    :initform nil
-    :reader prim-callables
-    :documentation "Property list that will be looked up for prim callable definitions.")
-   (data-callables
-    :initarg :data-callables
-    :type list
-    :initform nil
-    :reader data-callables
-    :documentation "Property list that will be looked up for data callable definitions."))
+    :reader callables
+    :documentation "Property list that will be looked up for callable definitions."))
   (:documentation "MOPR configuration."))
 
 (defun configure ()
@@ -58,16 +41,12 @@ regardles of object type.")
         do (setf (gethash k table) v)))
 
 (defun create-call-tables ()
-  (create-call-table (generic-callables *config*) *generic-call-table*)
-  (create-call-table (data-callables *config*) *data-call-table*)
-  (create-call-table (prim-callables *config*) *prim-call-table*))
+  (create-call-table (callables *config*) *call-table*))
 
 (defmacro with-configuration ((&key)
                               &body body)
   `(let* ((*config* nil)
-          (*generic-call-table* (make-hash-table))
-          (*data-call-table* (make-hash-table))
-          (*prim-call-table* (make-hash-table)))
+          (*call-table* (make-hash-table)))
      (configure)
      (create-call-tables)
      ,@body))

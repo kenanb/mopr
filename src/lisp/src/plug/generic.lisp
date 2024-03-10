@@ -76,6 +76,6 @@
                           :o (:new-array))))
 
 (defconstant +configuration+
-  `((:generic-callables ,+arith-op-callables+)
-    (:generic-callables ,+stack-op-callables+)
-    (:generic-callables ,+seq-op-callables+)))
+  `((:callables ,+arith-op-callables+)
+    (:callables ,+stack-op-callables+)
+    (:callables ,+seq-op-callables+)))

@@ -37,4 +37,4 @@
                           :o (:group))))
 
 (defconstant +configuration+
-  `((:generic-callables ,+sgt-op-callables+)))
+  `((:callables ,+sgt-op-callables+)))

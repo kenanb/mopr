@@ -41,14 +41,13 @@
 ;;
 ;; RETURN: '(a p q)
 
-(defun process-call-stack (form special-table generic-table)
+(defun process-call-stack% (form table)
   (loop with stack = nil
         with params = (car form)
         for e in (cdr form)
         for p = (getf params e :param-not-found)
         if (eq p :param-not-found)
-          do (alexandria:if-let ((c (or (gethash e special-table)
-                                        (gethash e generic-table))))
+          do (alexandria:if-let ((c (gethash e table)))
                (let (args)
                  (loop for i below (length (callable-i c))
                        do (push (pop stack) args))
@@ -61,8 +60,5 @@
         end
         finally (return (reverse stack))))
 
-(defun process-data-call-stack (form)
-  (process-call-stack form *data-call-table* *generic-call-table*))
-
-(defun process-prim-call-stack (form)
-  (process-call-stack form *prim-call-table* *generic-call-table*))
+(defun process-call-stack (form)
+  (process-call-stack% form *call-table*))

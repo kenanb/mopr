@@ -91,7 +91,7 @@
   ;; (format t "~%Called handle-prim-call-form!~%: ~S~%" form)
   (if *enable-call*
       (when form
-        (loop for s in (mopr-plug:process-prim-call-stack form)
+        (loop for s in (mopr-plug:process-call-stack form)
               do (handle-prim-subforms
                   prim-h
                   (serialize s))))
@@ -101,7 +101,7 @@
   ;; (format t "~%Called handle-call-form!~%: ~S~%" form)
   (if *enable-call*
       (when form
-        (loop for s in (mopr-plug:process-data-call-stack form)
+        (loop for s in (mopr-plug:process-call-stack form)
               do (handle-data-subforms
                   stage-h
                   (serialize s))))

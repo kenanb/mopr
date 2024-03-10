@@ -16,5 +16,4 @@
 
   (:export
    #:callable
-   #:process-data-call-stack
-   #:process-prim-call-stack))
+   #:process-call-stack))

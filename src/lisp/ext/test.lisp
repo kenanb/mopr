@@ -12,14 +12,13 @@
 
 ;; Call table generation.
 
-(defconstant +prim-callables+
+(defconstant +callables+
   '(:test-gen-xform-info
     #S(mopr-plug:callable :fn prim-fn-test-gen-xform-info
                           :i (:tr-array :rt-array)
-                          :o (:data-group))))
+                          :o (:data-group))
 
-(defconstant +data-callables+
-  '(:test-gen-cubes
+    :test-gen-cubes
     #S(mopr-plug:callable :fn data-fn-test-gen-cubes
                           :i (:r)
                           :o (:data-group))
