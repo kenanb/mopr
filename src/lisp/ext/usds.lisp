@@ -35,6 +35,7 @@
   (when (and (eq action :debug) *debug-mode*)
     (error "Cannot handle form: ~S~%" form)))
 
+(defvar *var-table* nil)
 (defvar *bind-table* nil)
 (defvar *alias-table* nil)
 (defvar *usds-ns-package* (defpackage #:usds-ns (:use)))
@@ -87,11 +88,22 @@
     (loop for p in (mopr-sgt:data-group-data ob)
           appending (serialize p))))
 
+(defun handle-var-form (stage-h form)
+  ;; (format t "~%Called handle-var-form!~%: ~S~%" form)
+  (declare (ignore stage-h))
+  (if *enable-call*
+      (when form
+        (destructuring-bind
+            (name &rest call-form) form
+          (setf (gethash name *var-table*)
+                (car (mopr-plug:process-call-stack call-form *var-table*)))))
+      (unknown-form-error :call :debug)))
+
 (defun handle-prim-call-form (prim-h form)
   ;; (format t "~%Called handle-prim-call-form!~%: ~S~%" form)
   (if *enable-call*
       (when form
-        (loop for s in (mopr-plug:process-call-stack form)
+        (loop for s in (mopr-plug:process-call-stack form *var-table*)
               do (handle-prim-subforms
                   prim-h
                   (serialize s))))
@@ -101,7 +113,7 @@
   ;; (format t "~%Called handle-call-form!~%: ~S~%" form)
   (if *enable-call*
       (when form
-        (loop for s in (mopr-plug:process-call-stack form)
+        (loop for s in (mopr-plug:process-call-stack form *var-table*)
               do (handle-data-subforms
                   stage-h
                   (serialize s))))
@@ -363,6 +375,8 @@
   ;; (format t "~%Called handle-data-subforms!~%: ~S~%" subforms)
   (loop for l in subforms
         for fn = (case (car l)
+                   (:var    #'handle-var-form)
+                   (:|var|  #'handle-var-form)
                    (:call   #'handle-call-form)
                    (:|call| #'handle-call-form)
                    (:meta   #'handle-meta-form)
@@ -379,6 +393,7 @@
                                   (enable-call nil))
                                &body body)
   `(let* ((*enable-call* ,enable-call)
+          (*var-table* (make-hash-table))
           (*bind-table* (make-hash-table))
           (*alias-table* (make-hash-table)))
      ,@body))

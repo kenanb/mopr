@@ -55,6 +55,7 @@ TEST_CASE( "USDS Callable Output", "[usds]" )
                                     "14_call",
                                     "15_call",
                                     "15_call-gen",
+                                    "15_call-let",
                                     "15_call-var" );
 
     const auto & config = Config::GetInstance( );
