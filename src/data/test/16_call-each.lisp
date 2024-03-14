@@ -6,10 +6,8 @@
  (:var :prop-ext () (:isa :Mesh :extent))
  (:var :base-grid-points ()
   10 (0 3 3) #(2 0 1) :grid-points :drop)
- (:each :oscillation-args
-        (:val 0 :time 00)
-        (:val 7 :time 10)
-        (:val 0 :time 20))
+ (:each :oscillation-args (:time :val)
+        (00 0) (10 7) (20 0))
  (:prim ("Grid3x3")
   (:type :Mesh)
   (:call (:prop (:isa :Mesh :faceVertexCounts))
