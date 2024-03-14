@@ -14,14 +14,13 @@
    3 3 :cw :grid-fv-indices nil :prop :make-prop)
   (:call (:val 0 :time 00)
    :base-grid-points :dim :len :val :grid-oscillate-y
-   :time :prop-pts :make-prop)
+   :dup :time :prop-pts :make-prop
+   :swap :compute-extent :time :prop-ext :make-prop)
   (:call (:val 7 :time 10)
    :base-grid-points :dim :len :val :grid-oscillate-y
-   :time :prop-pts :make-prop)
+   :dup :time :prop-pts :make-prop
+   :swap :compute-extent :time :prop-ext :make-prop)
   (:call (:val 0 :time 20)
-   :base-grid-points :dim :len :val :grid-oscillate-y :dup
-   :time :prop-pts :make-prop
-   :swap :compute-extent
-   :dup 00 :prop-ext :make-prop :-rot
-   :dup 10 :prop-ext :make-prop :-rot
-   :dup 20 :prop-ext :make-prop)))
+   :base-grid-points :dim :len :val :grid-oscillate-y
+   :dup :time :prop-pts :make-prop
+   :swap :compute-extent :time :prop-ext :make-prop)))
