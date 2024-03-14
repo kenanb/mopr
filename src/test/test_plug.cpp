@@ -56,7 +56,8 @@ TEST_CASE( "USDS Callable Output", "[usds]" )
                                     "15_call",
                                     "15_call-gen",
                                     "15_call-let",
-                                    "15_call-var" );
+                                    "15_call-var",
+                                    "16_call-var" );
 
     const auto & config = Config::GetInstance( );
     const std::string & iFile = config.FromDataset( i, "lisp" );
