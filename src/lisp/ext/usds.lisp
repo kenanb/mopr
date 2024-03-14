@@ -36,6 +36,7 @@
     (error "Cannot handle form: ~S~%" form)))
 
 (defvar *var-table* nil)
+(defvar *each-table* nil)
 (defvar *bind-table* nil)
 (defvar *alias-table* nil)
 (defvar *usds-ns-package* (defpackage #:usds-ns (:use)))
@@ -94,30 +95,42 @@
   (if *enable-call*
       (when form
         (destructuring-bind
-            (name &rest call-form) form
+            (name args &rest body) form
           (setf (gethash name *var-table*)
-                (car (mopr-plug:process-call-stack call-form *var-table*)))))
+                (car (mopr-plug:process-call-stack args body *var-table*)))))
+      (unknown-form-error :call :debug)))
+
+(defun handle-each-form (stage-h form)
+  ;; (format t "~%Called handle-each-form!~%: ~S~%" form)
+  (declare (ignore stage-h))
+  (if *enable-call*
+      (when form
+        (destructuring-bind
+            (name &rest arg-list) form
+          (setf (gethash name *each-table*) arg-list)))
+      (unknown-form-error :call :debug)))
+
+(defun handle-call-generic (handler-fn target-h form
+                            &aux
+                              (params (car form))
+                              (body (cdr form)))
+  (if *enable-call*
+      (when form
+        (let ((args-list (if (listp params)
+                             (list params)
+                             (gethash params *each-table*))))
+          (loop for args in args-list
+                do (loop for s in (mopr-plug:process-call-stack args body *var-table*)
+                         do (funcall handler-fn target-h (serialize s))))))
       (unknown-form-error :call :debug)))
 
 (defun handle-prim-call-form (prim-h form)
   ;; (format t "~%Called handle-prim-call-form!~%: ~S~%" form)
-  (if *enable-call*
-      (when form
-        (loop for s in (mopr-plug:process-call-stack form *var-table*)
-              do (handle-prim-subforms
-                  prim-h
-                  (serialize s))))
-      (unknown-form-error :call :debug)))
+  (handle-call-generic #'handle-prim-subforms prim-h form))
 
 (defun handle-call-form (stage-h form)
   ;; (format t "~%Called handle-call-form!~%: ~S~%" form)
-  (if *enable-call*
-      (when form
-        (loop for s in (mopr-plug:process-call-stack form *var-table*)
-              do (handle-data-subforms
-                  stage-h
-                  (serialize s))))
-      (unknown-form-error :call :debug)))
+  (handle-call-generic #'handle-data-subforms stage-h form))
 
 (defclass node ()
   ((path
@@ -377,6 +390,8 @@
         for fn = (case (car l)
                    (:var    #'handle-var-form)
                    (:|var|  #'handle-var-form)
+                   (:each   #'handle-each-form)
+                   (:|each| #'handle-each-form)
                    (:call   #'handle-call-form)
                    (:|call| #'handle-call-form)
                    (:meta   #'handle-meta-form)
@@ -394,6 +409,7 @@
                                &body body)
   `(let* ((*enable-call* ,enable-call)
           (*var-table* (make-hash-table))
+          (*each-table* (make-hash-table))
           (*bind-table* (make-hash-table))
           (*alias-table* (make-hash-table)))
      ,@body))

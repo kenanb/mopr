@@ -41,10 +41,9 @@
 ;;
 ;; RETURN: '(a p q)
 
-(defun process-call-stack% (form table vars)
+(defun process-call-stack% (params body vars table)
   (loop with stack = nil
-        with params = (car form)
-        for e in (cdr form)
+        for e in body
         for p = (getf params e :param-not-found)
         for v = (gethash e vars :param-not-found)
         do (cond
@@ -63,5 +62,5 @@
                 (push e stack))))
         finally (return (reverse stack))))
 
-(defun process-call-stack (form vars)
-  (process-call-stack% form *call-table* vars))
+(defun process-call-stack (params body vars)
+  (process-call-stack% params body vars *call-table*))
