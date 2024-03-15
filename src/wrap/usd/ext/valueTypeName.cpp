@@ -104,5 +104,7 @@ unsigned char
         return 0;
     }
 
-    return this_ch->d.GetDimensions( ).d[ index ];
+    const auto & dims = this_ch->d.GetDimensions( );
+
+    return static_cast< int >( dims.size ) > index ? dims.d[ index ] : 0;
 }
