@@ -64,7 +64,8 @@
 (defun 4list (a b c d) (list a b c d))
 
 (defconstant +seq-op-callables+
-  '(:1list #S(callable :fn 1list :i (:a) :o (:list))
+  '(:cons  #S(callable :fn cons  :i (:a :b) :o (:cons))
+    :1list #S(callable :fn 1list :i (:a) :o (:list))
     :2list #S(callable :fn 2list :i (:a :b) :o (:list))
     :3list #S(callable :fn 3list :i (:a :b :c) :o (:list))
     :4list #S(callable :fn 4list :i (:a :b :c :d) :o (:list))
