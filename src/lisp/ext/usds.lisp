@@ -114,6 +114,18 @@
                         arg-list))))
       (unknown-form-error :call :debug)))
 
+(defun handle-iota-form (stage-h form)
+  ;; (format t "~%Called handle-iota-form!~%: ~S~%" form)
+  (declare (ignore stage-h))
+  (if *enable-call*
+      (when form
+        (destructuring-bind
+            (name param n &optional (start 0) (step 1)) form
+          (setf (gethash name *each-table*)
+                (mapcar (lambda (args) (list param args))
+                        (alexandria:iota n :start start :step step)))))
+      (unknown-form-error :call :debug)))
+
 (defun handle-call-generic (handler-fn target-h form
                             &aux
                               (params (car form))
@@ -396,6 +408,8 @@
                    (:|var|  #'handle-var-form)
                    (:each   #'handle-each-form)
                    (:|each| #'handle-each-form)
+                   (:iota   #'handle-iota-form)
+                   (:|iota| #'handle-iota-form)
                    (:call   #'handle-call-form)
                    (:|call| #'handle-call-form)
                    (:meta   #'handle-meta-form)
