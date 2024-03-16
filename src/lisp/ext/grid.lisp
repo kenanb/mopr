@@ -46,6 +46,11 @@
     :grid-oscillate-y
     #S(mopr-plug:callable :fn prim-fn-grid-oscillate-y
                           :i (:p-data :dim :len :val)
+                          :o (:data-group))
+
+    :grid-sine-y
+    #S(mopr-plug:callable :fn prim-fn-grid-sine-y
+                          :i (:p-data :len :time)
                           :o (:data-group))))
 
 ;; Grid generation functions.
@@ -127,4 +132,11 @@
           do (setf val-t (if (eq 0.0 val-t) len-t 0.0))
         end
         do (setf (aref p 1) val-t))
+  p-data)
+
+(defun prim-fn-grid-sine-y (p-data len time)
+  (loop for p-sub below (array-dimension p-data 0)
+        for p = (aref-point p-data p-sub)
+        for val = (* len (sin (+ (aref p 0) (/ time 10))))
+        do (setf (aref p 1) (coerce val 'single-float)))
   p-data)

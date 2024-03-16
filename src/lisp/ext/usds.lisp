@@ -108,7 +108,10 @@
         (destructuring-bind
             (name params &rest arg-list) form
           (setf (gethash name *each-table*)
-                (mapcar (lambda (args) (mapcan #'list params args)) arg-list))))
+                (mapcar (if (listp params)
+                            (lambda (args) (mapcan #'list params args))
+                            (lambda (args) (list params args)))
+                        arg-list))))
       (unknown-form-error :call :debug)))
 
 (defun handle-call-generic (handler-fn target-h form
