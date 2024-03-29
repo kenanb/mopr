@@ -3,6 +3,10 @@
 
 (in-package #:mopr-sgt)
 
+(deftype any-timecode ()
+  "Type definition for timecode, including the Default time."
+  '(or null float integer))
+
 (defstruct (data-group
             (:constructor make-data-group)
             (:constructor make-group (data)))
@@ -27,13 +31,13 @@
 (defconstant +sgt-op-callables+
   '(:make-prop
     #S(mopr-plug:callable :fn make-prop
-                          :i (:info-args :data :time)
-                          :o (:attr))
+                          :i (:datum t :time any-timecode :info-args list)
+                          :o (:prop prop-entry))
 
     :make-group
     #S(mopr-plug:callable :fn make-group
-                          :i (:prop-list)
-                          :o (:group))))
+                          :i (:prop-list list)
+                          :o (:group data-group))))
 
 (defconstant +configuration+
   `((:callables ,+sgt-op-callables+)))

@@ -17,41 +17,75 @@
 
 ;; Call table generation.
 
+(deftype non-default-timecode ()
+  "Type definition for timecode that's not Default time."
+  '(or float integer))
+
+(deftype boundable-extent ()
+  "Type definition for boundable geometry extent."
+  '(simple-array single-float (2 3)))
+
+(deftype point-based-points ()
+  "Type definition for point based geometry points."
+  '(simple-array single-float))
+
+(deftype mesh-fv-counts ()
+  "Type definition for mesh face-vertex counts."
+  '(simple-array (signed-byte 32)))
+
+(deftype mesh-fv-indices ()
+  "Type definition for mesh face-vertex indices."
+  '(simple-array (signed-byte 32)))
+
 (defconstant +callables+
   '(:compute-extent
     #S(mopr-plug:callable :fn compute-extent
-                          :i (:points)
-                          :o (:extent))
+                          :i (:points point-based-points)
+                          :o (:extent boundable-extent))
 
     :grid-fv-counts
     #S(mopr-plug:callable :fn prim-fn-grid-fv-counts
-                          :i (:w :h)
-                          :o (:prop-entry))
+                          :i (:w fixnum
+                              :h fixnum)
+                          :o (:fv-counts mesh-fv-counts))
 
     :grid-fv-indices
     #S(mopr-plug:callable :fn prim-fn-grid-fv-indices
-                          :i (:w :h :dir)
-                          :o (:prop-entry))
+                          :i (:w fixnum
+                              :h fixnum
+                              :dir keyword)
+                          :o (:fv-indices mesh-fv-indices))
 
     :grid-extent
     #S(mopr-plug:callable :fn prim-fn-grid-extent
-                          :i (:size :x :y :z)
-                          :o (:prop-entry))
+                          :i (:size real
+                              :x fixnum
+                              :y fixnum
+                              :z fixnum)
+                          :o (:extent boundable-extent))
 
     :grid-points
     #S(mopr-plug:callable :fn prim-fn-grid-points
-                          :i (:size :dims :order)
-                          :o (:points :extent))
+                          :i (:size real
+                              :dims list
+                              :order simple-vector)
+                          :o (:points point-based-points
+                              :extent boundable-extent))
 
     :grid-oscillate-y
     #S(mopr-plug:callable :fn prim-fn-grid-oscillate-y
-                          :i (:p-data :dim :len :val)
-                          :o (:data-group))
+                          :i (:points point-based-points
+                              :dim real
+                              :len real
+                              :val real)
+                          :o (:points point-based-points))
 
     :grid-sine-y
     #S(mopr-plug:callable :fn prim-fn-grid-sine-y
-                          :i (:p-data :len :time)
-                          :o (:data-group))))
+                          :i (:points point-based-points
+                              :len real
+                              :time non-default-timecode)
+                          :o (:points point-based-points))))
 
 ;; Grid generation functions.
 

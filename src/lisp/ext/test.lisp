@@ -15,18 +15,18 @@
 (defconstant +callables+
   '(:test-gen-xform-info
     #S(mopr-plug:callable :fn prim-fn-test-gen-xform-info
-                          :i (:tr-array :rt-array)
-                          :o (:data-group))
+                          :i (:tr-array array :rt-array array)
+                          :o (:data-group mopr-sgt:data-group))
 
     :test-gen-cubes
     #S(mopr-plug:callable :fn data-fn-test-gen-cubes
-                          :i (:r)
-                          :o (:data-group))
+                          :i (:r fixnum)
+                          :o (:data-group mopr-sgt:data-group))
 
     :test-tree-gen
     #S(mopr-plug:callable :fn data-fn-test-tree-gen
                           :i ()
-                          :o (:tree-entry))))
+                          :o (:tree-entry mopr-sgt:tree-entry))))
 
 (defvar *attr-info-xform-op-order*
   (make-instance 'mopr-info:attr-info

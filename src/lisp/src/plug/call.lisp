@@ -54,8 +54,13 @@
              (t
               (alexandria:if-let ((c (gethash e table)))
                 (let (args)
-                  (loop for i below (length (callable-i c))
+                  (loop for rest on (callable-i c) by #'cddr
                         do (push (pop stack) args))
+                  (loop for val in args
+                        for (key typespec . rest) on (callable-i c) by #'cddr
+                        do (assert (typep val typespec) (val)
+                                   'type-error :datum val
+                                   :expected-type typespec))
                   (dolist (x (multiple-value-list
                               (apply (callable-fn c) args)))
                     (push x stack)))

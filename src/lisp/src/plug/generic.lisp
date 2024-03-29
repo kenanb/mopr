@@ -13,13 +13,13 @@
 (defun dec (x  ) (1- x))
 
 (defconstant +arith-op-callables+
-  '(:add #S(callable :fn add :i (:x :y) :o (:result))
-    :sub #S(callable :fn sub :i (:x :y) :o (:result))
-    :mul #S(callable :fn mul :i (:x :y) :o (:result))
-    :div #S(callable :fn div :i (:x :y) :o (:result))
-    :neg #S(callable :fn neg :i (:x   ) :o (:result))
-    :inc #S(callable :fn inc :i (:x   ) :o (:result))
-    :dec #S(callable :fn dec :i (:x   ) :o (:result))))
+  '(:add #S(callable :fn add :i (:x number :y number) :o (:result number))
+    :sub #S(callable :fn sub :i (:x number :y number) :o (:result number))
+    :mul #S(callable :fn mul :i (:x number :y number) :o (:result number))
+    :div #S(callable :fn div :i (:x number :y number) :o (:result number))
+    :neg #S(callable :fn neg :i (:x number          ) :o (:result number))
+    :inc #S(callable :fn inc :i (:x number          ) :o (:result number))
+    :dec #S(callable :fn dec :i (:x number          ) :o (:result number))))
 
 ;; Stack shuffling operators. Based on Factor naming conventions.
 (defun dup   (x    ) (values x x))
@@ -40,22 +40,22 @@
 (defun -rot  (x y z) (values z x y))
 
 (defconstant +stack-op-callables+
-  '(:dup   #S(callable :fn dup   :i (:x)       :o (:x :x))
-    :2dup  #S(callable :fn 2dup  :i (:x :y)    :o (:x :y :x :y))
-    :over  #S(callable :fn over  :i (:x :y)    :o (:x :y :x))
-    :2over #S(callable :fn 2over :i (:x :y :z) :o (:x :y :z :x :y))
-    :pick  #S(callable :fn pick  :i (:x :y :z) :o (:x :y :z :x))
-    :dupd  #S(callable :fn dupd  :i (:x :y)    :o (:x :x :y))
+  '(:dup   #S(callable :fn dup   :i (:x t)           :o (:x t :x t))
+    :2dup  #S(callable :fn 2dup  :i (:x t :y t)      :o (:x t :y t :x t :y t))
+    :over  #S(callable :fn over  :i (:x t :y t)      :o (:x t :y t :x t))
+    :2over #S(callable :fn 2over :i (:x t :y t :z t) :o (:x t :y t :z t :x t :y t))
+    :pick  #S(callable :fn pick  :i (:x t :y t :z t) :o (:x t :y t :z t :x t))
+    :dupd  #S(callable :fn dupd  :i (:x t :y t)      :o (:x t :x t :y t))
 
-    :drop  #S(callable :fn drop  :i (:x)       :o ())
-    :2drop #S(callable :fn 2drop :i (:x :y)    :o ())
-    :nip   #S(callable :fn nip   :i (:x :y)    :o (:y))
-    :2nip  #S(callable :fn 2nip  :i (:x :y :z) :o (:z))
+    :drop  #S(callable :fn drop  :i (:x t)           :o ())
+    :2drop #S(callable :fn 2drop :i (:x t :y t)      :o ())
+    :nip   #S(callable :fn nip   :i (:x t :y t)      :o (:y t))
+    :2nip  #S(callable :fn 2nip  :i (:x t :y t :z t) :o (:z t))
 
-    :swap  #S(callable :fn swap  :i (:x :y)    :o (:y :x))
-    :swapd #S(callable :fn swapd :i (:x :y :z) :o (:y :x :z))
-    :rot   #S(callable :fn rot   :i (:x :y :z) :o (:y :z :x))
-    :-rot  #S(callable :fn -rot  :i (:x :y :z) :o (:z :x :y))))
+    :swap  #S(callable :fn swap  :i (:x t :y t)      :o (:y t :x t))
+    :swapd #S(callable :fn swapd :i (:x t :y t :z t) :o (:y t :x t :z t))
+    :rot   #S(callable :fn rot   :i (:x t :y t :z t) :o (:y t :z t :x t))
+    :-rot  #S(callable :fn -rot  :i (:x t :y t :z t) :o (:z t :x t :y t))))
 
 ;; Sequence operators. Based on Factor naming conventions.
 (defun 1list (a      ) (list a))
@@ -64,17 +64,17 @@
 (defun 4list (a b c d) (list a b c d))
 
 (defconstant +seq-op-callables+
-  '(:cons  #S(callable :fn cons  :i (:a :b) :o (:cons))
-    :1list #S(callable :fn 1list :i (:a) :o (:list))
-    :2list #S(callable :fn 2list :i (:a :b) :o (:list))
-    :3list #S(callable :fn 3list :i (:a :b :c) :o (:list))
-    :4list #S(callable :fn 4list :i (:a :b :c :d) :o (:list))
+  '(:cons  #S(callable :fn cons  :i (:a t :b t) :o (:cons cons))
+    :1list #S(callable :fn 1list :i (:a t) :o (:list cons))
+    :2list #S(callable :fn 2list :i (:a t :b t) :o (:list cons))
+    :3list #S(callable :fn 3list :i (:a t :b t :c t) :o (:list cons))
+    :4list #S(callable :fn 4list :i (:a t :b t :c t :d t) :o (:list cons))
 
     ;; Custom array operators.
     :copy-array
     #S(mopr-plug:callable :fn alexandria:copy-array
-                          :i (:ref-array)
-                          :o (:new-array))))
+                          :i (:ref-array array)
+                          :o (:new-array array))))
 
 (defconstant +configuration+
   `((:callables ,+arith-op-callables+)
