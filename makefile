@@ -162,8 +162,15 @@ wrap_usd ::= $(MOPR_LIB_DIR)/libmopr_wrap_usd.so
 $(wrap_usd): CFLAGS   ::= $(WRAP_USD_CF) $(CSTD)
 $(wrap_usd): CXXFLAGS ::= $(WRAP_USD_CF) $(CXXSTD)
 $(wrap_usd): LDFLAGS  ::= $(COMMON_LFLAGS) $(USD_LFLAGS) -L$(MOPR_LIB_DIR)
-$(wrap_usd): LDLIBS   ::= -lmopr_wrap_std \
+$(wrap_usd): LDLIBS   ::= -lmopr_wrap_std
+
+ifeq ($(MOPR_MONOLITHIC_USD),1)
+$(wrap_usd): LDLIBS += -lusd_ms
+else
+$(wrap_usd): LDLIBS += \
 	-lusd_tf -lusd_sdf -lusd_vt -lusd_usd -lusd_usdGeom
+endif
+
 
 $(wrap_usd): $(WRAP_USD_CPP_OBJ) $(wrap_std)
 	$(call ECHO_RULE)
@@ -244,10 +251,16 @@ plug_usdx ::= $(MOPR_OUT_DIR)/usdx/libmopr_usdx.so
 $(plug_usdx): CFLAGS   ::= $(USDX_CF) $(CSTD)
 $(plug_usdx): CXXFLAGS ::= $(USDX_CF) $(CXXSTD)
 $(plug_usdx): LDFLAGS  ::= $(COMMON_LFLAGS) $(USD_LFLAGS)
-$(plug_usdx): LDLIBS   ::= \
+$(plug_usdx): LDLIBS   ::=
+
+ifeq ($(MOPR_MONOLITHIC_USD),1)
+$(plug_usdx): LDLIBS += -lusd_ms
+else
+$(plug_usdx): LDLIBS += \
 	-lusd_tf -lusd_sdf -lusd_vt -lusd_gf \
 	-lusd_plug -lusd_arch -lusd_work -ltbb \
 	-lusd_usd
+endif
 
 # NOTE: The order is important here.
 # If we need to link ecl directly, mopr_boot_lisp should be linked
@@ -307,8 +320,15 @@ trtn_build ::= $(MOPR_OUT_DIR)/test/libroutines.so
 $(trtn_build): CFLAGS   ::= $(TRTN_CF) $(CSTD)
 $(trtn_build): CXXFLAGS ::= $(TRTN_CF) $(CXXSTD)
 $(trtn_build): LDFLAGS  ::= $(COMMON_LFLAGS) $(USD_LFLAGS) -L$(MOPR_LIB_DIR)
-$(trtn_build): LDLIBS   ::= -lusd_usd \
-	-lmopr_wrap_std -lmopr_wrap_usd
+$(trtn_build): LDLIBS   ::= -lmopr_wrap_std -lmopr_wrap_usd
+
+ifeq ($(MOPR_MONOLITHIC_USD),1)
+$(trtn_build): LDLIBS += -lusd_ms
+else
+$(trtn_build): LDLIBS += \
+	-lusd_usd
+endif
+
 $(trtn_build): LDECLOPT ::= `ecl-config --ldflags`
 
 $(trtn_build): $(TRTN_CPP_OBJ) $(wrap_usd)
