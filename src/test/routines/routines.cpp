@@ -43,16 +43,15 @@ static cl_object
 }
 
 static bool
- readLispFileEvaluationDisabled( SdfLayerRefPtr layer,
-                                 const std::string & resolvedPath,
-                                 bool callEnabled = false )
+ readLispFile( SdfLayerRefPtr layer,
+               const std::string & resolvedPath,
+               bool callEnabled = false )
 {
     MoprLayer sLayer;
     sLayer.SetRefPtr( layer );
     cl_object hLayer_l = ecl_make_pointer( &sLayer );
     cl_object pkgMoprExtUtil_l = ecl_find_package( "MOPR-EXT/UTIL" );
-    cl_object symFn_l =
-     getSymbol( "POPULATE-FROM-LISP-FILE-READ-EVAL-DISABLED", pkgMoprExtUtil_l );
+    cl_object symFn_l = getSymbol( "POPULATE-FROM-LISP-FILE", pkgMoprExtUtil_l );
     cl_object strFileName_l = ecl_make_constant_base_string( resolvedPath.c_str( ), -1 );
     cl_funcall( 4, symFn_l, hLayer_l, strFileName_l, callEnabled ? ECL_T : ECL_NIL );
 
@@ -68,7 +67,7 @@ std::string
     bool res = false;
 
     SdfLayerRefPtr lyr = SdfLayer::CreateAnonymous( src );
-    int result = readLispFileEvaluationDisabled( lyr, src, callEnabled );
+    int result = readLispFile( lyr, src, callEnabled );
     ( void ) result;
 
     if ( lyr )
