@@ -1,0 +1,15 @@
+{
+    "screen-width"   : 1280,
+    "screen-height"  : 960,
+    "complexity": 1.25,
+    "frame-all": true,
+    "purpose-guide": true,
+    "purpose-proxy": true,
+    "purpose-render": true,
+    "lighting-placeholder": true,
+    "lighting-scene": true,
+    "lighting-camera": true,
+    "scene-materials": true,
+    "view-translate": [0.0, 0.0, 0.0],
+    "view-rotate": [0.0, 0.0]
+}

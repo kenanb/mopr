@@ -1,0 +1,8 @@
+R"(
+USAGE: mopr -i /absolute/path/to/usds/file.lisp
+
+-i : Input Lisp that defines USDS data to load.
+-c : Configuration file path.
+-C : Scene camera path, in SdfPath syntax.
+-h : Show help.
+)"

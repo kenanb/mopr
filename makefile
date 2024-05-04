@@ -56,6 +56,18 @@ COMMON_LFLAGS ::= -Wl,-rpath,\$$ORIGIN -fuse-ld=mold
 USD_CFLAGS ::= $(USD_INC_ROOT) -DTBB_SUPPRESS_DEPRECATED_MESSAGES \
 	`pkg-config --cflags python3-embed`
 
+# WORKAROUND: When the framework is built with Clang, but linked USD is built with GCC,
+# usage of some classes like UsdGeomBBoxCache triggers a segfault in unordered_map dtor.
+# Because TfHashMap derives from __gnu_cxx::hash_map when ARCH_HAS_GNU_STL_EXTENSIONS
+# is defined, which is the case when the compiler is GCC. Otherwise, it derives from
+# std::unordered_map. Therefore, not using the same compiler causes incompatibility.
+#
+# In order to workaround this issue, we manually define the macro here.
+# Relevant info:
+# https://github.com/PixarAnimationStudios/OpenUSD/issues/1291
+# https://github.com/PixarAnimationStudios/OpenUSD/issues/1057
+USD_CFLAGS += -DARCH_HAS_GNU_STL_EXTENSIONS
+
 USD_LFLAGS ::= $(USD_LIB_ROOT) \
 	`pkg-config --libs python3-embed`
 
@@ -232,6 +244,113 @@ $(boot_lisp): $(BOOT_LISP_CPP_OBJ) $(mopr_lisp)
 	$(CXX) -shared -o $@ $(BOOT_LISP_CPP_OBJ) $(LDFLAGS) $(LDECLOPT)
 
 #
+## Target: yoga_core
+#
+
+YOGA_CORE_CF ::= $(COMMON_CFLAGS) -fPIC
+
+YOGA_CORE_C_OBJ ::=
+
+YOGA_CORE_C_DEP ::= $(YOGA_CORE_C_OBJ:.o=.d)
+
+$(YOGA_CORE_C_DEP): CFLAGS = $(YOGA_CORE_CF) $(CSTD)
+include $(YOGA_CORE_C_DEP)
+
+yoga_core ::= $(MOPR_LIB_DIR)/libyoga_core.so
+
+$(yoga_core): CFLAGS   ::= $(YOGA_CORE_CF) $(CSTD)
+$(yoga_core): LDFLAGS  ::= $(COMMON_LFLAGS) -L$(MOPR_YOGA_LIB_DIR)
+$(yoga_core): LDLIBS   ::= -Wl,--whole-archive -lyogacore -Wl,--no-whole-archive
+
+$(yoga_core): $(YOGA_CORE_C_OBJ)
+	$(call ECHO_RULE)
+	@mkdir -p $(@D)
+	$(CC) -shared -o $@ $(YOGA_CORE_C_OBJ) $(LDFLAGS) $(LDLIBS)
+
+# This is currently only for native testing of lisp module.
+# It is not tied to the wider task dependency graph.
+.PHONY: yoga
+yoga: $(yoga_core)
+
+#
+## Target: mopr_edit
+#
+
+MOPR_EDIT_CF ::= $(COMMON_CFLAGS) $(USD_CFLAGS) -fPIC
+
+MOPR_EDIT_LIBS = gl glew sdl2 SDL2_image
+
+MOPR_EDIT_CPP_OBJ ::= src/edit/.main.cpp.o \
+	src/edit/.common.cpp.o \
+	src/edit/.glUtil.cpp.o \
+	src/edit/.menu.cpp.o \
+	src/edit/.scene.cpp.o \
+	src/edit/.editor.cpp.o \
+	src/edit/.appConfig.cpp.o \
+	src/edit/.appDelegate.cpp.o \
+	src/edit/.appEnvironment.cpp.o \
+	src/edit/.appState.cpp.o \
+	src/edit/ext/imgui/.imgui.cpp.o \
+	src/edit/ext/imgui/.imgui_draw.cpp.o \
+	src/edit/ext/imgui/.imgui_tables.cpp.o \
+	src/edit/ext/imgui/.imgui_widgets.cpp.o \
+	src/edit/ext/imgui/backends/.imgui_impl_sdl2.cpp.o \
+	src/edit/ext/imgui/backends/.imgui_impl_opengl3.cpp.o \
+	src/edit/ext/imgui/misc/cpp/.imgui_stdlib.cpp.o
+
+MOPR_EDIT_CPP_DEP ::= $(MOPR_EDIT_CPP_OBJ:.o=.d)
+
+$(MOPR_EDIT_CPP_DEP): CXXFLAGS = `pkg-config --cflags $(MOPR_EDIT_LIBS)` \
+	$(MOPR_EDIT_CF) $(CXXSTD) -I$(MOPR_YOGA_INC_DIR)
+$(MOPR_EDIT_CPP_DEP): CXXFLAGS += \
+	-Isrc/edit/ext/imgui \
+	-Isrc/edit/ext/imgui/backends \
+	-Isrc/edit/ext/imgui/misc/cpp
+
+include $(MOPR_EDIT_CPP_DEP)
+
+mopr_edit ::= $(MOPR_OUT_DIR)/mopr_editor
+
+$(mopr_edit): CXXFLAGS ::= `pkg-config --cflags $(MOPR_EDIT_LIBS)` \
+	$(MOPR_EDIT_CF) $(CXXSTD) -I$(MOPR_YOGA_INC_DIR)
+$(mopr_edit): CXXFLAGS += \
+	-Isrc/edit/ext/imgui \
+	-Isrc/edit/ext/imgui/backends \
+	-Isrc/edit/ext/imgui/misc/cpp
+$(mopr_edit): LDFLAGS  ::= $(COMMON_LFLAGS) $(USD_LFLAGS) -L$(MOPR_LIB_DIR)
+$(mopr_edit): LDLIBS   ::= `pkg-config --libs $(MOPR_EDIT_LIBS)` \
+	-lyoga_core
+
+ifeq ($(MOPR_MONOLITHIC_USD),1)
+$(mopr_edit): LDLIBS += -lusd_ms
+else
+# boost-python is required by usdGeom dependency.
+$(mopr_edit): LDLIBS += \
+	-lusd_arch -lusd_gf -lusd_js -lusd_tf -lusd_vt -lusd_work \
+	-lboost_regex -lboost_python3 -lusd_sdf -lusd_usd -lusd_usdGeom \
+	-lusd_garch -lusd_cameraUtil -lusd_glf -lusd_hd \
+	-lusd_usdImaging -lusd_usdImagingGL
+endif
+
+# NOTE: The order is important here.
+# If we need to link ecl directly, mopr_boot_lisp should be linked
+# before that. Otherwise, we get a "symbols are not initialized yet" error.
+# Of course, we don't really need to link ecl again, if we link mopr_boot_lisp.
+$(mopr_edit): LDECLOPT ::= -L$(MOPR_LIB_DIR) -lmopr_wrap_usd -lmopr_boot_lisp \
+	`ecl-config --ldflags`
+
+$(mopr_edit): $(MOPR_EDIT_CPP_OBJ) $(yoga_core) $(boot_lisp) $(wrap_usd)
+	$(call ECHO_RULE)
+	@mkdir -p $(@D)
+	@cp -r src/edit/res $(MOPR_OUT_DIR)
+	$(CXX) -o $@ $(MOPR_EDIT_CPP_OBJ) $(LDFLAGS) $(LDLIBS) $(LDECLOPT)
+
+# This is currently only for native testing of lisp module.
+# It is not tied to the wider task dependency graph.
+.PHONY: mopr_edit
+mopr_edit: $(mopr_edit)
+
+#
 ## Target: plug_usdx
 #
 
@@ -390,6 +509,7 @@ TEST_ARGS ::= -R $(CURDIR) # -s
 
 # The ending slash of plugin path is important.
 .PHONY: test_run
+test_run: mopr_edit
 test_run: usdx_build
 test_run: $(test_build)
 test_run: $(with_plugin_sh)
