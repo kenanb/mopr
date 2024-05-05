@@ -321,13 +321,15 @@ $(mopr_edit): LDFLAGS  ::= $(COMMON_LFLAGS) $(USD_LFLAGS) -L$(MOPR_LIB_DIR)
 $(mopr_edit): LDLIBS   ::= `pkg-config --libs $(MOPR_EDIT_LIBS)` \
 	-lyoga_core
 
+# boost-python is required by usdGeom dependency.
+$(mopr_edit): LDLIBS += -lboost_regex -lboost_python3
+
 ifeq ($(MOPR_MONOLITHIC_USD),1)
 $(mopr_edit): LDLIBS += -lusd_ms
 else
-# boost-python is required by usdGeom dependency.
 $(mopr_edit): LDLIBS += \
 	-lusd_arch -lusd_gf -lusd_js -lusd_tf -lusd_vt -lusd_work \
-	-lboost_regex -lboost_python3 -lusd_sdf -lusd_usd -lusd_usdGeom \
+	-lusd_sdf -lusd_usd -lusd_usdGeom \
 	-lusd_garch -lusd_cameraUtil -lusd_glf -lusd_hd \
 	-lusd_usdImaging -lusd_usdImagingGL
 endif
@@ -372,12 +374,14 @@ $(plug_usdx): CXXFLAGS ::= $(USDX_CF) $(CXXSTD)
 $(plug_usdx): LDFLAGS  ::= $(COMMON_LFLAGS) $(USD_LFLAGS)
 $(plug_usdx): LDLIBS   ::=
 
+$(plug_usdx): LDLIBS += -ltbb
+
 ifeq ($(MOPR_MONOLITHIC_USD),1)
 $(plug_usdx): LDLIBS += -lusd_ms
 else
 $(plug_usdx): LDLIBS += \
 	-lusd_tf -lusd_sdf -lusd_vt -lusd_gf \
-	-lusd_plug -lusd_arch -lusd_work -ltbb \
+	-lusd_plug -lusd_arch -lusd_work \
 	-lusd_usd
 endif
 
