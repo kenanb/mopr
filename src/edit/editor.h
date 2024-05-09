@@ -38,6 +38,12 @@ struct Layer
     }
 
     void
+     init( GLint pos2d );
+
+    void
+     draw( GLint pos2d, GLint clr ) const;
+
+    void
      allocate( size_t quadCount )
     {
         this->quadCount = quadCount;

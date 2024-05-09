@@ -9,6 +9,41 @@
 namespace mopr
 {
 
+void
+ Layer::init( GLint pos2d )
+{
+    GLenum target;
+    glGenVertexArrays( 1, &this->vao );
+    glBindVertexArray( this->vao );
+
+    target = GL_ARRAY_BUFFER;
+    size_t bufferSizeV = this->vbuffer.size( ) * sizeof( GLfloat );
+    glGenBuffers( 1, &this->vbo );
+    GL_CALL( glBindBuffer( target, this->vbo ) );
+    GL_CALL( glBufferData( target, bufferSizeV, this->vbuffer.data( ), GL_STATIC_DRAW ) );
+
+    GL_CALL(
+     glVertexAttribPointer( pos2d, 2, GL_FLOAT, GL_FALSE, 2 * sizeof( GLfloat ), NULL ) );
+
+    target = GL_ELEMENT_ARRAY_BUFFER;
+    size_t bufferSizeI = this->ibuffer.size( ) * sizeof( GLuint );
+    glGenBuffers( 1, &this->ibo );
+    GL_CALL( glBindBuffer( target, this->ibo ) );
+    GL_CALL( glBufferData( target, bufferSizeI, this->ibuffer.data( ), GL_STATIC_DRAW ) );
+}
+
+void
+ Layer::draw( GLint pos2d, GLint clr ) const
+{
+    GL_CALL( glBindVertexArray( this->vao ) );
+    GL_CALL( glEnableVertexAttribArray( pos2d ) );
+    GL_CALL( glUniform3f( clr, this->color[ 0 ], this->color[ 1 ], this->color[ 2 ] ) );
+    GL_CALL( glBindBuffer( GL_ELEMENT_ARRAY_BUFFER, this->ibo ) );
+    GL_CALL(
+     glDrawElements( GL_TRIANGLES, this->ibuffer.size( ), GL_UNSIGNED_INT, NULL ) );
+    GL_CALL( glDisableVertexAttribArray( pos2d ) );
+}
+
 bool
  Editor::init( )
 {
@@ -93,29 +128,7 @@ void main()
     // Initialize clear color.
     glClearColor( 0.f, 0.f, 0.f, 1.f );
 
-    for ( size_t i = 0; i < this->layers.size( ); i++ )
-    {
-        GLenum target;
-        glGenVertexArrays( 1, &this->layers[ i ].vao );
-        glBindVertexArray( this->layers[ i ].vao );
-
-        target = GL_ARRAY_BUFFER;
-        size_t bufferSizeV = this->layers[ i ].vbuffer.size( ) * sizeof( GLfloat );
-        glGenBuffers( 1, &this->layers[ i ].vbo );
-        GL_CALL( glBindBuffer( target, this->layers[ i ].vbo ) );
-        GL_CALL( glBufferData(
-         target, bufferSizeV, this->layers[ i ].vbuffer.data( ), GL_STATIC_DRAW ) );
-
-        GL_CALL( glVertexAttribPointer(
-         this->pos2d, 2, GL_FLOAT, GL_FALSE, 2 * sizeof( GLfloat ), NULL ) );
-
-        target = GL_ELEMENT_ARRAY_BUFFER;
-        size_t bufferSizeI = this->layers[ i ].ibuffer.size( ) * sizeof( GLuint );
-        glGenBuffers( 1, &this->layers[ i ].ibo );
-        GL_CALL( glBindBuffer( target, this->layers[ i ].ibo ) );
-        GL_CALL( glBufferData(
-         target, bufferSizeI, this->layers[ i ].ibuffer.data( ), GL_STATIC_DRAW ) );
-    }
+    for ( auto & layer : this->layers ) layer.init( this->pos2d );
 
     return true;
 }

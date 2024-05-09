@@ -122,27 +122,8 @@ void
         // Render showEditor
         if ( appState.showEditor )
         {
-            // Bind program
             GL_CALL( glUseProgram( editor.pid ) );
-
-            for ( size_t i = 0; i < editor.layers.size( ); i++ )
-            {
-                GL_CALL( glBindVertexArray( editor.layers[ i ].vao ) );
-                GL_CALL( glEnableVertexAttribArray( editor.pos2d ) );
-                GL_CALL( glUniform3f( editor.clr,
-                                      editor.layers[ i ].color[ 0 ],
-                                      editor.layers[ i ].color[ 1 ],
-                                      editor.layers[ i ].color[ 2 ] ) );
-                GL_CALL(
-                 glBindBuffer( GL_ELEMENT_ARRAY_BUFFER, editor.layers[ i ].ibo ) );
-                GL_CALL( glDrawElements( GL_TRIANGLES,
-                                         editor.layers[ i ].ibuffer.size( ),
-                                         GL_UNSIGNED_INT,
-                                         NULL ) );
-                GL_CALL( glDisableVertexAttribArray( editor.pos2d ) );
-            }
-
-            // Unbind program
+            for ( auto & layer : editor.layers ) layer.draw( editor.pos2d, editor.clr );
             GL_CALL( glUseProgram( 0 ) );
         }
 
