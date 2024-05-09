@@ -119,13 +119,7 @@ void
         GL_CALL( glBindFramebuffer( GL_DRAW_FRAMEBUFFER, fboWindow ) );
         GL_CALL( glBindFramebuffer( GL_READ_FRAMEBUFFER, fboWindow ) );
 
-        // Render showEditor
-        if ( appState.showEditor )
-        {
-            GL_CALL( glUseProgram( editor.pid ) );
-            for ( auto & layer : editor.layers ) layer.draw( editor.pos2d, editor.clr );
-            GL_CALL( glUseProgram( 0 ) );
-        }
+        if ( appState.showEditor ) editor.draw( );
 
         // Start ImGui frame.
         ImGui_ImplOpenGL3_NewFrame( );

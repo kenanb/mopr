@@ -134,6 +134,14 @@ void main()
 }
 
 void
+ Editor::draw( ) const
+{
+    GL_CALL( glUseProgram( this->pid ) );
+    for ( const auto & layer : this->layers ) layer.draw( this->pos2d, this->clr );
+    GL_CALL( glUseProgram( 0 ) );
+}
+
+void
  Editor::dummyTree( )
 {
     // For disabling pixel rounding:

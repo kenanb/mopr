@@ -82,6 +82,9 @@ struct Editor
 
     bool
      init( );
+
+    void
+     draw( ) const;
 };
 
 }   // namespace mopr
