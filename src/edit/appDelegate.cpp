@@ -7,6 +7,7 @@
 
 #include "common.h"
 #include "editor.h"
+#include "glUtil.h"
 #include "menu.h"
 #include "scene.h"
 
@@ -25,17 +26,14 @@ void
  appDelegate( SDL_Window * window, const AppEnvironment * appEnvironment )
 {
     GLint fboWindow;
-    glGetIntegerv( GL_FRAMEBUFFER_BINDING, &fboWindow );
+    GL_CALL( glGetIntegerv( GL_FRAMEBUFFER_BINDING, &fboWindow ) );
     GLuint vaoDrawTarget;
 
     Scene scene{ appEnvironment->getResolvedInputPath( ), appEnvironment->camera };
 
     Menu menu{ };
-    Editor editor = { /* .pid = */ 0,
-                      /* .vao = */ 0,
-                      /* .pos2d = */ -1,
-                      /* .vbo = */ 0,
-                      /* .ibo = */ 0 };
+    Editor editor{ };
+    editor.dummyTree( );
 
     auto const & appConfig = mopr::AppConfig::GetInstance( );
 
@@ -54,7 +52,7 @@ void
     }
 
     {
-        glGenVertexArrays( 1, &vaoDrawTarget );
+        GL_CALL( glGenVertexArrays( 1, &vaoDrawTarget ) );
 
         if ( !scene.init( &appState ) )
         {
@@ -98,48 +96,54 @@ void
             }
         }
 
-        glBindVertexArray( vaoDrawTarget );
+        GL_CALL( glBindVertexArray( vaoDrawTarget ) );
 
         scene.draw( frame, &appState );
 
         // Blit the resulting color buffer to the window.
-        glBindFramebuffer( GL_DRAW_FRAMEBUFFER, fboWindow );
-        glBindFramebuffer( GL_READ_FRAMEBUFFER, scene.drawTarget->GetFramebufferId( ) );
+        GL_CALL( glBindFramebuffer( GL_DRAW_FRAMEBUFFER, fboWindow ) );
+        GL_CALL( glBindFramebuffer( GL_READ_FRAMEBUFFER,
+                                    scene.drawTarget->GetFramebufferId( ) ) );
 
-        glBlitFramebuffer( 0,
-                           0,
-                           appState.screenW,
-                           appState.screenH,
-                           0,
-                           0,
-                           appState.screenW,
-                           appState.screenH,
-                           GL_COLOR_BUFFER_BIT,
-                           GL_NEAREST );
+        GL_CALL( glBlitFramebuffer( 0,
+                                    0,
+                                    appState.screenW,
+                                    appState.screenH,
+                                    0,
+                                    0,
+                                    appState.screenW,
+                                    appState.screenH,
+                                    GL_COLOR_BUFFER_BIT,
+                                    GL_NEAREST ) );
 
-        glBindFramebuffer( GL_DRAW_FRAMEBUFFER, fboWindow );
-        glBindFramebuffer( GL_READ_FRAMEBUFFER, fboWindow );
-
-        glBindVertexArray( editor.vao );
+        GL_CALL( glBindFramebuffer( GL_DRAW_FRAMEBUFFER, fboWindow ) );
+        GL_CALL( glBindFramebuffer( GL_READ_FRAMEBUFFER, fboWindow ) );
 
         // Render showEditor
         if ( appState.showEditor )
         {
             // Bind program
-            glUseProgram( editor.pid );
+            GL_CALL( glUseProgram( editor.pid ) );
 
-            // Enable vertex position
-            glEnableVertexAttribArray( editor.pos2d );
-
-            // Set index data and render
-            glBindBuffer( GL_ELEMENT_ARRAY_BUFFER, editor.ibo );
-            glDrawElements( GL_TRIANGLES, editor.ibs, GL_UNSIGNED_INT, NULL );
-
-            // Disable vertex position
-            glDisableVertexAttribArray( editor.pos2d );
+            for ( size_t i = 0; i < editor.layers.size( ); i++ )
+            {
+                GL_CALL( glBindVertexArray( editor.layers[ i ].vao ) );
+                GL_CALL( glEnableVertexAttribArray( editor.pos2d ) );
+                GL_CALL( glUniform3f( editor.clr,
+                                      editor.layers[ i ].color[ 0 ],
+                                      editor.layers[ i ].color[ 1 ],
+                                      editor.layers[ i ].color[ 2 ] ) );
+                GL_CALL(
+                 glBindBuffer( GL_ELEMENT_ARRAY_BUFFER, editor.layers[ i ].ibo ) );
+                GL_CALL( glDrawElements( GL_TRIANGLES,
+                                         editor.layers[ i ].ibuffer.size( ),
+                                         GL_UNSIGNED_INT,
+                                         NULL ) );
+                GL_CALL( glDisableVertexAttribArray( editor.pos2d ) );
+            }
 
             // Unbind program
-            glUseProgram( 0 );
+            GL_CALL( glUseProgram( 0 ) );
         }
 
         // Start ImGui frame.
@@ -150,15 +154,10 @@ void
         menu.draw( );
 
         ImGui::Render( );
-        glViewport( 0, 0, ( int ) io.DisplaySize.x, ( int ) io.DisplaySize.y );
-        // glClearColor( menu.clearColor.x * menu.clearColor.w,
-        //               menu.clearColor.y * menu.clearColor.w,
-        //               menu.clearColor.z * menu.clearColor.w,
-        //               menu.clearColor.w );
-        // glClear( GL_COLOR_BUFFER_BIT );
+        GL_CALL( glViewport( 0, 0, ( int ) io.DisplaySize.x, ( int ) io.DisplaySize.y ) );
         ImGui_ImplOpenGL3_RenderDrawData( ImGui::GetDrawData( ) );
 
-        glFinish( );
+        GL_CALL( glFinish( ) );
 
         // Update screen.
         SDL_GL_SwapWindow( window );

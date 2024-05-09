@@ -21,8 +21,10 @@ bool
 
         const GLchar * src[] = { R"SHADER(
 
-#version 150 core
+#version 150
+
 in vec2 iPos2d;
+
 void main()
 {
     gl_Position = vec4( iPos2d.x, iPos2d.y, 0, 1 );
@@ -41,11 +43,14 @@ void main()
 
         const GLchar * src[] = { R"SHADER(
 
-#version 150 core
+#version 150
+
+uniform vec3 layerColor;
 out vec4 oColor;
+
 void main()
 {
-    oColor = vec4( .5, .5, .5, 1. );
+    oColor = vec4( layerColor, 1. );
 }
 
 )SHADER" };
@@ -72,9 +77,6 @@ void main()
         }
     }
 
-    glGenVertexArrays( 1, &this->vao );
-    glBindVertexArray( this->vao );
-
     // Get vertex attribute location.
     {
         this->pos2d = glGetAttribLocation( this->pid, "iPos2d" );
@@ -86,6 +88,41 @@ void main()
         }
     }
 
+    this->clr = glGetUniformLocation( this->pid, "layerColor" );
+
+    // Initialize clear color.
+    glClearColor( 0.f, 0.f, 0.f, 1.f );
+
+    for ( size_t i = 0; i < this->layers.size( ); i++ )
+    {
+        GLenum target;
+        glGenVertexArrays( 1, &this->layers[ i ].vao );
+        glBindVertexArray( this->layers[ i ].vao );
+
+        target = GL_ARRAY_BUFFER;
+        size_t bufferSizeV = this->layers[ i ].vbuffer.size( ) * sizeof( GLfloat );
+        glGenBuffers( 1, &this->layers[ i ].vbo );
+        GL_CALL( glBindBuffer( target, this->layers[ i ].vbo ) );
+        GL_CALL( glBufferData(
+         target, bufferSizeV, this->layers[ i ].vbuffer.data( ), GL_STATIC_DRAW ) );
+
+        GL_CALL( glVertexAttribPointer(
+         this->pos2d, 2, GL_FLOAT, GL_FALSE, 2 * sizeof( GLfloat ), NULL ) );
+
+        target = GL_ELEMENT_ARRAY_BUFFER;
+        size_t bufferSizeI = this->layers[ i ].ibuffer.size( ) * sizeof( GLuint );
+        glGenBuffers( 1, &this->layers[ i ].ibo );
+        GL_CALL( glBindBuffer( target, this->layers[ i ].ibo ) );
+        GL_CALL( glBufferData(
+         target, bufferSizeI, this->layers[ i ].ibuffer.data( ), GL_STATIC_DRAW ) );
+    }
+
+    return true;
+}
+
+void
+ Editor::dummyTree( )
+{
     // For disabling pixel rounding:
     // YGConfigRef config = YGConfigNew( );
     // YGConfigSetPointScaleFactor( config, 0.0f );
@@ -106,8 +143,22 @@ void main()
     YGNodeStyleSetFlexGrow( c1, 1.0f );
     YGNodeStyleSetMargin( c1, YGEdgeAll, 10.0f );
 
-    YGNodeInsertChild( root, c0, 0.0f );
-    YGNodeInsertChild( root, c1, 1.0f );
+    YGNodeStyleSetFlexDirection( c1, YGFlexDirectionRow );
+    YGNodeRef c1c0 = YGNodeNew( );
+    YGNodeStyleSetFlexGrow( c1c0, 1.0f );
+    YGNodeStyleSetMargin( c1c0, YGEdgeAll, 10.0f );
+    YGNodeRef c1c1 = YGNodeNew( );
+    YGNodeStyleSetFlexGrow( c1c1, 1.0f );
+    YGNodeStyleSetMargin( c1c1, YGEdgeAll, 10.0f );
+    YGNodeRef c1c2 = YGNodeNew( );
+    YGNodeStyleSetFlexGrow( c1c2, 1.0f );
+    YGNodeStyleSetMargin( c1c2, YGEdgeAll, 10.0f );
+
+    YGNodeInsertChild( root, c0, 0 );
+    YGNodeInsertChild( root, c1, 1 );
+    YGNodeInsertChild( c1, c1c0, 0 );
+    YGNodeInsertChild( c1, c1c1, 1 );
+    YGNodeInsertChild( c1, c1c2, 2 );
 
     YGNodeCalculateLayout( root, YGUndefined, YGUndefined, YGDirectionLTR );
 
@@ -132,6 +183,27 @@ void main()
     float Wc1 = YGNodeLayoutGetWidth( c1 ) / pixelsW;
     float Hc1 = YGNodeLayoutGetHeight( c1 ) / pixelsH;
 
+    float Lc1c0 = YGNodeLayoutGetLeft( c1c0 ) / pixelsW;
+    // float Rc1c0 = YGNodeLayoutGetRight( c1c0 ) / pixelsW;
+    float Tc1c0 = YGNodeLayoutGetTop( c1c0 ) / pixelsH;
+    // float Bc1c0 = YGNodeLayoutGetBottom( c1c0 ) / pixelsH;
+    float Wc1c0 = YGNodeLayoutGetWidth( c1c0 ) / pixelsW;
+    float Hc1c0 = YGNodeLayoutGetHeight( c1c0 ) / pixelsH;
+
+    float Lc1c1 = YGNodeLayoutGetLeft( c1c1 ) / pixelsW;
+    // float Rc1c1 = YGNodeLayoutGetRight( c1c1 ) / pixelsW;
+    float Tc1c1 = YGNodeLayoutGetTop( c1c1 ) / pixelsH;
+    // float Bc1c1 = YGNodeLayoutGetBottom( c1c1 ) / pixelsH;
+    float Wc1c1 = YGNodeLayoutGetWidth( c1c1 ) / pixelsW;
+    float Hc1c1 = YGNodeLayoutGetHeight( c1c1 ) / pixelsH;
+
+    float Lc1c2 = YGNodeLayoutGetLeft( c1c2 ) / pixelsW;
+    // float Rc1c2 = YGNodeLayoutGetRight( c1c2 ) / pixelsW;
+    float Tc1c2 = YGNodeLayoutGetTop( c1c2 ) / pixelsH;
+    // float Bc1c2 = YGNodeLayoutGetBottom( c1c2 ) / pixelsH;
+    float Wc1c2 = YGNodeLayoutGetWidth( c1c2 ) / pixelsW;
+    float Hc1c2 = YGNodeLayoutGetHeight( c1c2 ) / pixelsH;
+
     YGNodeFreeRecursive( root );
 
     printf( "\nCoordinates:" );
@@ -141,11 +213,12 @@ void main()
     printf( formatString, "- c1: ", Lc1, Rc1, Tc1, Bc1, Wc1, Hc1 );
     printf( "\n" );
 
-    // Initialize clear color.
-    glClearColor( 0.f, 0.f, 0.f, 1.f );
-
     // clang-format off
-    GLfloat vertexData[] = {
+    this->layers.resize( 2 );
+
+    this->layers[ 0 ].setColor( .25f, .25f, .25f );
+    this->layers[ 0 ].allocate( 2 );
+    this->layers[ 0 ].vbuffer = {
         Lc0      , Tc0,
         Lc0 + Wc0, Tc0,
         Lc0 + Wc0, Tc0 + Hc0,
@@ -155,24 +228,24 @@ void main()
         Lc1 + Wc1, Tc1 + Hc1,
         Lc1      , Tc1 + Hc1
     };
+
+    this->layers[ 1 ].setColor( .50f, .50f, .50f );
+    this->layers[ 1 ].allocate( 3 );
+    this->layers[ 1 ].vbuffer = {
+        Lc1 + Lc1c0        , Tc1 + Tc1c0,
+        Lc1 + Lc1c0 + Wc1c0, Tc1 + Tc1c0,
+        Lc1 + Lc1c0 + Wc1c0, Tc1 + Tc1c0 + Hc1c0,
+        Lc1 + Lc1c0        , Tc1 + Tc1c0 + Hc1c0,
+        Lc1 + Lc1c1        , Tc1 + Tc1c1,
+        Lc1 + Lc1c1 + Wc1c1, Tc1 + Tc1c1,
+        Lc1 + Lc1c1 + Wc1c1, Tc1 + Tc1c1 + Hc1c1,
+        Lc1 + Lc1c1        , Tc1 + Tc1c1 + Hc1c1,
+        Lc1 + Lc1c2        , Tc1 + Tc1c2,
+        Lc1 + Lc1c2 + Wc1c2, Tc1 + Tc1c2,
+        Lc1 + Lc1c2 + Wc1c2, Tc1 + Tc1c2 + Hc1c2,
+        Lc1 + Lc1c2        , Tc1 + Tc1c2 + Hc1c2
+    };
     // clang-format on
-
-    glGenBuffers( 1, &this->vbo );
-    glBindBuffer( GL_ARRAY_BUFFER, this->vbo );
-    glBufferData( GL_ARRAY_BUFFER, sizeof( vertexData ), vertexData, GL_STATIC_DRAW );
-    glVertexAttribPointer(
-     this->pos2d, 2, GL_FLOAT, GL_FALSE, 2 * sizeof( GLfloat ), NULL );
-    this->vbs = sizeof( vertexData ) / sizeof( vertexData[ 0 ] );
-
-    GLuint indexData[] = { 0, 1, 2, 2, 3, 0, 4, 5, 6, 6, 7, 4 };
-
-    glGenBuffers( 1, &this->ibo );
-    glBindBuffer( GL_ELEMENT_ARRAY_BUFFER, this->ibo );
-    glBufferData(
-     GL_ELEMENT_ARRAY_BUFFER, sizeof( indexData ), indexData, GL_STATIC_DRAW );
-    this->ibs = sizeof( indexData ) / sizeof( indexData[ 0 ] );
-
-    return true;
 }
 
 }   // namespace mopr
