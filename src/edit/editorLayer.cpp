@@ -1,4 +1,4 @@
-#include "editor.h"
+#include "editorLayer.h"
 
 #include "glUtil.h"
 
@@ -10,139 +10,63 @@ namespace mopr
 {
 
 void
- Layer::init( GLint pos2d )
+ EditorLayer::init( const EditorProgram & prog )
 {
-    GLenum target;
-    glGenVertexArrays( 1, &this->vao );
-    glBindVertexArray( this->vao );
+    {
+        GLenum target = GL_ARRAY_BUFFER;
+        size_t bSize = this->vbuffer.size( ) * sizeof( GLfloat );
+        glGenBuffers( 1, &this->vbo );
+        GL_CALL( glBindBuffer( target, this->vbo ) );
+        GL_CALL( glBufferData( target, bSize, this->vbuffer.data( ), GL_STATIC_DRAW ) );
+        GL_CALL( glVertexAttribPointer(
+         prog.pos2d, 2, GL_FLOAT, GL_FALSE, 2 * sizeof( GLfloat ), NULL ) );
+    }
 
-    target = GL_ARRAY_BUFFER;
-    size_t bufferSizeV = this->vbuffer.size( ) * sizeof( GLfloat );
-    glGenBuffers( 1, &this->vbo );
-    GL_CALL( glBindBuffer( target, this->vbo ) );
-    GL_CALL( glBufferData( target, bufferSizeV, this->vbuffer.data( ), GL_STATIC_DRAW ) );
-
-    GL_CALL(
-     glVertexAttribPointer( pos2d, 2, GL_FLOAT, GL_FALSE, 2 * sizeof( GLfloat ), NULL ) );
-
-    target = GL_ELEMENT_ARRAY_BUFFER;
-    size_t bufferSizeI = this->ibuffer.size( ) * sizeof( GLuint );
-    glGenBuffers( 1, &this->ibo );
-    GL_CALL( glBindBuffer( target, this->ibo ) );
-    GL_CALL( glBufferData( target, bufferSizeI, this->ibuffer.data( ), GL_STATIC_DRAW ) );
+    {
+        GLenum target = GL_ELEMENT_ARRAY_BUFFER;
+        size_t bSize = this->ibuffer.size( ) * sizeof( GLuint );
+        glGenBuffers( 1, &this->ibo );
+        GL_CALL( glBindBuffer( target, this->ibo ) );
+        GL_CALL( glBufferData( target, bSize, this->ibuffer.data( ), GL_STATIC_DRAW ) );
+    }
 }
 
 void
- Layer::draw( GLint pos2d, GLint clr ) const
+ EditorLayer::draw( const EditorProgram & prog ) const
 {
-    GL_CALL( glBindVertexArray( this->vao ) );
-    GL_CALL( glEnableVertexAttribArray( pos2d ) );
-    GL_CALL( glUniform3f( clr, this->color[ 0 ], this->color[ 1 ], this->color[ 2 ] ) );
+    GL_CALL( glEnableVertexAttribArray( prog.pos2d ) );
+    GL_CALL(
+     glUniform3f( prog.clr, this->color[ 0 ], this->color[ 1 ], this->color[ 2 ] ) );
     GL_CALL( glBindBuffer( GL_ELEMENT_ARRAY_BUFFER, this->ibo ) );
     GL_CALL(
      glDrawElements( GL_TRIANGLES, this->ibuffer.size( ), GL_UNSIGNED_INT, NULL ) );
-    GL_CALL( glDisableVertexAttribArray( pos2d ) );
-}
-
-bool
- Editor::init( )
-{
-    // Generate program.
-    this->pid = glCreateProgram( );
-
-    // Vertex shader.
-    {
-        GLuint shdr = glCreateShader( GL_VERTEX_SHADER );
-
-        const GLchar * src[] = { R"SHADER(
-
-#version 150
-
-in vec2 iPos2d;
-
-void main()
-{
-    gl_Position = vec4( iPos2d.x, iPos2d.y, 0, 1 );
-}
-
-)SHADER" };
-
-        if ( !compileShader( shdr, src ) ) return false;
-
-        glAttachShader( this->pid, shdr );
-    }
-
-    // Fragment shader.
-    {
-        GLuint shdr = glCreateShader( GL_FRAGMENT_SHADER );
-
-        const GLchar * src[] = { R"SHADER(
-
-#version 150
-
-uniform vec3 layerColor;
-out vec4 oColor;
-
-void main()
-{
-    oColor = vec4( layerColor, 1. );
-}
-
-)SHADER" };
-
-        if ( !compileShader( shdr, src ) ) return false;
-
-        glAttachShader( this->pid, shdr );
-    }
-
-    glBindFragDataLocation( this->pid, 0, "oColor" );
-
-    // Link program.
-    {
-        glLinkProgram( this->pid );
-
-        GLint programSuccess = GL_TRUE;
-        glGetProgramiv( this->pid, GL_LINK_STATUS, &programSuccess );
-
-        if ( programSuccess != GL_TRUE )
-        {
-            printf( "Error linking program %d.\n", this->pid );
-            printProgramLog( this->pid );
-            return false;
-        }
-    }
-
-    // Get vertex attribute location.
-    {
-        this->pos2d = glGetAttribLocation( this->pid, "iPos2d" );
-
-        if ( this->pos2d == -1 )
-        {
-            printf( "iPos2d is not a valid glsl program variable.\n" );
-            return false;
-        }
-    }
-
-    this->clr = glGetUniformLocation( this->pid, "layerColor" );
-
-    // Initialize clear color.
-    glClearColor( 0.f, 0.f, 0.f, 1.f );
-
-    for ( auto & layer : this->layers ) layer.init( this->pos2d );
-
-    return true;
+    GL_CALL( glDisableVertexAttribArray( prog.pos2d ) );
 }
 
 void
- Editor::draw( ) const
+ EditorLayer::allocate( size_t quadCount )
 {
-    GL_CALL( glUseProgram( this->pid ) );
-    for ( const auto & layer : this->layers ) layer.draw( this->pos2d, this->clr );
-    GL_CALL( glUseProgram( 0 ) );
+    this->quadCount = quadCount;
+
+    this->vbuffer.resize( quadCount * 8 );
+
+    size_t offset = 0;
+    this->ibuffer.clear( );
+    this->ibuffer.reserve( quadCount * 6 );
+    for ( size_t i = 0; i < quadCount; i++ )
+    {
+        this->ibuffer.push_back( offset + 0 );
+        this->ibuffer.push_back( offset + 1 );
+        this->ibuffer.push_back( offset + 2 );
+        this->ibuffer.push_back( offset + 2 );
+        this->ibuffer.push_back( offset + 3 );
+        this->ibuffer.push_back( offset + 0 );
+        offset += 4;
+    }
 }
 
 void
- Editor::dummyTree( )
+ dummyTree( std::vector< EditorLayer > & layers )
 {
     // For disabling pixel rounding:
     // YGConfigRef config = YGConfigNew( );
@@ -235,11 +159,11 @@ void
     printf( "\n" );
 
     // clang-format off
-    this->layers.resize( 2 );
+    layers.resize( 2 );
 
-    this->layers[ 0 ].setColor( .25f, .25f, .25f );
-    this->layers[ 0 ].allocate( 2 );
-    this->layers[ 0 ].vbuffer = {
+    layers[ 0 ].setColor( .25f, .25f, .25f );
+    layers[ 0 ].allocate( 2 );
+    layers[ 0 ].vbuffer = {
         Lc0      , Tc0,
         Lc0 + Wc0, Tc0,
         Lc0 + Wc0, Tc0 + Hc0,
@@ -250,9 +174,9 @@ void
         Lc1      , Tc1 + Hc1
     };
 
-    this->layers[ 1 ].setColor( .50f, .50f, .50f );
-    this->layers[ 1 ].allocate( 3 );
-    this->layers[ 1 ].vbuffer = {
+    layers[ 1 ].setColor( .50f, .50f, .50f );
+    layers[ 1 ].allocate( 3 );
+    layers[ 1 ].vbuffer = {
         Lc1 + Lc1c0        , Tc1 + Tc1c0,
         Lc1 + Lc1c0 + Wc1c0, Tc1 + Tc1c0,
         Lc1 + Lc1c0 + Wc1c0, Tc1 + Tc1c0 + Hc1c0,
