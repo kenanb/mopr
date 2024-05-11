@@ -43,6 +43,9 @@ struct EditorLayer
      init( const EditorProgram & prog );
 
     void
+     fini( );
+
+    void
      draw( const EditorProgram & prog ) const;
 
     void

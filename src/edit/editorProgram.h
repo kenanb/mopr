@@ -23,6 +23,9 @@ struct EditorProgram
 
     bool
      init( );
+
+    void
+     fini( );
 };
 
 }   // namespace mopr

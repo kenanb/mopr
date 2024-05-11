@@ -209,6 +209,20 @@ void
         frame += frameStep;
         if ( frame > appEnvironment->frameLast ) frame = appEnvironment->frameFirst;
     }
+
+    //
+    // Cleanup.
+    //
+
+    for ( auto & layer : layers )
+    {
+        layer.fini( );
+        GL_CALL( glDeleteVertexArrays( 1, &layer.vao ) );
+    }
+
+    GL_CALL( glDeleteVertexArrays( 1, &vaoDrawTarget ) );
+
+    editorProgram.fini();
 }
 
 }   // namespace mopr

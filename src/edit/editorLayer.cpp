@@ -32,6 +32,16 @@ void
 }
 
 void
+ EditorLayer::fini( )
+{
+    GL_CALL( glDeleteBuffers( 1, &this->vbo ) );
+    this->vbo = 0;
+
+    GL_CALL( glDeleteBuffers( 1, &this->ibo ) );
+    this->ibo = 0;
+}
+
+void
  EditorLayer::draw( const EditorProgram & prog ) const
 {
     GL_CALL( glEnableVertexAttribArray( prog.pos2d ) );

@@ -15,9 +15,12 @@ bool
     // Generate program.
     this->pid = glCreateProgram( );
 
+    GLuint shdrV;
+    GLuint shdrF;
+
     // Vertex shader.
     {
-        GLuint shdr = glCreateShader( GL_VERTEX_SHADER );
+        shdrV = glCreateShader( GL_VERTEX_SHADER );
 
         const GLchar * src[] = { R"SHADER(
 
@@ -32,14 +35,14 @@ void main()
 
 )SHADER" };
 
-        if ( !compileShader( shdr, src ) ) return false;
+        if ( !compileShader( shdrV, src ) ) return false;
 
-        glAttachShader( this->pid, shdr );
+        glAttachShader( this->pid, shdrV );
     }
 
     // Fragment shader.
     {
-        GLuint shdr = glCreateShader( GL_FRAGMENT_SHADER );
+        shdrF = glCreateShader( GL_FRAGMENT_SHADER );
 
         const GLchar * src[] = { R"SHADER(
 
@@ -55,9 +58,9 @@ void main()
 
 )SHADER" };
 
-        if ( !compileShader( shdr, src ) ) return false;
+        if ( !compileShader( shdrF, src ) ) return false;
 
-        glAttachShader( this->pid, shdr );
+        glAttachShader( this->pid, shdrF );
     }
 
     glBindFragDataLocation( this->pid, 0, "oColor" );
@@ -77,6 +80,11 @@ void main()
         }
     }
 
+    glDetachShader( this->pid, shdrV );
+    glDetachShader( this->pid, shdrF );
+    glDeleteShader( shdrV );
+    glDeleteShader( shdrF );
+
     // Get vertex attribute location.
     {
         this->pos2d = glGetAttribLocation( this->pid, "iPos2d" );
@@ -94,6 +102,13 @@ void main()
     glClearColor( 0.f, 0.f, 0.f, 1.f );
 
     return true;
+}
+
+void
+ EditorProgram::fini( )
+{
+    GL_CALL( glDeleteProgram( this->pid ) );
+    this->pid = 0;
 }
 
 }   // namespace mopr
