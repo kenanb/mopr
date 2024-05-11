@@ -64,6 +64,15 @@ bool
     return true;
 }
 
+void
+ uiSetStyle( )
+{
+    ImGui::StyleColorsLight( );
+    ImVec4 * colors = ImGui::GetStyle( ).Colors;
+
+    colors[ ImGuiCol_WindowBg ] = ImVec4( 0.75f, 0.75f, 0.75f, 0.9f );
+}
+
 int
  main( int argc, char * argv[] )
 {
@@ -170,10 +179,11 @@ int
 
                         ImGuiIO & io = ImGui::GetIO( );
                         ( void ) io;
+
                         // Enable Keyboard Controls.
                         io.ConfigFlags |= ImGuiConfigFlags_NavEnableKeyboard;
 
-                        ImGui::StyleColorsDark( );
+                        uiSetStyle();
 
                         ImGui_ImplSDL2_InitForOpenGL( window, ctx );
 
