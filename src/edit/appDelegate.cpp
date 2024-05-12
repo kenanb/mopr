@@ -6,10 +6,10 @@
 #include "appState.h"
 
 #include "common.h"
-#include "editorLayer.h"
-#include "editorProgram.h"
+#include "editor.h"
 #include "glUtil.h"
-#include "menu.h"
+#include "overlayLayer.h"
+#include "overlayProgram.h"
 #include "scene.h"
 
 #include "imgui.h"
@@ -73,31 +73,31 @@ void
     }
 
     //
-    // Init editor.
+    // Init overlay.
     //
 
-    EditorProgram editorProgram{ };
+    OverlayProgram overlayProgram{ };
 
-    if ( !editorProgram.init( ) )
+    if ( !overlayProgram.init( ) )
     {
-        SDL_Log( "Unable to initialize OpenGL state for editor program.\n" );
+        SDL_Log( "Unable to initialize OpenGL state for overlay program.\n" );
         return;
     }
 
-    std::vector< EditorLayer > layers;
-    dummyTree( layers );
+    std::vector< OverlayLayer > layers;
+    dummyOverlay( layers );
     for ( auto & layer : layers )
     {
         GL_CALL( glGenVertexArrays( 1, &layer.vao ) );
         GL_CALL( glBindVertexArray( layer.vao ) );
-        layer.init( editorProgram );
+        layer.init( overlayProgram );
     }
 
     //
-    // Init menu.
+    // Init editor.
     //
 
-    Menu menu{ };
+    Editor editor{ };
 
     //
     // Event loop.
@@ -165,22 +165,22 @@ void
         GL_CALL( glBindFramebuffer( GL_READ_FRAMEBUFFER, fboWindow ) );
 
         //
-        // Draw editor layers.
+        // Draw overlay layers.
         //
 
-        if ( appState.showEditor )
+        if ( appState.showOverlays )
         {
-            GL_CALL( glUseProgram( editorProgram.pid ) );
+            GL_CALL( glUseProgram( overlayProgram.pid ) );
             for ( const auto & layer : layers )
             {
                 GL_CALL( glBindVertexArray( layer.vao ) );
-                layer.draw( editorProgram );
+                layer.draw( overlayProgram );
             }
             GL_CALL( glUseProgram( 0 ) );
         }
 
         //
-        // Draw UI menu.
+        // Draw editor.
         //
 
         // Start ImGui frame.
@@ -188,7 +188,7 @@ void
         ImGui_ImplSDL2_NewFrame( );
         ImGui::NewFrame( );
 
-        menu.draw( );
+        editor.draw( );
 
         ImGui::Render( );
         GL_CALL( glViewport( 0, 0, ( int ) io.DisplaySize.x, ( int ) io.DisplaySize.y ) );
@@ -222,7 +222,7 @@ void
 
     GL_CALL( glDeleteVertexArrays( 1, &vaoDrawTarget ) );
 
-    editorProgram.fini();
+    overlayProgram.fini( );
 }
 
 }   // namespace mopr

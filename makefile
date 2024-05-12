@@ -283,10 +283,10 @@ MOPR_EDIT_LIBS = gl glew sdl2 SDL2_image
 MOPR_EDIT_CPP_OBJ ::= src/edit/.main.cpp.o \
 	src/edit/.common.cpp.o \
 	src/edit/.glUtil.cpp.o \
-	src/edit/.menu.cpp.o \
+	src/edit/.editor.cpp.o \
 	src/edit/.scene.cpp.o \
-	src/edit/.editorLayer.cpp.o \
-	src/edit/.editorProgram.cpp.o \
+	src/edit/.overlayLayer.cpp.o \
+	src/edit/.overlayProgram.cpp.o \
 	src/edit/.appConfig.cpp.o \
 	src/edit/.appDelegate.cpp.o \
 	src/edit/.appEnvironment.cpp.o \

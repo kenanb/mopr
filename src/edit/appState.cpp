@@ -24,7 +24,7 @@ void
             appState->quit = true;
             break;
         case SDLK_TAB:
-            appState->showEditor = !appState->showEditor;
+            appState->showOverlays = !appState->showOverlays;
             break;
     }
 }

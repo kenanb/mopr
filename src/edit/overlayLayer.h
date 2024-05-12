@@ -1,7 +1,7 @@
-#ifndef MOPR_MAIN_EDITORLAYER_H
-#define MOPR_MAIN_EDITORLAYER_H
+#ifndef MOPR_MAIN_OVERLAYLAYER_H
+#define MOPR_MAIN_OVERLAYLAYER_H
 
-#include "editorProgram.h"
+#include "overlayProgram.h"
 
 // GL API providers (GLEW, GLApi) should be included before other GL headers.
 #include "pxr/imaging/garch/glApi.h"
@@ -13,10 +13,10 @@ namespace mopr
 {
 
 //
-// Editor
+// Overlay
 //
 
-struct EditorLayer
+struct OverlayLayer
 {
     int quadCount;
     GLuint vao;
@@ -26,7 +26,7 @@ struct EditorLayer
     std::vector< GLuint > ibuffer;
     float color[ 3 ];
 
-    EditorLayer( ) : quadCount( 0 ), vao( 0 ), vbo( 0 ), ibo( 0 )
+    OverlayLayer( ) : quadCount( 0 ), vao( 0 ), vbo( 0 ), ibo( 0 )
     {
         this->setColor( .0f, .0f, .0f );
     }
@@ -40,21 +40,21 @@ struct EditorLayer
     }
 
     void
-     init( const EditorProgram & prog );
+     init( const OverlayProgram & prog );
 
     void
      fini( );
 
     void
-     draw( const EditorProgram & prog ) const;
+     draw( const OverlayProgram & prog ) const;
 
     void
      allocate( size_t quadCount );
 };
 
 void
- dummyTree( std::vector< EditorLayer > & layers );
+ dummyOverlay( std::vector< OverlayLayer > & layers );
 
 }   // namespace mopr
 
-#endif   // MOPR_MAIN_EDITORLAYER_H
+#endif   // MOPR_MAIN_OVERLAYLAYER_H

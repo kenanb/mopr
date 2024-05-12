@@ -15,7 +15,7 @@ typedef struct AppState
     int screenW;
     int screenH;
     bool quit;
-    bool showEditor;
+    bool showOverlays;
     double mx;
     double my;
     double viewRotate[ 2 ];

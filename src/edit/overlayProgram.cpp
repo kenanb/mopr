@@ -1,4 +1,4 @@
-#include "editorProgram.h"
+#include "overlayProgram.h"
 
 #include "glUtil.h"
 
@@ -10,7 +10,7 @@ namespace mopr
 {
 
 bool
- EditorProgram::init( )
+ OverlayProgram::init( )
 {
     // Generate program.
     this->pid = glCreateProgram( );
@@ -105,7 +105,7 @@ void main()
 }
 
 void
- EditorProgram::fini( )
+ OverlayProgram::fini( )
 {
     GL_CALL( glDeleteProgram( this->pid ) );
     this->pid = 0;

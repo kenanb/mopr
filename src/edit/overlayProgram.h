@@ -1,5 +1,5 @@
-#ifndef MOPR_MAIN_EDITORPROGRAM_H
-#define MOPR_MAIN_EDITORPROGRAM_H
+#ifndef MOPR_MAIN_OVERLAYPROGRAM_H
+#define MOPR_MAIN_OVERLAYPROGRAM_H
 
 // GL API providers (GLEW, GLApi) should be included before other GL headers.
 #include "pxr/imaging/garch/glApi.h"
@@ -8,16 +8,16 @@ namespace mopr
 {
 
 //
-// EditorProgram
+// OverlayProgram
 //
 
-struct EditorProgram
+struct OverlayProgram
 {
     GLuint pid;
     GLint pos2d;
     GLint clr;
 
-    EditorProgram( ) : pid( 0 ), pos2d( -1 ), clr( -1 )
+    OverlayProgram( ) : pid( 0 ), pos2d( -1 ), clr( -1 )
     {
     }
 
@@ -30,4 +30,4 @@ struct EditorProgram
 
 }   // namespace mopr
 
-#endif   // MOPR_MAIN_EDITORPROGRAM_H
+#endif   // MOPR_MAIN_OVERLAYPROGRAM_H
