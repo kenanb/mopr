@@ -32,7 +32,7 @@ MOPR_BOOL
     return this_ch->d.IsEmpty( );
 }
 
-size_t
+int
  mopr_path_get_path_element_count( MoprPath_ch this_ch )
 {
     return this_ch->d.GetPathElementCount( );

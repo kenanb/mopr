@@ -46,7 +46,7 @@ extern "C"
 
     /* Query */
 
-    MOPR_API size_t
+    MOPR_API int
      mopr_path_get_path_element_count( MoprPath_ch this_ch );
 
     MOPR_API MOPR_BOOL
