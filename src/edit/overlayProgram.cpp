@@ -2,8 +2,6 @@
 
 #include "glUtil.h"
 
-#include <yoga/Yoga.h>
-
 #include <stdio.h>
 
 namespace mopr

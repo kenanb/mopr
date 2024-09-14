@@ -1,10 +1,19 @@
-#ifndef MOPR_CORE_H
-#define MOPR_CORE_H
+#ifndef MOPR_CORE_TEST_H
+#define MOPR_CORE_TEST_H
 
 // Generic includes.
 #include "base/api.h"
 
-MOPR_API int
- mopr_test_core( void );
+#ifdef __cplusplus
+extern "C"
+{
+#endif
 
-#endif   // MOPR_CORE_H
+    MOPR_API int
+     mopr_test_core( void );
+
+#ifdef __cplusplus
+}
+#endif
+
+#endif   // MOPR_CORE_TEST_H

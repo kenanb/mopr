@@ -5,4 +5,5 @@
 
 TEST_CASE( "Wrapper Type Compatibility", "[wrap]" )
 {
+    testYogaBindings( );
 }

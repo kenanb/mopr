@@ -10,3 +10,6 @@
 for package-inferred extension systems in ext directory."
   :pathname "ext"
   :depends-on (:mopr))
+
+(register-system-packages "cl-plus-c"
+                          '(:plus-c))

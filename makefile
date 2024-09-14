@@ -87,7 +87,7 @@ MOPR_LIB_DIR ::= $(MOPR_OUT_DIR)/lib
 
 MOPR_CORE_CF ::= $(COMMON_CFLAGS) $(USD_CFLAGS) -fPIC
 
-MOPR_CORE_C_OBJ ::= src/core/._test.c.o
+MOPR_CORE_C_OBJ ::= src/core/._test.c.o src/core/.command.c.o
 
 MOPR_CORE_C_DEP ::= $(MOPR_CORE_C_OBJ:.o=.d)
 
@@ -205,7 +205,7 @@ MOPR_LISP_FILE ::= mopr-user--all-systems.so
 mopr_lisp ::= $(MOPR_LIB_DIR)/$(MOPR_LISP_FILE)
 
 MOPR_LISP_DEP ::= src/lisp/.mopr-user.asd.d
-$(MOPR_LISP_DEP): CFLAGS = $(MOPR_LISP_CF) $(CSTD)
+$(MOPR_LISP_DEP): CFLAGS = $(MOPR_LISP_CF) $(CSTD) -I$(MOPR_YOGA_INC_DIR)
 include $(MOPR_LISP_DEP)
 
 # $(wrap_usd) is dynamically loaded via CFFI. So no linker declaration.
@@ -320,7 +320,7 @@ $(mopr_edit): CXXFLAGS += \
 	-Isrc/edit/ext/imgui/misc/cpp
 $(mopr_edit): LDFLAGS  ::= $(COMMON_LFLAGS) $(USD_LFLAGS) -L$(MOPR_LIB_DIR)
 $(mopr_edit): LDLIBS   ::= `pkg-config --libs $(MOPR_EDIT_LIBS)` \
-	-lyoga_core
+	-lmopr_core -lyoga_core
 
 # boost-python is required by usdGeom dependency.
 $(mopr_edit): LDLIBS += -lboost_regex -lboost_python3
@@ -342,7 +342,7 @@ endif
 $(mopr_edit): LDECLOPT ::= -L$(MOPR_LIB_DIR) -lmopr_wrap_usd -lmopr_boot_lisp \
 	`ecl-config --ldflags`
 
-$(mopr_edit): $(MOPR_EDIT_CPP_OBJ) $(yoga_core) $(boot_lisp) $(wrap_usd)
+$(mopr_edit): $(MOPR_EDIT_CPP_OBJ) $(mopr_core) $(yoga_core) $(boot_lisp) $(wrap_usd)
 	$(call ECHO_RULE)
 	@mkdir -p $(@D)
 	@cp -r src/edit/res $(MOPR_OUT_DIR)

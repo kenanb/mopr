@@ -14,4 +14,7 @@ MOPR_API std::string
 MOPR_API void
  registerPlugins( );
 
+MOPR_API bool
+ testYogaBindings( );
+
 #endif

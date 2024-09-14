@@ -24,6 +24,7 @@
    "mopr-ext/grid"
    "mopr-ext/test"
    "mopr-ext/usds"
+   "mopr-ext/repr"
    "mopr-ext/util"
 
    ;;

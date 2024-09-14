@@ -1,6 +1,8 @@
 #ifndef MOPR_MAIN_EDITOR_H
 #define MOPR_MAIN_EDITOR_H
 
+#include "core/command.h"
+
 namespace mopr
 {
 
@@ -15,7 +17,7 @@ struct Editor
     }
 
     void
-     draw( );
+     draw( CommandQueue const * const q );
 };
 
 }   // namespace mopr

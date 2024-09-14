@@ -20,3 +20,4 @@
 
 (mopr-ffi:init-core)
 (mopr-ffi:init-wrap)
+(yoga-ffi:init-yoga)

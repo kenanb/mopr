@@ -1,16 +1,13 @@
-(cl:in-package :mopr-def)
+(cl:in-package :yoga-def)
 
 (autowrap:c-include
- '(#:mopr #:ffi "moprCoreIncludes.h")
+ '(#:mopr #:ffi "moprYogaIncludes.h")
  :spec-path '(#:mopr #:ffi #:spec)
 
- ;; According to current directory structure,
- ;; the header lookup should happen relative
- ;; to the parent directory of system definition.
+ ;; Only needed during spec generation. So once we generate the spec file,
+ ;; we shouldn't need the envvar being defined for later REPL use.
  :sysincludes
- (cl:list (cl:namestring
-           (uiop/pathname:pathname-parent-directory-pathname
-            (asdf:component-pathname (asdf:find-system :mopr cl:t)))))
+ (cl:list (uiop/os:getenv "MOPR_YOGA_INC_DIR"))
 
  ;; For now, we limit spec generation to avoid committing too many changes.
  :exclude-arch
@@ -33,23 +30,18 @@
   "i686-unknown-linux-android"
   "x86_64-unknown-linux-android")
 
+ :exclude-sources ("/usr/include/.*")
+
  :exclude-definitions ("^_[_A-Z].*" ; Skip reserved symbols.
                        "^ARCH_.*")
 
  ;; Cleanup prefixes of functions, isolate into a separate package.
- :function-package #:MOPR-FUN
+ :function-package #:YOGA-FUN
+
  :symbol-regex
- (("^mopr_(.*)" () (cl:lambda (s m r)
+ (("^YG(.*)" () (cl:lambda (s m r)
                      (cl:declare (cl:ignorable s r))
                      (cl:elt m 0))))
-
- ;; Access using cl-plus-c: There seems to be some issues with
- ;; autowrap accessors approach:
- ;; - combined-command union is failing on things like c-aref calls
- ;;   unless we define a type alias around it.
- ;; - nested union > struct > array-member > index based access decides
- ;;   array type is a pointer instead of char.
- ;; The remaining accessors work as expected.
 
  :no-accessors cl:t
 
@@ -57,3 +49,5 @@
 
  ;; Don't mute logs.
  :release-p cl:nil)
+
+(cl:setf yoga-def:+undefined+ float-features:single-float-nan)

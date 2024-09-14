@@ -105,3 +105,13 @@ std::string
 
     return x;
 }
+
+bool
+ testYogaBindings( )
+{
+    cl_object pkgMoprGuiLayout_l = ecl_find_package( "MOPR-EXT/REPR" );
+    cl_object symFn_l = getSymbol( "TESTING", pkgMoprGuiLayout_l );
+    cl_object ret = cl_funcall( 1, symFn_l );
+
+    return ecl_to_double( ret ) == 260.0;
+}

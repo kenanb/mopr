@@ -12,3 +12,13 @@
 
 (defpackage #:mopr-fun
   (:use))
+
+(defpackage #:yoga-ffi
+  (:use)
+  (:export #:init-yoga))
+
+(defpackage #:yoga-def
+  (:use))
+
+(defpackage #:yoga-fun
+  (:use))

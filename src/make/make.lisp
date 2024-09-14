@@ -21,8 +21,11 @@
 
 ;; (ql:quickload :cl-autowrap)
 
+;; (ql:quickload :float-features)
+
 (asdf:oos 'asdf:load-op :cffi)
 (asdf:oos 'asdf:load-op :cl-autowrap)
+(asdf:oos 'asdf:load-op :float-features)
 
 (asdf:make-build :mopr-user
                  :type :shared-library

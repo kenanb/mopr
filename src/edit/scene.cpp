@@ -1,6 +1,7 @@
 #include "scene.h"
 
 #include "appConfig.h"
+#include "common.h"
 
 #include "pxr/pxr.h"
 
@@ -26,10 +27,13 @@ PXR_NAMESPACE_USING_DIRECTIVE
 namespace mopr
 {
 
-Scene::Scene( const std::string & usdsPath, const char * camera )
+Scene::Scene( const std::string & usdsPath, const char * camera, float pixelsW, float pixelsH )
     : stage( ), camera( ), drawTarget( ), lighting( ), renderSettings( )
 {
+    this->commandQueue.pixelsW = pixelsW;
+    this->commandQueue.pixelsH = pixelsH;
     this->initStageAndCamera( usdsPath, camera );
+    // mopr_print_command_queue( &this->commandQueue );
 }
 
 void
@@ -93,17 +97,18 @@ static cl_object
 
 static bool
  readLispFile( SdfLayerRefPtr layer,
+               CommandQueue * queue,
                const std::string & resolvedPath,
                bool callEnabled = false )
 {
     MoprLayer sLayer;
     sLayer.SetRefPtr( layer );
     cl_object hLayer_l = ecl_make_pointer( &sLayer );
+    cl_object hQueue_l = ecl_make_pointer( queue );
     cl_object pkgMoprExtUtil_l = ecl_find_package( "MOPR-EXT/UTIL" );
-    cl_object symFn_l = getSymbol( "POPULATE-FROM-LISP-FILE", pkgMoprExtUtil_l );
+    cl_object symFn_l = getSymbol( "POPULATE-FROM-LISP-FILE-WITH-REPR", pkgMoprExtUtil_l );
     cl_object strFileName_l = ecl_make_constant_base_string( resolvedPath.c_str( ), -1 );
-    cl_funcall( 4, symFn_l, hLayer_l, strFileName_l, callEnabled ? ECL_T : ECL_NIL );
-
+    cl_funcall( 5, symFn_l, hLayer_l, hQueue_l, strFileName_l, callEnabled ? ECL_T : ECL_NIL );
     if ( !layer ) return false;
 
     return true;
@@ -113,7 +118,8 @@ void
  Scene::initStageAndCamera( const std::string & usdsPath, const char * camera )
 {
     pxr::SdfLayerRefPtr layer = pxr::SdfLayer::CreateAnonymous( );
-    int result = readLispFile( layer, usdsPath, /* callEnabled = */ true );
+    int result =
+     readLispFile( layer, &this->commandQueue, usdsPath, /* callEnabled = */ true );
     ( void ) result;
     this->stage = pxr::UsdStage::Open( layer, pxr::UsdStage::LoadAll );
     if ( camera ) this->camera = pxr::SdfPath( camera );

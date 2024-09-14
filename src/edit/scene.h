@@ -3,6 +3,8 @@
 
 #include "appState.h"
 
+#include "core/command.h"
+
 #include "pxr/base/gf/vec3d.h"
 
 #include "pxr/usd/usd/stage.h"
@@ -39,7 +41,9 @@ struct Scene
 
     pxr::VtDictionary renderSettings;
 
-    Scene( const std::string & usdsPath, const char * camera );
+    CommandQueue commandQueue;
+
+    Scene( const std::string & usdsPath, const char * camera, float pixelsW, float pixelsH );
 
     void
      initStageAndCamera( const std::string & usdsPath, const char * camera );

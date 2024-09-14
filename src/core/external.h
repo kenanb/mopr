@@ -4,4 +4,6 @@
 // Core test include.
 #include "_test.h"
 
+#include "command.h"
+
 #endif   // MOPR_CORE_EXTERNAL_H

@@ -12,6 +12,8 @@
 #include "overlayProgram.h"
 #include "scene.h"
 
+#include "core/command.h"
+
 #include "imgui.h"
 #include "imgui_impl_opengl3.h"
 #include "imgui_impl_sdl2.h"
@@ -39,7 +41,7 @@ void
     //
 
     // Stage needs to be available for app state initialization.
-    Scene scene{ appEnvironment->getResolvedInputPath( ), appEnvironment->camera };
+    Scene scene{ appEnvironment->getResolvedInputPath( ), appEnvironment->camera, 640.0, 960.0 };
 
     //
     // Init app state.
@@ -188,7 +190,7 @@ void
         ImGui_ImplSDL2_NewFrame( );
         ImGui::NewFrame( );
 
-        editor.draw( );
+        editor.draw( &scene.commandQueue );
 
         ImGui::Render( );
         GL_CALL( glViewport( 0, 0, ( int ) io.DisplaySize.x, ( int ) io.DisplaySize.y ) );
