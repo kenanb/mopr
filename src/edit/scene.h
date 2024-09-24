@@ -45,6 +45,8 @@ struct Scene
 
     Scene( const std::string & usdsPath, const char * camera, float pixelsW, float pixelsH );
 
+    ~Scene();
+
     void
      initStageAndCamera( const std::string & usdsPath, const char * camera );
 

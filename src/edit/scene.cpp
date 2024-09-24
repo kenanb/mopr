@@ -27,13 +27,39 @@ PXR_NAMESPACE_USING_DIRECTIVE
 namespace mopr
 {
 
-Scene::Scene( const std::string & usdsPath, const char * camera, float pixelsW, float pixelsH )
+Scene::Scene( const std::string & usdsPath,
+              const char * camera,
+              float pixelsW,
+              float pixelsH )
     : stage( ), camera( ), drawTarget( ), lighting( ), renderSettings( )
 {
     this->commandQueue.pixelsW = pixelsW;
     this->commandQueue.pixelsH = pixelsH;
     this->initStageAndCamera( usdsPath, camera );
     // mopr_print_command_queue( &this->commandQueue );
+}
+
+static cl_object
+ getSymbol( const char * symName, cl_object pkg_l )
+{
+    cl_object strSym_l = ecl_make_constant_base_string( symName, -1 );
+    int flags = 0;
+    return ecl_find_symbol( strSym_l, pkg_l, &flags );
+}
+
+static bool
+ destructCommandQueue( CommandQueue * queue )
+{
+    cl_object hQueue_l = ecl_make_pointer( queue );
+    cl_object pkgMoprExtRepr_l = ecl_find_package( "MOPR-EXT/REPR" );
+    cl_object symFn_l = getSymbol( "DESTRUCT-COMMAND-QUEUE", pkgMoprExtRepr_l );
+    cl_funcall( 2, symFn_l, hQueue_l );
+    return true;
+}
+
+Scene::~Scene( )
+{
+    destructCommandQueue( &this->commandQueue );
 }
 
 void
@@ -87,14 +113,6 @@ bool
     return true;
 }
 
-static cl_object
- getSymbol( const char * symName, cl_object pkg_l )
-{
-    cl_object strSym_l = ecl_make_constant_base_string( symName, -1 );
-    int flags = 0;
-    return ecl_find_symbol( strSym_l, pkg_l, &flags );
-}
-
 static bool
  readLispFile( SdfLayerRefPtr layer,
                CommandQueue * queue,
@@ -106,9 +124,11 @@ static bool
     cl_object hLayer_l = ecl_make_pointer( &sLayer );
     cl_object hQueue_l = ecl_make_pointer( queue );
     cl_object pkgMoprExtUtil_l = ecl_find_package( "MOPR-EXT/UTIL" );
-    cl_object symFn_l = getSymbol( "POPULATE-FROM-LISP-FILE-WITH-REPR", pkgMoprExtUtil_l );
+    cl_object symFn_l =
+     getSymbol( "POPULATE-FROM-LISP-FILE-WITH-REPR", pkgMoprExtUtil_l );
     cl_object strFileName_l = ecl_make_constant_base_string( resolvedPath.c_str( ), -1 );
-    cl_funcall( 5, symFn_l, hLayer_l, hQueue_l, strFileName_l, callEnabled ? ECL_T : ECL_NIL );
+    cl_funcall(
+     5, symFn_l, hLayer_l, hQueue_l, strFileName_l, callEnabled ? ECL_T : ECL_NIL );
     if ( !layer ) return false;
 
     return true;

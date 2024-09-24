@@ -10,6 +10,7 @@
   (:use :cl)
   (:export
    #:populate-command-queue
+   #:destruct-command-queue
    #:with-layout-settings
    #:testing))
 
@@ -50,7 +51,7 @@
    (text
     :initarg :text
     :type base-string
-    :initform ""
+    :initform (make-string 0 :element-type 'base-char)
     :reader repr-node-text)
    (ynode
     :initarg :ynode
@@ -75,6 +76,7 @@
   (yoga-fun:node-style-set-min-height ynode 50))
 
 (defun handle-inner-form (yparent form color title-text content-text)
+  (declare (ignore form))
   (let* ((yt (yoga-fun:node-new))
          (nt (make-instance 'repr-node :ynode yt :text title-text :color color))
          (yc (yoga-fun:node-new))
@@ -207,10 +209,9 @@
       (+ (%dim ynode :top)
          (recursive-get-top (yoga-fun:node-get-parent ynode)))))
 
-;; TODO : Implement/ensure cleanup for the allocations.
 (defun populate-command-queue (cmd-queue usds-data)
   (let* ((pixels-w (plus-c:c-ref cmd-queue mopr-def:command-queue :pixels-w))
-         (pixels-h (plus-c:c-ref cmd-queue mopr-def:command-queue :pixels-h))
+         ;; (pixels-h (plus-c:c-ref cmd-queue mopr-def:command-queue :pixels-h))
          (nodes (with-layout-settings (build-repr-call-enabled usds-data)))
          (cmd-count (length nodes))
          (ynode (repr-node-ynode (car nodes)))
@@ -244,6 +245,30 @@
                  :commands (autowrap:ptr commands))
 
     (yoga-fun:node-free-recursive ynode)))
+
+;; NOTE: Free calls are made from the same module the allocations were made from,
+;;       to avoid possible issues with multiple malloc implementations in runtime.
+(defun destruct-command-queue (cmd-queue-ptr
+                               &aux
+                                 (cmd-queue (autowrap:wrap-pointer
+                                             cmd-queue-ptr 'mopr-def:command-queue)))
+  (let* ((cmd-count (plus-c:c-ref cmd-queue mopr-def:command-queue :nof-commands))
+         (commands (plus-c:c-ref cmd-queue mopr-def:command-queue :commands)))
+
+    (loop for i to cmd-count
+          for c = (autowrap:c-aref commands i 'mopr-def:combined-command)
+          for c-type = (plus-c:c-ref c mopr-def:combined-command :base :c-type)
+          do (when (eql c-type mopr-def:+command-type-draw-rect+)
+               ;; c-ref implements some convenience functionality based on the last field.
+               ;; However, in order to free the C string, we do need the pointer.  So we
+               ;; dereference and reference in the end, to inhibit foreign-string last-field
+               ;; convenience.
+               (autowrap::free (plus-c:c-ref c mopr-def:combined-command
+                                             :draw-rect :text plus-c:* plus-c:&))))
+
+    (autowrap:free commands)
+
+    (%set-values cmd-queue (mopr-def:command-queue) :nof-commands 0 :commands (autowrap:ptr nil))))
 
 ;; TESTING
 
