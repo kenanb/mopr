@@ -50,7 +50,7 @@ void
     ImGuiViewport * viewport = ImGui::GetMainViewport( );
     ImGui::SetNextWindowPos( ImVec2( viewport->Pos.x + 10, viewport->Pos.y + 10 ) );
     ImGui::SetNextWindowSize(
-     ImVec2( viewport->Size.x / 2 + 100, viewport->Size.y - 20 ) );
+     ImVec2( viewport->Size.x / 2 + 20, viewport->Size.y - 20 ) );
     ImGui::SetNextWindowViewport( viewport->ID );
 
     ImGuiWindowFlags windowFlags =
@@ -66,7 +66,7 @@ void
         return;
     }
 
-    ImGui::Text( "..." );
+    // ImGui::Text( "..." );
 
     ImDrawList * draw_list = ImGui::GetWindowDrawList( );
 
@@ -80,9 +80,8 @@ void
         COMMANDS[ q->commands[ i ].base.cType ]( draw_list, q->commands[ i ], &ctxCmd );
     }
 
-    // Advance the ImGui cursor to claim space in the window
-    // (otherwise the window will appear small and needs to be
-    // resized).
+    // Advance the ImGui cursor to claim space. If the "reserved" height and width were
+    // not fully used, we expect the values to have already been adjusted to "used" area.
     ImGui::Dummy( ImVec2( q->pixelsW, q->pixelsH ) );
 
     for ( int i = 0; i < 10; i++ ) ImGui::Text( "..." );
