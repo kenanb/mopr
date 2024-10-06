@@ -147,7 +147,7 @@ int
         // | SDL_WINDOW_RESIZABLE
         // | SDL_WINDOW_ALLOW_HIGHDPI
 
-        SDL_Window * window = SDL_CreateWindow( "SDL Tutorial",
+        SDL_Window * window = SDL_CreateWindow( "MOPR Editor",
                                                 SDL_WINDOWPOS_UNDEFINED,
                                                 SDL_WINDOWPOS_UNDEFINED,
                                                 appConfig.screenW,

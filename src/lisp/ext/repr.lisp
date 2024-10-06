@@ -222,43 +222,44 @@
          (recursive-get-top (yoga-fun:node-get-parent ynode)))))
 
 (defun populate-command-queue (cmd-queue usds-data)
-  (let* ((pixels-w (plus-c:c-ref cmd-queue mopr-def:command-queue :pixels-w))
-         ;; (pixels-h (plus-c:c-ref cmd-queue mopr-def:command-queue :pixels-h))
-         (nodes (with-layout-settings (build-repr-call-enabled usds-data)))
-         (cmd-count (length nodes))
-         (ynode (repr-node-ynode (car nodes)))
-         (commands (autowrap:alloc 'mopr-def:combined-command cmd-count)))
+  (with-layout-settings
+      (let* ((pixels-w (plus-c:c-ref cmd-queue mopr-def:command-queue :pixels-w))
+             ;; (pixels-h (plus-c:c-ref cmd-queue mopr-def:command-queue :pixels-h))
+             (nodes (build-repr-call-enabled usds-data))
+             (cmd-count (length nodes))
+             (ynode (repr-node-ynode (car nodes)))
+             (commands (autowrap:alloc 'mopr-def:combined-command cmd-count)))
 
-    (yoga-fun:node-calculate-layout ynode
-                                    pixels-w
-                                    yoga-def:+undefined+ ;; pixels-h
-                                    yoga-def:+direction-ltr+)
+        (yoga-fun:node-calculate-layout ynode
+                                        pixels-w
+                                        yoga-def:+undefined+ ;; pixels-h
+                                        yoga-def:+direction-ltr+)
 
-    (loop for n in nodes
-          for y = (repr-node-ynode n)
-          for i to cmd-count
-          for c = (autowrap:c-aref commands i 'mopr-def:combined-command)
-          do (%set-values c (mopr-def:combined-command :draw-rect)
-                          :c-type mopr-def:+command-type-draw-rect+
-                          :x (recursive-get-left y)
-                          :y (recursive-get-top y)
-                          :w (%dim y :width)
-                          :h (%dim y :height)
-                          :rounding 5.0f0
-                          :text (autowrap:alloc-string (repr-node-text n)))
-          do (%set-values c (mopr-def:combined-command :draw-rect :col)
-                          0 (aref (repr-node-color n) 0)
-                          1 (aref (repr-node-color n) 1)
-                          2 (aref (repr-node-color n) 2)
-                          3 (aref (repr-node-color n) 3)))
+        (loop for n in nodes
+              for y = (repr-node-ynode n)
+              for i to cmd-count
+              for c = (autowrap:c-aref commands i 'mopr-def:combined-command)
+              do (%set-values c (mopr-def:combined-command :draw-rect)
+                              :c-type mopr-def:+command-type-draw-rect+
+                              :x (recursive-get-left y)
+                              :y (recursive-get-top y)
+                              :w (%dim y :width)
+                              :h (%dim y :height)
+                              :rounding 5.0f0
+                              :text (autowrap:alloc-string (repr-node-text n)))
+              do (%set-values c (mopr-def:combined-command :draw-rect :col)
+                              0 (aref (repr-node-color n) 0)
+                              1 (aref (repr-node-color n) 1)
+                              2 (aref (repr-node-color n) 2)
+                              3 (aref (repr-node-color n) 3)))
 
-    (%set-values cmd-queue (mopr-def:command-queue)
-                 :nof-commands cmd-count
-                 :commands (autowrap:ptr commands)
-                 ;; Adjust height to the actual "used" height.
-                 :pixels-h (%dim ynode :height))
+        (%set-values cmd-queue (mopr-def:command-queue)
+                     :nof-commands cmd-count
+                     :commands (autowrap:ptr commands)
+                     ;; Adjust height to the actual "used" height.
+                     :pixels-h (%dim ynode :height))
 
-    (yoga-fun:node-free-recursive ynode)))
+        (yoga-fun:node-free-recursive ynode))))
 
 ;; NOTE: Free calls are made from the same module the allocations were made from,
 ;;       to avoid possible issues with multiple malloc implementations in runtime.

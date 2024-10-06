@@ -12,7 +12,7 @@ else
       export PATH=${MOPR_USD_ROOT}/bin:$PATH
       export PYTHONPATH=${MOPR_USD_ROOT}/lib/python/:$PYTHONPATH
       export LD_LIBRARY_PATH=${MOPR_USD_ROOT}/lib:$LD_LIBRARY_PATH
-      export LD_PRELOAD=/usr/lib64/libjemalloc.so
+      export LD_PRELOAD=${MOPR_MULTIARCH_LIB_DIR}/libjemalloc.so
 fi
 
 # Pass -pn to debug.

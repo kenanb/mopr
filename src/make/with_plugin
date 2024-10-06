@@ -1,6 +1,7 @@
 #!/bin/bash
 
 # USAGE:
+# - Activate the python environment needed by the USD installation, if needed.
 # - Ensure env variables are set to find USD installation.
 # - ./with_plugin usdview ../src/data/test/00.usdx
 

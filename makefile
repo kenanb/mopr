@@ -71,6 +71,11 @@ USD_CFLAGS += -DARCH_HAS_GNU_STL_EXTENSIONS
 USD_LFLAGS ::= $(USD_LIB_ROOT) \
 	`pkg-config --libs python3-embed`
 
+# NOTE: It is assumed that the correct python environment was activated, if needed.
+PYTHON_VER_MAJ ::= `python -c 'import sys; print(sys.version_info[0])'`
+PYTHON_VER_MIN ::= `python -c 'import sys; print(sys.version_info[1])'`
+BOOST_PYTHON_LIB ::= boost_python$(PYTHON_VER_MAJ)$(PYTHON_VER_MIN)
+
 #
 #
 ####################
@@ -243,6 +248,16 @@ $(boot_lisp): $(BOOT_LISP_CPP_OBJ) $(mopr_lisp)
 	@mkdir -p $(@D)
 	$(CXX) -shared -o $@ $(BOOT_LISP_CPP_OBJ) $(LDFLAGS) $(LDECLOPT)
 
+# NOTE: The order is important here.
+# If we need to link ecl directly, mopr_boot_lisp should be linked
+# before that. Otherwise, we get a "symbols are not initialized yet" error.
+# Of course, we don't really need to link ecl again, if we link mopr_boot_lisp.
+#
+# NOTE: Some linker versions seem to ignore the shared-lib ctor dtor hooks and ignore
+# mopr_boot_lisp dependency declaration. So we add --no-as-needed beforehand.
+BOOT_LISP_LDECLOPT ::= -L$(MOPR_LIB_DIR) -lmopr_wrap_usd \
+	-Wl,--no-as-needed -lmopr_boot_lisp `ecl-config --ldflags`
+
 #
 ## Target: yoga_core
 #
@@ -323,7 +338,7 @@ $(mopr_edit): LDLIBS   ::= `pkg-config --libs $(MOPR_EDIT_LIBS)` \
 	-lmopr_core -lyoga_core
 
 # boost-python is required by usdGeom dependency.
-$(mopr_edit): LDLIBS += -lboost_regex -lboost_python3
+$(mopr_edit): LDLIBS += -lboost_regex -l$(BOOST_PYTHON_LIB)
 
 ifeq ($(MOPR_MONOLITHIC_USD),1)
 $(mopr_edit): LDLIBS += -lusd_ms
@@ -335,12 +350,7 @@ $(mopr_edit): LDLIBS += \
 	-lusd_usdImaging -lusd_usdImagingGL
 endif
 
-# NOTE: The order is important here.
-# If we need to link ecl directly, mopr_boot_lisp should be linked
-# before that. Otherwise, we get a "symbols are not initialized yet" error.
-# Of course, we don't really need to link ecl again, if we link mopr_boot_lisp.
-$(mopr_edit): LDECLOPT ::= -L$(MOPR_LIB_DIR) -lmopr_wrap_usd -lmopr_boot_lisp \
-	`ecl-config --ldflags`
+$(mopr_edit): LDECLOPT ::= $(BOOT_LISP_LDECLOPT)
 
 $(mopr_edit): $(MOPR_EDIT_CPP_OBJ) $(mopr_core) $(yoga_core) $(boot_lisp) $(wrap_usd)
 	$(call ECHO_RULE)
@@ -386,12 +396,7 @@ $(plug_usdx): LDLIBS += \
 	-lusd_usd
 endif
 
-# NOTE: The order is important here.
-# If we need to link ecl directly, mopr_boot_lisp should be linked
-# before that. Otherwise, we get a "symbols are not initialized yet" error.
-# Of course, we don't really need to link ecl again, if we link mopr_boot_lisp.
-$(plug_usdx): LDECLOPT ::= -L$(MOPR_LIB_DIR) -lmopr_wrap_usd -lmopr_boot_lisp \
-	`ecl-config --ldflags`
+$(plug_usdx): LDECLOPT ::= $(BOOT_LISP_LDECLOPT)
 
 $(plug_usdx): $(USDX_CPP_OBJ) $(boot_lisp) $(wrap_usd)
 	$(call ECHO_RULE)
@@ -450,7 +455,7 @@ ifeq ($(MOPR_MONOLITHIC_USD),1)
 $(trtn_build): LDLIBS += -lusd_ms
 else
 $(trtn_build): LDLIBS += \
-	-lusd_usd
+	-lusd_plug -lusd_sdf -lusd_usd
 endif
 
 $(trtn_build): LDECLOPT ::= `ecl-config --ldflags`

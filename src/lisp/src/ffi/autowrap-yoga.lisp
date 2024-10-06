@@ -30,7 +30,7 @@
   "i686-unknown-linux-android"
   "x86_64-unknown-linux-android")
 
- :exclude-sources ("/usr/include/.*")
+ :exclude-sources ("^/usr/include/.*")
 
  :exclude-definitions ("^_[_A-Z].*" ; Skip reserved symbols.
                        "^ARCH_.*")
