@@ -56,26 +56,64 @@
     :initform (make-string 0 :element-type 'base-char)
     :reader repr-node-text)
    (ynode
-    :initarg :ynode
-    :type (or yoga-def:node-ref null)
-    :initform nil
+    :type yoga-def:node-ref
+    :initform (yoga-fun:node-new)
     :reader repr-node-ynode)))
 
-(defun layout-title-form (ynode yparent)
-  (yoga-fun:node-insert-child yparent ynode (yoga-fun:node-get-child-count yparent))
-  (yoga-fun:node-style-set-flex-direction ynode yoga-def:+flex-direction-row+)
-  (yoga-fun:node-style-set-flex-grow ynode 0.0f0)
-  (yoga-fun:node-style-set-margin ynode yoga-def:+edge-all+ 5.0f0)
-  (yoga-fun:node-style-set-width ynode 40)
-  (yoga-fun:node-style-set-min-height ynode 20))
+(defmethod initialize-instance :after ((node repr-node) &key (yparent nil))
+  (when yparent
+    (with-slots (ynode) node
+      (yoga-fun:node-insert-child yparent ynode (yoga-fun:node-get-child-count yparent)))))
 
-(defun layout-generic-form (ynode yparent &optional (h-co 1))
-  (yoga-fun:node-insert-child yparent ynode (yoga-fun:node-get-child-count yparent))
-  (yoga-fun:node-style-set-flex-direction ynode yoga-def:+flex-direction-row+)
-  (yoga-fun:node-style-set-flex-grow ynode 1.0f0)
-  (yoga-fun:node-style-set-margin ynode yoga-def:+edge-all+ 5.0f0)
-  (yoga-fun:node-style-set-min-width ynode 200)
-  (yoga-fun:node-style-set-min-height ynode (+ 10 (* h-co 15))))
+(defclass repr-node-root (repr-node)
+  ((color :initform #(250 250 200 100))))
+
+(defmethod initialize-instance :after ((node repr-node-root) &key)
+  (with-slots (ynode) node
+    (yoga-fun:node-style-set-flex-direction ynode yoga-def:+flex-direction-column+)
+    (yoga-fun:node-style-set-padding ynode yoga-def:+edge-all+ 5.0f0)))
+
+(defclass repr-node-top-level-container (repr-node)
+  ((color :initform #(255 255 255 50))))
+
+(defmethod initialize-instance :after ((node repr-node-top-level-container) &key)
+  (with-slots (ynode) node
+    (yoga-fun:node-style-set-flex-direction ynode yoga-def:+flex-direction-row+)
+    (yoga-fun:node-style-set-flex-grow ynode 1.0f0)
+    (yoga-fun:node-style-set-margin ynode yoga-def:+edge-all+ 5.0f0)
+    (yoga-fun:node-style-set-padding ynode yoga-def:+edge-all+ 2.5f0)))
+
+(defclass repr-node-form-title (repr-node) ())
+
+(defmethod initialize-instance :after ((node repr-node-form-title) &key)
+  (with-slots (ynode) node
+    (yoga-fun:node-style-set-flex-grow ynode 0.0f0)
+    (yoga-fun:node-style-set-margin ynode yoga-def:+edge-all+ 2.5f0)
+    (yoga-fun:node-style-set-width ynode 40)
+    (yoga-fun:node-style-set-min-height ynode 20)))
+
+(defclass repr-node-content-form (repr-node) ())
+
+(defmethod initialize-instance :after ((node repr-node-content-form) &key (h-co 1))
+  (with-slots (ynode) node
+    (yoga-fun:node-style-set-flex-direction ynode yoga-def:+flex-direction-column+)
+    (yoga-fun:node-style-set-flex-grow ynode 1.0f0)
+    (yoga-fun:node-style-set-margin ynode yoga-def:+edge-all+ 2.5f0)
+    (yoga-fun:node-style-set-min-width ynode 200)
+    (yoga-fun:node-style-set-min-height ynode (+ 10 (* h-co 15)))))
+
+(defun handle-inner-form (yparent form color title-text content-text &optional (line-count 1))
+  (declare (ignore form))
+  (let* ((nt (make-instance 'repr-node-form-title
+                            :yparent yparent
+                            :text title-text
+                            :color color))
+         (nc (make-instance 'repr-node-content-form
+                            :yparent yparent
+                            :text content-text
+                            :color color
+                            :h-co line-count)))
+    (list nt nc)))
 
 (defun format-form (form margin)
   (let ((*print-pretty* t)
@@ -84,73 +122,49 @@
            (line-count (count #\newline text)))
       (values text line-count))))
 
-(defun handle-inner-form (yparent form color title-text content-text &optional (line-count 1))
-  (declare (ignore form))
-  (let* ((yt (yoga-fun:node-new))
-         (nt (make-instance 'repr-node :ynode yt :text title-text :color color))
-         (yc (yoga-fun:node-new))
-         (nc (make-instance 'repr-node :ynode yc :text content-text :color color)))
-    (layout-title-form yt yparent)
-    (layout-generic-form yc yparent line-count)
-    (list nt nc)))
-
 (defun handle-var-form (yparent form)
   ;; (format t "~%Called handle-var-form!~%: ~S~%" form)
-  (let* ((ynode (yoga-fun:node-new))
-         (node (make-instance 'repr-node :ynode ynode :color #(255 255 255 50))))
-    (layout-generic-form ynode yparent)
-    (cons node (handle-inner-form ynode form #(100 200 200 50)
+  (let* ((node (make-instance 'repr-node-top-level-container :yparent yparent)))
+    (cons node (handle-inner-form (repr-node-ynode node) form #(100 200 200 50)
                                   "VAR" (format-form form *fill-column*)))))
 
 (defun handle-each-form (yparent form)
   ;; (format t "~%Called handle-each-form!~%: ~S~%" form)
-  (let* ((ynode (yoga-fun:node-new))
-         (node (make-instance 'repr-node :ynode ynode :color #(255 255 255 50))))
-    (layout-generic-form ynode yparent)
-    (cons node (handle-inner-form ynode form #(0 255 200 50)
+  (let* ((node (make-instance 'repr-node-top-level-container :yparent yparent)))
+    (cons node (handle-inner-form (repr-node-ynode node) form #(0 255 200 50)
                                   "EACH" (format-form form *fill-column*)))))
 
 (defun handle-iota-form (yparent form)
   ;; (format t "~%Called handle-iota-form!~%: ~S~%" form)
-  (let* ((ynode (yoga-fun:node-new))
-         (node (make-instance 'repr-node :ynode ynode :color #(255 255 255 50))))
-    (layout-generic-form ynode yparent)
-    (cons node (handle-inner-form ynode form #(0 200 255 50)
+  (let* ((node (make-instance 'repr-node-top-level-container :yparent yparent)))
+    (cons node (handle-inner-form (repr-node-ynode node) form #(0 200 255 50)
                                   "IOTA" (format-form form *fill-column*)))))
 
 (defun handle-call-form (yparent form)
   ;; (format t "~%Called handle-call-form!~%: ~S~%" form)
-  (let* ((ynode (yoga-fun:node-new))
-         (node (make-instance 'repr-node :ynode ynode :color #(255 255 255 50))))
-    (layout-generic-form ynode yparent)
-    (cons node (handle-inner-form ynode form #(200 200 200 50)
+  (let* ((node (make-instance 'repr-node-top-level-container :yparent yparent)))
+    (cons node (handle-inner-form (repr-node-ynode node) form #(200 200 200 50)
                                   "CALL" (format-form form *fill-column*)))))
 
 (defun handle-prim-form (yparent form)
   ;; (format t "~%Called handle-prim-form!~%: ~S~%" form)
-  (let* ((ynode (yoga-fun:node-new))
-         (node (make-instance 'repr-node :ynode ynode :color #(255 255 255 50))))
-    (layout-generic-form ynode yparent)
+  (let* ((node (make-instance 'repr-node-top-level-container :yparent yparent)))
     (cons node
           (multiple-value-bind (text line-count)
               (format-form form *fill-column*)
-            (handle-inner-form ynode form #(200 100 200 50)
+            (handle-inner-form (repr-node-ynode node) form #(200 100 200 50)
                                "PRIM" text line-count)))))
 
 (defun handle-tree-form (yparent form)
   ;; (format t "~%Called handle-tree-form!~%: ~S~%" form)
-  (let* ((ynode (yoga-fun:node-new))
-         (node (make-instance 'repr-node :ynode ynode :color #(255 255 255 50))))
-    (layout-generic-form ynode yparent)
-    (cons node (handle-inner-form ynode form #(0 0 200 50)
+  (let* ((node (make-instance 'repr-node-top-level-container :yparent yparent)))
+    (cons node (handle-inner-form (repr-node-ynode node) form #(0 0 200 50)
                                   "TREE" (format-form form *fill-column*)))))
 
 (defun handle-meta-form (yparent form)
   ;; (format t "~%Called handle-meta-form!~%: ~S~%" form)
-  (let* ((ynode (yoga-fun:node-new))
-         (node (make-instance 'repr-node :ynode ynode :color #(255 255 255 50))))
-    (layout-generic-form ynode yparent)
-    (cons node (handle-inner-form ynode form #(0 0 0 50)
+  (let* ((node (make-instance 'repr-node-top-level-container :yparent yparent)))
+    (cons node (handle-inner-form (repr-node-ynode node) form #(0 0 0 50)
                                   "META" (format-form form *fill-column*)))))
 
 (defun handle-data-subforms (yparent subforms)
@@ -183,15 +197,11 @@
      ,@body))
 
 (defun build-repr-call-enabled (usds-data)
-  (let* ((ynode (yoga-fun:node-new))
-         (root-node (make-instance 'repr-node :ynode ynode :color #(250 250 200 100))))
-    (yoga-fun:node-style-set-flex-direction ynode yoga-def:+flex-direction-column+)
-    (yoga-fun:node-style-set-padding ynode yoga-def:+edge-all+ 5.0f0)
-
-    (mopr-info:with-registry (:supported-cases '(:upcase))
-      (mopr-plug:with-configuration ()
-        (with-repr-variables (:enable-call t)
-          (cons root-node (handle-data-subforms ynode usds-data)))))))
+  (mopr-info:with-registry (:supported-cases '(:upcase))
+    (mopr-plug:with-configuration ()
+      (with-repr-variables (:enable-call t)
+        (let* ((root-node (make-instance 'repr-node-root)))
+          (cons root-node (handle-data-subforms (repr-node-ynode root-node) usds-data)))))))
 
 (defmacro with-layout-settings (&body body)
   `(float-features:with-float-traps-masked (:invalid)
