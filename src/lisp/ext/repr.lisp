@@ -250,30 +250,33 @@
                            (fmeta (cadr form))
                            (frest (cddr form)))
   ;; (format t "~%Called handle-prim-form!~%: ~S~%" form)
-  (multiple-value-bind (text-body line-count-body)
-      (format-form frest *fill-column*)
-    (let* ((color #(200 100 200 50))
-           (node (make-instance 'repr-node-top-level-container :yparent yparent))
-           (nt (make-instance 'repr-node-form-title
-                              :yparent (repr-node-ynode node)
-                              :text "PRIM"
+  (let* ((color #(200 100 200 50))
+         (node (make-instance 'repr-node-top-level-container :yparent yparent))
+         (nt (make-instance 'repr-node-form-title
+                            :yparent (repr-node-ynode node)
+                            :text "PRIM"
+                            :color color))
+         (nc (make-instance 'repr-node-content-form
+                            :yparent (repr-node-ynode node)))
+         (nca0 (make-instance 'repr-node-content-attr
+                              :yparent (repr-node-ynode nc)
+                              :text (format nil "PATH: ~S" fpath)
                               :color color))
-           (nc (make-instance 'repr-node-content-form
-                              :yparent (repr-node-ynode node)))
-           (nca0 (make-instance 'repr-node-content-attr
-                                :yparent (repr-node-ynode nc)
-                                :text (format nil "PATH: ~S" fpath)
-                                :color color))
-           (nca1 (make-instance 'repr-node-content-attr
-                                :yparent (repr-node-ynode nc)
-                                :text (format nil "META: ~S" fmeta)
-                                :color color))
-           (ncb (make-instance 'repr-node-content-body
-                               :yparent (repr-node-ynode nc)
-                               :text text-body
-                               :color color
-                               :h-co line-count-body)))
-      (list node nt nc nca0 nca1 ncb))))
+         (nca1 (make-instance 'repr-node-content-attr
+                              :yparent (repr-node-ynode nc)
+                              :text (format nil "META: ~S" fmeta)
+                              :color color))
+         (nested-nodes
+           (loop for l in frest
+                 for i from 0
+                 for fn = (case (car l)
+                            ;; TODO : Handle other forms.
+                            (:call   #'handle-call-form)
+                            (:|call| #'handle-call-form))
+                 nconc (if fn
+                           (funcall fn (repr-node-ynode nc) (cdr l))
+                           (unknown-form-error (car l) :debug)))))
+    (concatenate 'list (list node nt nc nca0 nca1) nested-nodes)))
 
 (defun handle-tree-form (yparent form)
   ;; (format t "~%Called handle-tree-form!~%: ~S~%" form)
