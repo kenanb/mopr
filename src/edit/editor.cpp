@@ -50,7 +50,7 @@ void
     ImGuiViewport * viewport = ImGui::GetMainViewport( );
     ImGui::SetNextWindowPos( ImVec2( viewport->Pos.x + 10, viewport->Pos.y + 10 ) );
     ImGui::SetNextWindowSize(
-     ImVec2( viewport->Size.x / 2 + 20, viewport->Size.y - 20 ) );
+     ImVec2( viewport->Size.x / 2 + 30, viewport->Size.y - 20 ) );
     ImGui::SetNextWindowViewport( viewport->ID );
 
     ImGuiWindowFlags windowFlags =

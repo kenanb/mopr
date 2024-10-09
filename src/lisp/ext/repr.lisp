@@ -70,102 +70,241 @@
 
 (defmethod initialize-instance :after ((node repr-node-root) &key)
   (with-slots (ynode) node
+    ;; Content rules:
     (yoga-fun:node-style-set-flex-direction ynode yoga-def:+flex-direction-column+)
-    (yoga-fun:node-style-set-padding ynode yoga-def:+edge-all+ 5.0f0)))
+    (yoga-fun:node-style-set-padding ynode yoga-def:+edge-all+ 10.0f0)
+    (yoga-fun:node-style-set-gap ynode yoga-def:+gutter-row+ 10.0f0)))
 
 (defclass repr-node-top-level-container (repr-node)
   ((color :initform #(255 255 255 50))))
 
 (defmethod initialize-instance :after ((node repr-node-top-level-container) &key)
   (with-slots (ynode) node
-    (yoga-fun:node-style-set-flex-direction ynode yoga-def:+flex-direction-row+)
     (yoga-fun:node-style-set-flex-grow ynode 1.0f0)
-    (yoga-fun:node-style-set-margin ynode yoga-def:+edge-all+ 5.0f0)
-    (yoga-fun:node-style-set-padding ynode yoga-def:+edge-all+ 2.5f0)))
+    ;; Content rules:
+    (yoga-fun:node-style-set-flex-direction ynode yoga-def:+flex-direction-row+)
+    (yoga-fun:node-style-set-padding ynode yoga-def:+edge-all+ 5.0f0)
+    (yoga-fun:node-style-set-gap ynode yoga-def:+gutter-column+ 5.0f0)))
 
 (defclass repr-node-form-title (repr-node) ())
 
 (defmethod initialize-instance :after ((node repr-node-form-title) &key)
   (with-slots (ynode) node
     (yoga-fun:node-style-set-flex-grow ynode 0.0f0)
-    (yoga-fun:node-style-set-margin ynode yoga-def:+edge-all+ 2.5f0)
     (yoga-fun:node-style-set-width ynode 40)
     (yoga-fun:node-style-set-min-height ynode 20)))
 
-(defclass repr-node-content-form (repr-node) ())
+(defclass repr-node-content-form (repr-node)
+  ((color :initform #(0 0 0 0))))
 
-(defmethod initialize-instance :after ((node repr-node-content-form) &key (h-co 1))
+(defmethod initialize-instance :after ((node repr-node-content-form) &key)
   (with-slots (ynode) node
-    (yoga-fun:node-style-set-flex-direction ynode yoga-def:+flex-direction-column+)
     (yoga-fun:node-style-set-flex-grow ynode 1.0f0)
-    (yoga-fun:node-style-set-margin ynode yoga-def:+edge-all+ 2.5f0)
-    (yoga-fun:node-style-set-min-width ynode 200)
-    (yoga-fun:node-style-set-min-height ynode (+ 10 (* h-co 15)))))
+    ;; Content rules:
+    (yoga-fun:node-style-set-flex-direction ynode yoga-def:+flex-direction-column+)
+    (yoga-fun:node-style-set-padding ynode yoga-def:+edge-all+ 0.0f0)
+    (yoga-fun:node-style-set-gap ynode yoga-def:+gutter-row+ 5.0f0)))
 
-(defun handle-inner-form (yparent form color title-text content-text &optional (line-count 1))
-  (declare (ignore form))
-  (let* ((nt (make-instance 'repr-node-form-title
-                            :yparent yparent
-                            :text title-text
-                            :color color))
-         (nc (make-instance 'repr-node-content-form
-                            :yparent yparent
-                            :text content-text
-                            :color color
-                            :h-co line-count)))
-    (list nt nc)))
+(defclass repr-node-content-attr (repr-node) ())
+
+(defmethod initialize-instance :after ((node repr-node-content-attr) &key (h-co 1))
+  (with-slots (ynode) node
+    (yoga-fun:node-style-set-flex-grow ynode 0.0f0)
+    (yoga-fun:node-style-set-min-width ynode 200)
+    (yoga-fun:node-style-set-min-height ynode (+ 10 (* h-co 14)))))
+
+(defclass repr-node-content-body (repr-node) ())
+
+(defmethod initialize-instance :after ((node repr-node-content-body) &key (h-co 1))
+  (with-slots (ynode) node
+    (yoga-fun:node-style-set-flex-grow ynode 1.0f0)
+    (yoga-fun:node-style-set-min-width ynode 200)
+    (yoga-fun:node-style-set-min-height ynode (+ 10 (* h-co 14)))))
 
 (defun format-form (form margin)
   (let ((*print-pretty* t)
         (*print-right-margin* margin))
     (let* ((text (format nil "~S" form))
-           (line-count (count #\newline text)))
+           (line-count (1+ (count #\newline text))))
       (values text line-count))))
 
-(defun handle-var-form (yparent form)
+(defun handle-var-form (yparent form
+                        &aux
+                          (var-name (car form))
+                          (var-aux (cadr form))
+                          (frest (cddr form)))
   ;; (format t "~%Called handle-var-form!~%: ~S~%" form)
-  (let* ((node (make-instance 'repr-node-top-level-container :yparent yparent)))
-    (cons node (handle-inner-form (repr-node-ynode node) form #(100 200 200 50)
-                                  "VAR" (format-form form *fill-column*)))))
+  (multiple-value-bind (text-body line-count-body)
+      (format-form frest *fill-column*)
+    (let* ((color #(100 200 200 50))
+           (node (make-instance 'repr-node-top-level-container :yparent yparent))
+           (nt (make-instance 'repr-node-form-title
+                              :yparent (repr-node-ynode node)
+                              :text "VAR"
+                              :color color))
+           (nc (make-instance 'repr-node-content-form
+                              :yparent (repr-node-ynode node)))
+           (nca0 (make-instance 'repr-node-content-attr
+                                :yparent (repr-node-ynode nc)
+                                :text (format nil "NAME: ~S" var-name)
+                                :color color))
+           (nca1 (make-instance 'repr-node-content-attr
+                                :yparent (repr-node-ynode nc)
+                                :text (format nil "AUX: ~S" var-aux)
+                                :color color))
+           (ncb (make-instance 'repr-node-content-body
+                               :yparent (repr-node-ynode nc)
+                               :text text-body
+                               :color color
+                               :h-co line-count-body)))
+      (list node nt nc nca0 nca1 ncb))))
 
-(defun handle-each-form (yparent form)
+(defun handle-each-form (yparent form
+                         &aux
+                           (name (car form))
+                           (arg-aggrs (cadr form))
+                           (val-aggrs (cddr form)))
   ;; (format t "~%Called handle-each-form!~%: ~S~%" form)
-  (let* ((node (make-instance 'repr-node-top-level-container :yparent yparent)))
-    (cons node (handle-inner-form (repr-node-ynode node) form #(0 255 200 50)
-                                  "EACH" (format-form form *fill-column*)))))
+  (multiple-value-bind (text-val-aggrs line-count-val-aggrs)
+      (format-form val-aggrs *fill-column*)
+    (let* ((color #(0 255 200 50))
+           (node (make-instance 'repr-node-top-level-container :yparent yparent))
+           (nt (make-instance 'repr-node-form-title
+                              :yparent (repr-node-ynode node)
+                              :text "EACH"
+                              :color color))
+           (nc (make-instance 'repr-node-content-form
+                              :yparent (repr-node-ynode node)))
+           (nca0 (make-instance 'repr-node-content-attr
+                                :yparent (repr-node-ynode nc)
+                                :text (format nil "NAME: ~S" name)
+                                :color color))
+           (nca1 (make-instance 'repr-node-content-attr
+                                :yparent (repr-node-ynode nc)
+                                :text (format nil "ARG-AGGR(S): ~S" arg-aggrs)
+                                :color color))
+           (nca2 (make-instance 'repr-node-content-attr
+                                :yparent (repr-node-ynode nc)
+                                :text (format nil "VAL-AGGR(S): ~S" text-val-aggrs)
+                                :color color
+                                :h-co line-count-val-aggrs)))
+      (list node nt nc nca0 nca1 nca2))))
 
-(defun handle-iota-form (yparent form)
+(defun handle-iota-form (yparent form
+                         &aux
+                           (name (car form))
+                           (arg-aggr (cadr form))
+                           (val-aggr (caddr form)))
   ;; (format t "~%Called handle-iota-form!~%: ~S~%" form)
-  (let* ((node (make-instance 'repr-node-top-level-container :yparent yparent)))
-    (cons node (handle-inner-form (repr-node-ynode node) form #(0 200 255 50)
-                                  "IOTA" (format-form form *fill-column*)))))
+  (let* ((color #(0 200 255 50))
+         (node (make-instance 'repr-node-top-level-container :yparent yparent))
+         (nt (make-instance 'repr-node-form-title
+                            :yparent (repr-node-ynode node)
+                            :text "IOTA"
+                            :color color))
+         (nc (make-instance 'repr-node-content-form
+                            :yparent (repr-node-ynode node)))
+         (nca0 (make-instance 'repr-node-content-attr
+                              :yparent (repr-node-ynode nc)
+                              :text (format nil "NAME: ~S" name)
+                              :color color))
+         (nca1 (make-instance 'repr-node-content-attr
+                              :yparent (repr-node-ynode nc)
+                              :text (format nil "ARG-AGGR: ~S" arg-aggr)
+                              :color color))
+         (nca2 (make-instance 'repr-node-content-attr
+                              :yparent (repr-node-ynode nc)
+                              :text (format nil "VAL-AGGR: ~S" val-aggr)
+                              :color color)))
+    (list node nt nc nca0 nca1 nca2)))
 
-(defun handle-call-form (yparent form)
+(defun handle-call-form (yparent form
+                         &aux
+                           (call-aux (car form))
+                           (call-body (cdr form)))
   ;; (format t "~%Called handle-call-form!~%: ~S~%" form)
-  (let* ((node (make-instance 'repr-node-top-level-container :yparent yparent)))
-    (cons node (handle-inner-form (repr-node-ynode node) form #(200 200 200 50)
-                                  "CALL" (format-form form *fill-column*)))))
+  (multiple-value-bind (text-call-body line-count-call-body)
+      (format-form call-body *fill-column*)
+    (let* ((color #(150 150 200 50))
+           (node (make-instance 'repr-node-top-level-container :yparent yparent))
+           (nt (make-instance 'repr-node-form-title
+                              :yparent (repr-node-ynode node)
+                              :text "CALL"
+                              :color color))
+           (nc (make-instance 'repr-node-content-form
+                              :yparent (repr-node-ynode node)))
+           (nca0 (make-instance 'repr-node-content-attr
+                                :yparent (repr-node-ynode nc)
+                                :text (format nil "AUX: ~S" call-aux)
+                                :color color))
+           (ncb (make-instance 'repr-node-content-body
+                               :yparent (repr-node-ynode nc)
+                               :text text-call-body
+                               :color color
+                               :h-co line-count-call-body)))
+      (list node nt nc nca0 ncb))))
 
-(defun handle-prim-form (yparent form)
+(defun handle-prim-form (yparent form
+                         &aux
+                           (fpath (car form))
+                           (fmeta (cadr form))
+                           (frest (cddr form)))
   ;; (format t "~%Called handle-prim-form!~%: ~S~%" form)
-  (let* ((node (make-instance 'repr-node-top-level-container :yparent yparent)))
-    (cons node
-          (multiple-value-bind (text line-count)
-              (format-form form *fill-column*)
-            (handle-inner-form (repr-node-ynode node) form #(200 100 200 50)
-                               "PRIM" text line-count)))))
+  (multiple-value-bind (text-body line-count-body)
+      (format-form frest *fill-column*)
+    (let* ((color #(200 100 200 50))
+           (node (make-instance 'repr-node-top-level-container :yparent yparent))
+           (nt (make-instance 'repr-node-form-title
+                              :yparent (repr-node-ynode node)
+                              :text "PRIM"
+                              :color color))
+           (nc (make-instance 'repr-node-content-form
+                              :yparent (repr-node-ynode node)))
+           (nca0 (make-instance 'repr-node-content-attr
+                                :yparent (repr-node-ynode nc)
+                                :text (format nil "PATH: ~S" fpath)
+                                :color color))
+           (nca1 (make-instance 'repr-node-content-attr
+                                :yparent (repr-node-ynode nc)
+                                :text (format nil "META: ~S" fmeta)
+                                :color color))
+           (ncb (make-instance 'repr-node-content-body
+                               :yparent (repr-node-ynode nc)
+                               :text text-body
+                               :color color
+                               :h-co line-count-body)))
+      (list node nt nc nca0 nca1 ncb))))
 
 (defun handle-tree-form (yparent form)
   ;; (format t "~%Called handle-tree-form!~%: ~S~%" form)
-  (let* ((node (make-instance 'repr-node-top-level-container :yparent yparent)))
-    (cons node (handle-inner-form (repr-node-ynode node) form #(0 0 200 50)
-                                  "TREE" (format-form form *fill-column*)))))
+  (let* ((color #(0 0 200 50))
+         (node (make-instance 'repr-node-top-level-container :yparent yparent))
+         (nt (make-instance 'repr-node-form-title
+                            :yparent (repr-node-ynode node)
+                            :text "TREE"
+                            :color color))
+         (nc (make-instance 'repr-node-content-form
+                            :yparent (repr-node-ynode node)))
+         (nca0 (make-instance 'repr-node-content-attr
+                              :yparent (repr-node-ynode nc)
+                              :text (format-form form *fill-column*)
+                              :color color)))
+    (list node nt nc nca0)))
 
 (defun handle-meta-form (yparent form)
   ;; (format t "~%Called handle-meta-form!~%: ~S~%" form)
-  (let* ((node (make-instance 'repr-node-top-level-container :yparent yparent)))
-    (cons node (handle-inner-form (repr-node-ynode node) form #(0 0 0 50)
-                                  "META" (format-form form *fill-column*)))))
+  (declare (ignore form))
+  (let* ((color #(0 0 0 50))
+         (node (make-instance 'repr-node-top-level-container :yparent yparent))
+         (nt (make-instance 'repr-node-form-title
+                            :yparent (repr-node-ynode node)
+                            :text "META"
+                            :color color))
+         (nc (make-instance 'repr-node-content-form
+                            :yparent (repr-node-ynode node)))
+         ;; TODO : Add support for metadata handling.
+         )
+    (list node nt nc)))
 
 (defun handle-data-subforms (yparent subforms)
   ;; (format t "~%Called handle-data-subforms!~%: ~S~%" subforms)
