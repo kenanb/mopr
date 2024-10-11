@@ -150,8 +150,8 @@
     (yoga-fun:node-style-set-flex-grow ynode 1.0f0)
     ;; Content rules:
     (yoga-fun:node-style-set-flex-direction ynode yoga-def:+flex-direction-row+)
-    (yoga-fun:node-style-set-padding ynode yoga-def:+edge-all+ 4.0f0)
-    (yoga-fun:node-style-set-gap ynode yoga-def:+gutter-column+ 4.0f0)))
+    (yoga-fun:node-style-set-padding ynode yoga-def:+edge-all+ 6.0f0)
+    (yoga-fun:node-style-set-gap ynode yoga-def:+gutter-column+ 6.0f0)))
 
 (defmethod rnode-command-type ((n expr-container-rnode))
   mopr-def:+command-type-draw-expr-container+)
@@ -200,7 +200,7 @@
     ;; Content rules:
     (yoga-fun:node-style-set-flex-direction ynode yoga-def:+flex-direction-column+)
     (yoga-fun:node-style-set-padding ynode yoga-def:+edge-all+ 0.0f0)
-    (yoga-fun:node-style-set-gap ynode yoga-def:+gutter-row+ 4.0f0)))
+    (yoga-fun:node-style-set-gap ynode yoga-def:+gutter-row+ 6.0f0)))
 
 ;;
 ;;; ATTR-CONTAINER-RNODE
