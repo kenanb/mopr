@@ -12,14 +12,23 @@ void
         printf( "Contents of commandQueue->commands[ %d ]:\n", i );
         switch ( commandQueue->commands[ i ].base.cType )
         {
-            case COMMAND_TYPE_NONE:
-                printf( "  Type: NONE\n" );
+            case COMMAND_TYPE_BASE:
+                printf( "  Type: BASE\n" );
                 break;
-            case COMMAND_TYPE_DRAW_RECT:
-                printf( "  Type: DRAW_RECT\n" );
+            case COMMAND_TYPE_DRAW_ROOT_CONTAINER:
+                printf( "  Type: DRAW_ROOT_CONTAINER\n" );
                 break;
-            case COMMAND_TYPE_DRAW_CIRCLE:
-                printf( "  Type: DRAW_CIRCLE\n" );
+            case COMMAND_TYPE_DRAW_EXPR_CONTAINER:
+                printf( "  Type: DRAW_EXPR_CONTAINER\n" );
+                break;
+            case COMMAND_TYPE_DRAW_EXPR_LABEL:
+                printf( "  Type: DRAW_EXPR_LABEL\n" );
+                break;
+            case COMMAND_TYPE_DRAW_ATTR_LABEL:
+                printf( "  Type: DRAW_ATTR_LABEL\n" );
+                break;
+            case COMMAND_TYPE_DRAW_ATTR_INPUT:
+                printf( "  Type: DRAW_ATTR_INPUT\n" );
                 break;
         }
     }

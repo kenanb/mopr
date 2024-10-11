@@ -16,11 +16,15 @@
 
 (in-package :mopr-ext/repr)
 
-(defvar *fill-column* 75)
+(defvar *fill-column* 70)
 
 (defvar *debug-mode* t)
 
 (defvar *enable-call* nil)
+
+;;
+;;; Utilities
+;;
 
 (defun unknown-form-error (form action)
   (format t "
@@ -39,94 +43,231 @@
   (when (and (eq action :debug) *debug-mode*)
     (error "Cannot handle form: ~S~%" form)))
 
-(defclass repr-node ()
-  ((id
-    :initarg :id
-    :type integer
-    :initform 0
-    :reader repr-node-id)
-   (color
-    :initarg :color
-    :type (simple-vector 4)
-    :initform #(255 255 255 255)
-    :reader repr-node-color)
-   (text
-    :initarg :text
-    :type base-string
-    :initform (make-string 0 :element-type 'base-char)
-    :reader repr-node-text)
-   (ynode
-    :type yoga-def:node-ref
-    :initform (yoga-fun:node-new)
-    :reader repr-node-ynode)))
-
-(defmethod initialize-instance :after ((node repr-node) &key (yparent nil))
-  (when yparent
-    (with-slots (ynode) node
-      (yoga-fun:node-insert-child yparent ynode (yoga-fun:node-get-child-count yparent)))))
-
-(defclass repr-node-root (repr-node)
-  ((color :initform #(250 250 200 100))))
-
-(defmethod initialize-instance :after ((node repr-node-root) &key)
-  (with-slots (ynode) node
-    ;; Content rules:
-    (yoga-fun:node-style-set-flex-direction ynode yoga-def:+flex-direction-column+)
-    (yoga-fun:node-style-set-padding ynode yoga-def:+edge-all+ 10.0f0)
-    (yoga-fun:node-style-set-gap ynode yoga-def:+gutter-row+ 10.0f0)))
-
-(defclass repr-node-top-level-container (repr-node)
-  ((color :initform #(255 255 255 50))))
-
-(defmethod initialize-instance :after ((node repr-node-top-level-container) &key)
-  (with-slots (ynode) node
-    (yoga-fun:node-style-set-flex-grow ynode 1.0f0)
-    ;; Content rules:
-    (yoga-fun:node-style-set-flex-direction ynode yoga-def:+flex-direction-row+)
-    (yoga-fun:node-style-set-padding ynode yoga-def:+edge-all+ 5.0f0)
-    (yoga-fun:node-style-set-gap ynode yoga-def:+gutter-column+ 5.0f0)))
-
-(defclass repr-node-form-title (repr-node) ())
-
-(defmethod initialize-instance :after ((node repr-node-form-title) &key)
-  (with-slots (ynode) node
-    (yoga-fun:node-style-set-flex-grow ynode 0.0f0)
-    (yoga-fun:node-style-set-width ynode 40)
-    (yoga-fun:node-style-set-min-height ynode 20)))
-
-(defclass repr-node-content-form (repr-node)
-  ((color :initform #(0 0 0 0))))
-
-(defmethod initialize-instance :after ((node repr-node-content-form) &key)
-  (with-slots (ynode) node
-    (yoga-fun:node-style-set-flex-grow ynode 1.0f0)
-    ;; Content rules:
-    (yoga-fun:node-style-set-flex-direction ynode yoga-def:+flex-direction-column+)
-    (yoga-fun:node-style-set-padding ynode yoga-def:+edge-all+ 0.0f0)
-    (yoga-fun:node-style-set-gap ynode yoga-def:+gutter-row+ 5.0f0)))
-
-(defclass repr-node-content-attr (repr-node) ())
-
-(defmethod initialize-instance :after ((node repr-node-content-attr) &key (h-co 1))
-  (with-slots (ynode) node
-    (yoga-fun:node-style-set-flex-grow ynode 0.0f0)
-    (yoga-fun:node-style-set-min-width ynode 200)
-    (yoga-fun:node-style-set-min-height ynode (+ 10 (* h-co 14)))))
-
-(defclass repr-node-content-body (repr-node) ())
-
-(defmethod initialize-instance :after ((node repr-node-content-body) &key (h-co 1))
-  (with-slots (ynode) node
-    (yoga-fun:node-style-set-flex-grow ynode 1.0f0)
-    (yoga-fun:node-style-set-min-width ynode 200)
-    (yoga-fun:node-style-set-min-height ynode (+ 10 (* h-co 14)))))
-
 (defun format-form (form margin)
   (let ((*print-pretty* t)
         (*print-right-margin* margin))
     (let* ((text (format nil "~S" form))
            (line-count (1+ (count #\newline text))))
       (values text line-count))))
+
+(defmacro %dim (ynode accessor)
+  (case accessor
+    (:left `(yoga-fun:node-layout-get-left ,ynode))
+    (:right `(yoga-fun:node-layout-get-right ,ynode))
+    (:top `(yoga-fun:node-layout-get-top ,ynode))
+    (:bottom `(yoga-fun:node-layout-get-bottom ,ynode))
+    (:width `(yoga-fun:node-layout-get-width ,ynode))
+    (:height `(yoga-fun:node-layout-get-height ,ynode))))
+
+(defun recursive-get-left (ynode)
+  (if (autowrap:wrapper-null-p ynode) 0
+      (+ (%dim ynode :left)
+         (recursive-get-left (yoga-fun:node-get-parent ynode)))))
+
+(defun recursive-get-top (ynode)
+  (if (autowrap:wrapper-null-p ynode) 0
+      (+ (%dim ynode :top)
+         (recursive-get-top (yoga-fun:node-get-parent ynode)))))
+
+(defmacro %set-values (obj accessor &rest key-value-plist)
+  `(progn
+     ,@(loop for (k v . rest) on key-value-plist by #'cddr
+             collecting `(setf (plus-c:c-ref ,obj ,@accessor ,k) ,v))))
+
+;;
+;;; RNODE and Generic Functions
+;;
+
+(defgeneric rnode-command-type (node)
+  (:documentation "Command type to assign for the node."))
+
+(defgeneric populate-command-from-rnode (node c)
+  (:documentation "Populate command to represent the behaviour of the given node."))
+
+(defclass rnode ()
+  ((id
+    :initarg :id
+    :type integer
+    :initform 0
+    :reader rnode-id)
+   (ynode
+    :type yoga-def:node-ref
+    :initform (yoga-fun:node-new)
+    :reader rnode-ynode)))
+
+(defmethod initialize-instance :after ((node rnode) &key (yparent nil))
+  (when yparent
+    (with-slots (ynode) node
+      (yoga-fun:node-insert-child yparent ynode (yoga-fun:node-get-child-count yparent)))))
+
+(defmethod rnode-command-type ((n rnode))
+  mopr-def:+command-type-base+)
+
+(defmethod populate-command-from-rnode ((n rnode) c &aux (y (rnode-ynode n)))
+  (%set-values c (mopr-def:combined-command :base)
+               :c-type (rnode-command-type n)
+               :x (recursive-get-left y)
+               :y (recursive-get-top y)
+               :w (%dim y :width)
+               :h (%dim y :height)))
+
+;;
+;;; HIDDEN-RNODE
+;;
+
+(defclass hidden-rnode (rnode)
+  ())
+
+(defmethod populate-command-from-rnode ((n hidden-rnode) c)
+  (error "Invalid node passed to populate-command-from-rnode!"))
+
+;;
+;;; ROOT-CONTAINER-RNODE
+;;
+
+(defclass root-container-rnode (rnode)
+  ())
+
+(defmethod initialize-instance :after ((node root-container-rnode) &key)
+  (with-slots (ynode) node
+    ;; Content rules:
+    (yoga-fun:node-style-set-flex-direction ynode yoga-def:+flex-direction-column+)
+    (yoga-fun:node-style-set-padding ynode yoga-def:+edge-all+ 8.0f0)
+    (yoga-fun:node-style-set-gap ynode yoga-def:+gutter-row+ 8.0f0)))
+
+(defmethod rnode-command-type ((n root-container-rnode))
+  mopr-def:+command-type-draw-root-container+)
+
+;;
+;;; EXPR-CONTAINER-RNODE
+;;
+
+(defclass expr-container-rnode (rnode)
+  ())
+
+(defmethod initialize-instance :after ((node expr-container-rnode) &key)
+  (with-slots (ynode) node
+    (yoga-fun:node-style-set-flex-grow ynode 1.0f0)
+    ;; Content rules:
+    (yoga-fun:node-style-set-flex-direction ynode yoga-def:+flex-direction-row+)
+    (yoga-fun:node-style-set-padding ynode yoga-def:+edge-all+ 4.0f0)
+    (yoga-fun:node-style-set-gap ynode yoga-def:+gutter-column+ 4.0f0)))
+
+(defmethod rnode-command-type ((n expr-container-rnode))
+  mopr-def:+command-type-draw-expr-container+)
+
+;;
+;;; EXPR-LABEL-RNODE
+;;
+
+(defclass expr-label-rnode (rnode)
+  ((bg
+    :initarg :bg
+    :type mopr-def:command-theme
+    :initform mopr-def:+command-theme-none+
+    :reader rnode-bg)
+   (text
+    :initarg :text
+    :type base-string
+    :initform (make-string 0 :element-type 'base-char)
+    :reader rnode-text)))
+
+(defmethod initialize-instance :after ((node expr-label-rnode) &key)
+  (with-slots (ynode) node
+    (yoga-fun:node-style-set-flex-grow ynode 0.0f0)
+    (yoga-fun:node-style-set-width ynode 48)
+    (yoga-fun:node-style-set-min-height ynode 20)))
+
+(defmethod rnode-command-type ((n expr-label-rnode))
+  mopr-def:+command-type-draw-expr-label+)
+
+(defmethod populate-command-from-rnode ((n expr-label-rnode) c)
+  (%set-values c (mopr-def:combined-command :draw-expr-label)
+               :bg (rnode-bg n)
+               :text (autowrap:alloc-string (rnode-text n)))
+  (call-next-method))
+
+;;
+;;; CONTENT-CONTAINER-RNODE
+;;
+
+(defclass content-container-rnode (hidden-rnode)
+  ())
+
+(defmethod initialize-instance :after ((node content-container-rnode) &key)
+  (with-slots (ynode) node
+    (yoga-fun:node-style-set-flex-grow ynode 1.0f0)
+    ;; Content rules:
+    (yoga-fun:node-style-set-flex-direction ynode yoga-def:+flex-direction-column+)
+    (yoga-fun:node-style-set-padding ynode yoga-def:+edge-all+ 0.0f0)
+    (yoga-fun:node-style-set-gap ynode yoga-def:+gutter-row+ 4.0f0)))
+
+;;
+;;; ATTR-CONTAINER-RNODE
+;;
+
+(defclass attr-container-rnode (hidden-rnode)
+  ())
+
+(defmethod initialize-instance :after ((node attr-container-rnode) &key)
+  (with-slots (ynode) node
+    (yoga-fun:node-style-set-flex-grow ynode 0.0f0)
+    ;; Content rules:
+    (yoga-fun:node-style-set-flex-direction ynode yoga-def:+flex-direction-row+)
+    (yoga-fun:node-style-set-padding ynode yoga-def:+edge-all+ 0.0f0)
+    (yoga-fun:node-style-set-gap ynode yoga-def:+gutter-column+ 4.0f0)))
+
+(defclass attr-label-rnode (rnode)
+  ((bg
+    :initarg :bg
+    :type mopr-def:command-theme
+    :initform mopr-def:+command-theme-none+
+    :reader rnode-bg)
+   (text
+    :initarg :text
+    :type base-string
+    :initform (make-string 0 :element-type 'base-char)
+    :reader rnode-text)))
+
+(defmethod initialize-instance :after ((node attr-label-rnode) &key (h-co 1))
+  (with-slots (ynode text) node
+    (yoga-fun:node-style-set-flex-grow ynode 0.0f0)
+    (yoga-fun:node-style-set-min-width ynode (+ 16 (* (length text) 7)))
+    (yoga-fun:node-style-set-min-height ynode (+ 16 (* h-co 14)))))
+
+(defmethod rnode-command-type ((n attr-label-rnode))
+  mopr-def:+command-type-draw-attr-label+)
+
+(defmethod populate-command-from-rnode ((n attr-label-rnode) c)
+  (%set-values c (mopr-def:combined-command :draw-attr-label)
+               :bg (rnode-bg n)
+               :text (autowrap:alloc-string (rnode-text n)))
+  (call-next-method))
+
+(defclass attr-input-rnode (rnode)
+  ((text
+    :initarg :text
+    :type base-string
+    :initform (make-string 0 :element-type 'base-char)
+    :reader rnode-text)))
+
+(defmethod initialize-instance :after ((node attr-input-rnode) &key (h-co 1))
+  (with-slots (ynode) node
+    (yoga-fun:node-style-set-flex-grow ynode 1.0f0)
+    (yoga-fun:node-style-set-min-width ynode 200)
+    (yoga-fun:node-style-set-min-height ynode (+ 16 (* h-co 14)))))
+
+(defmethod rnode-command-type ((n attr-input-rnode))
+  mopr-def:+command-type-draw-attr-input+)
+
+(defmethod populate-command-from-rnode ((n attr-input-rnode) c)
+  (%set-values c (mopr-def:combined-command :draw-attr-input)
+               :text (autowrap:alloc-string (rnode-text n)))
+  (call-next-method))
+
+;;
+;;; Form Handlers
+;;
 
 (defun handle-var-form (yparent form
                         &aux
@@ -136,28 +277,37 @@
   ;; (format t "~%Called handle-var-form!~%: ~S~%" form)
   (multiple-value-bind (text-body line-count-body)
       (format-form frest *fill-column*)
-    (let* ((color #(100 200 200 50))
-           (node (make-instance 'repr-node-top-level-container :yparent yparent))
-           (nt (make-instance 'repr-node-form-title
-                              :yparent (repr-node-ynode node)
-                              :text "VAR"
-                              :color color))
-           (nc (make-instance 'repr-node-content-form
-                              :yparent (repr-node-ynode node)))
-           (nca0 (make-instance 'repr-node-content-attr
-                                :yparent (repr-node-ynode nc)
-                                :text (format nil "NAME: ~S" var-name)
-                                :color color))
-           (nca1 (make-instance 'repr-node-content-attr
-                                :yparent (repr-node-ynode nc)
-                                :text (format nil "AUX: ~S" var-aux)
-                                :color color))
-           (ncb (make-instance 'repr-node-content-body
-                               :yparent (repr-node-ynode nc)
+    (let* ((color mopr-def:+command-theme-expr-bg-0+)
+           (nec (make-instance 'expr-container-rnode :yparent yparent))
+           (nel (make-instance 'expr-label-rnode
+                               :yparent (rnode-ynode nec)
+                               :text "VAR"
+                               :bg color))
+           (ncc (make-instance 'content-container-rnode
+                               :yparent (rnode-ynode nec)))
+           (nac0 (make-instance 'attr-container-rnode
+                                :yparent (rnode-ynode ncc)))
+           (nal0 (make-instance 'attr-label-rnode
+                                :yparent (rnode-ynode nac0)
+                                :text "NAME"
+                                :bg color))
+           (nai0 (make-instance 'attr-input-rnode
+                                :yparent (rnode-ynode nac0)
+                                :text (format nil "~S" var-name)))
+           (nac1 (make-instance 'attr-container-rnode
+                                :yparent (rnode-ynode ncc)))
+           (nal1 (make-instance 'attr-label-rnode
+                                :yparent (rnode-ynode nac1)
+                                :text "LET"
+                                :bg color))
+           (nai1 (make-instance 'attr-input-rnode
+                                :yparent (rnode-ynode nac1)
+                                :text (format nil "~S" var-aux)))
+           (nar (make-instance 'attr-input-rnode
+                               :yparent (rnode-ynode ncc)
                                :text text-body
-                               :color color
                                :h-co line-count-body)))
-      (list node nt nc nca0 nca1 ncb))))
+      (list nec nel ncc nac0 nal0 nai0 nac1 nal1 nai1 nar))))
 
 (defun handle-each-form (yparent form
                          &aux
@@ -167,28 +317,42 @@
   ;; (format t "~%Called handle-each-form!~%: ~S~%" form)
   (multiple-value-bind (text-val-aggrs line-count-val-aggrs)
       (format-form val-aggrs *fill-column*)
-    (let* ((color #(0 255 200 50))
-           (node (make-instance 'repr-node-top-level-container :yparent yparent))
-           (nt (make-instance 'repr-node-form-title
-                              :yparent (repr-node-ynode node)
-                              :text "EACH"
-                              :color color))
-           (nc (make-instance 'repr-node-content-form
-                              :yparent (repr-node-ynode node)))
-           (nca0 (make-instance 'repr-node-content-attr
-                                :yparent (repr-node-ynode nc)
-                                :text (format nil "NAME: ~S" name)
-                                :color color))
-           (nca1 (make-instance 'repr-node-content-attr
-                                :yparent (repr-node-ynode nc)
-                                :text (format nil "ARG-AGGR(S): ~S" arg-aggrs)
-                                :color color))
-           (nca2 (make-instance 'repr-node-content-attr
-                                :yparent (repr-node-ynode nc)
-                                :text (format nil "VAL-AGGR(S): ~S" text-val-aggrs)
-                                :color color
-                                :h-co line-count-val-aggrs)))
-      (list node nt nc nca0 nca1 nca2))))
+    (let* ((color mopr-def:+command-theme-expr-bg-1+)
+           (nec (make-instance 'expr-container-rnode :yparent yparent))
+           (nel (make-instance 'expr-label-rnode
+                               :yparent (rnode-ynode nec)
+                               :text "EACH"
+                               :bg color))
+           (ncc (make-instance 'content-container-rnode
+                               :yparent (rnode-ynode nec)))
+           (nac0 (make-instance 'attr-container-rnode
+                                :yparent (rnode-ynode ncc)))
+           (nal0 (make-instance 'attr-label-rnode
+                                :yparent (rnode-ynode nac0)
+                                :text "NAME"
+                                :bg color))
+           (nai0 (make-instance 'attr-input-rnode
+                                :yparent (rnode-ynode nac0)
+                                :text (format nil "~S" name)))
+           (nac1 (make-instance 'attr-container-rnode
+                                :yparent (rnode-ynode ncc)))
+           (nal1 (make-instance 'attr-label-rnode
+                                :yparent (rnode-ynode nac1)
+                                :text "ARG-AGGR(S)"
+                                :bg color))
+           (nai1 (make-instance 'attr-input-rnode
+                                :yparent (rnode-ynode nac1)
+                                :text (format nil "~S" arg-aggrs)))
+           (nac2 (make-instance 'attr-container-rnode
+                                :yparent (rnode-ynode ncc)))
+           (nal2 (make-instance 'attr-label-rnode
+                                :yparent (rnode-ynode nac2)
+                                :text "VAL-AGGR(S)"
+                                :bg color))
+           (nai2 (make-instance 'attr-input-rnode
+                                :yparent (rnode-ynode nac2)
+                                :text (format nil "~S" val-aggrs))))
+      (list nec nel ncc nac0 nal0 nai0 nac1 nal1 nai1 nac2 nal2 nai2))))
 
 (defun handle-iota-form (yparent form
                          &aux
@@ -196,27 +360,42 @@
                            (arg-aggr (cadr form))
                            (val-aggr (caddr form)))
   ;; (format t "~%Called handle-iota-form!~%: ~S~%" form)
-  (let* ((color #(0 200 255 50))
-         (node (make-instance 'repr-node-top-level-container :yparent yparent))
-         (nt (make-instance 'repr-node-form-title
-                            :yparent (repr-node-ynode node)
-                            :text "IOTA"
-                            :color color))
-         (nc (make-instance 'repr-node-content-form
-                            :yparent (repr-node-ynode node)))
-         (nca0 (make-instance 'repr-node-content-attr
-                              :yparent (repr-node-ynode nc)
-                              :text (format nil "NAME: ~S" name)
-                              :color color))
-         (nca1 (make-instance 'repr-node-content-attr
-                              :yparent (repr-node-ynode nc)
-                              :text (format nil "ARG-AGGR: ~S" arg-aggr)
-                              :color color))
-         (nca2 (make-instance 'repr-node-content-attr
-                              :yparent (repr-node-ynode nc)
-                              :text (format nil "VAL-AGGR: ~S" val-aggr)
-                              :color color)))
-    (list node nt nc nca0 nca1 nca2)))
+  (let* ((color mopr-def:+command-theme-expr-bg-2+)
+         (nec (make-instance 'expr-container-rnode :yparent yparent))
+         (nel (make-instance 'expr-label-rnode
+                             :yparent (rnode-ynode nec)
+                             :text "IOTA"
+                             :bg color))
+         (ncc (make-instance 'content-container-rnode
+                             :yparent (rnode-ynode nec)))
+         (nac0 (make-instance 'attr-container-rnode
+                              :yparent (rnode-ynode ncc)))
+         (nal0 (make-instance 'attr-label-rnode
+                              :yparent (rnode-ynode nac0)
+                              :text "NAME"
+                              :bg color))
+         (nai0 (make-instance 'attr-input-rnode
+                              :yparent (rnode-ynode nac0)
+                              :text (format nil "~S" name)))
+         (nac1 (make-instance 'attr-container-rnode
+                              :yparent (rnode-ynode ncc)))
+         (nal1 (make-instance 'attr-label-rnode
+                              :yparent (rnode-ynode nac1)
+                              :text "ARG-AGGR"
+                              :bg color))
+         (nai1 (make-instance 'attr-input-rnode
+                              :yparent (rnode-ynode nac1)
+                              :text (format nil "~S" arg-aggr)))
+         (nac2 (make-instance 'attr-container-rnode
+                              :yparent (rnode-ynode ncc)))
+         (nal2 (make-instance 'attr-label-rnode
+                              :yparent (rnode-ynode nac2)
+                              :text "VAL-AGGR"
+                              :bg color))
+         (nai2 (make-instance 'attr-input-rnode
+                              :yparent (rnode-ynode nac2)
+                              :text (format nil "~S" val-aggr))))
+    (list nec nel ncc nac0 nal0 nai0 nac1 nal1 nai1 nac2 nal2 nai2)))
 
 (defun handle-call-form (yparent form
                          &aux
@@ -225,24 +404,28 @@
   ;; (format t "~%Called handle-call-form!~%: ~S~%" form)
   (multiple-value-bind (text-call-body line-count-call-body)
       (format-form call-body *fill-column*)
-    (let* ((color #(150 150 200 50))
-           (node (make-instance 'repr-node-top-level-container :yparent yparent))
-           (nt (make-instance 'repr-node-form-title
-                              :yparent (repr-node-ynode node)
-                              :text "CALL"
-                              :color color))
-           (nc (make-instance 'repr-node-content-form
-                              :yparent (repr-node-ynode node)))
-           (nca0 (make-instance 'repr-node-content-attr
-                                :yparent (repr-node-ynode nc)
-                                :text (format nil "AUX: ~S" call-aux)
-                                :color color))
-           (ncb (make-instance 'repr-node-content-body
-                               :yparent (repr-node-ynode nc)
+    (let* ((color mopr-def:+command-theme-expr-bg-3+)
+           (nec (make-instance 'expr-container-rnode :yparent yparent))
+           (nel (make-instance 'expr-label-rnode
+                               :yparent (rnode-ynode nec)
+                               :text "CALL"
+                               :bg color))
+           (ncc (make-instance 'content-container-rnode
+                               :yparent (rnode-ynode nec)))
+           (nac0 (make-instance 'attr-container-rnode
+                                :yparent (rnode-ynode ncc)))
+           (nal0 (make-instance 'attr-label-rnode
+                                :yparent (rnode-ynode nac0)
+                                :text "LET"
+                                :bg color))
+           (nai0 (make-instance 'attr-input-rnode
+                                :yparent (rnode-ynode nac0)
+                                :text (format nil "~S" call-aux)))
+           (nar (make-instance 'attr-input-rnode
+                               :yparent (rnode-ynode ncc)
                                :text text-call-body
-                               :color color
                                :h-co line-count-call-body)))
-      (list node nt nc nca0 ncb))))
+      (list nec nel ncc nac0 nal0 nai0 nar))))
 
 (defun handle-prim-form (yparent form
                          &aux
@@ -250,23 +433,33 @@
                            (fmeta (cadr form))
                            (frest (cddr form)))
   ;; (format t "~%Called handle-prim-form!~%: ~S~%" form)
-  (let* ((color #(200 100 200 50))
-         (node (make-instance 'repr-node-top-level-container :yparent yparent))
-         (nt (make-instance 'repr-node-form-title
-                            :yparent (repr-node-ynode node)
-                            :text "PRIM"
-                            :color color))
-         (nc (make-instance 'repr-node-content-form
-                            :yparent (repr-node-ynode node)))
-         (nca0 (make-instance 'repr-node-content-attr
-                              :yparent (repr-node-ynode nc)
-                              :text (format nil "PATH: ~S" fpath)
-                              :color color))
-         (nca1 (make-instance 'repr-node-content-attr
-                              :yparent (repr-node-ynode nc)
-                              :text (format nil "META: ~S" fmeta)
-                              :color color))
-         (nested-nodes
+  (let* ((color mopr-def:+command-theme-expr-bg-4+)
+         (nec (make-instance 'expr-container-rnode :yparent yparent))
+         (nel (make-instance 'expr-label-rnode
+                             :yparent (rnode-ynode nec)
+                             :text "PRIM"
+                             :bg color))
+         (ncc (make-instance 'content-container-rnode
+                             :yparent (rnode-ynode nec)))
+         (nac0 (make-instance 'attr-container-rnode
+                              :yparent (rnode-ynode ncc)))
+         (nal0 (make-instance 'attr-label-rnode
+                              :yparent (rnode-ynode nac0)
+                              :text "PATH"
+                              :bg color))
+         (nai0 (make-instance 'attr-input-rnode
+                              :yparent (rnode-ynode nac0)
+                              :text (format nil "~S" fpath)))
+         (nac1 (make-instance 'attr-container-rnode
+                              :yparent (rnode-ynode ncc)))
+         (nal1 (make-instance 'attr-label-rnode
+                              :yparent (rnode-ynode nac1)
+                              :text "META"
+                              :bg color))
+         (nai1 (make-instance 'attr-input-rnode
+                              :yparent (rnode-ynode nac1)
+                              :text (format nil "~S" fmeta)))
+         (nested-rnodes
            (loop for l in frest
                  for i from 0
                  for fn = (case (car l)
@@ -274,40 +467,39 @@
                             (:call   #'handle-call-form)
                             (:|call| #'handle-call-form))
                  nconc (if fn
-                           (funcall fn (repr-node-ynode nc) (cdr l))
+                           (funcall fn (rnode-ynode ncc) (cdr l))
                            (unknown-form-error (car l) :debug)))))
-    (concatenate 'list (list node nt nc nca0 nca1) nested-nodes)))
+    (concatenate 'list (list nec nel ncc nac0 nal0 nai0 nac1 nal1 nai1) nested-rnodes)))
 
 (defun handle-tree-form (yparent form)
   ;; (format t "~%Called handle-tree-form!~%: ~S~%" form)
-  (let* ((color #(0 0 200 50))
-         (node (make-instance 'repr-node-top-level-container :yparent yparent))
-         (nt (make-instance 'repr-node-form-title
-                            :yparent (repr-node-ynode node)
-                            :text "TREE"
-                            :color color))
-         (nc (make-instance 'repr-node-content-form
-                            :yparent (repr-node-ynode node)))
-         (nca0 (make-instance 'repr-node-content-attr
-                              :yparent (repr-node-ynode nc)
-                              :text (format-form form *fill-column*)
-                              :color color)))
-    (list node nt nc nca0)))
+  (let* ((color mopr-def:+command-theme-expr-bg-5+)
+         (nec (make-instance 'expr-container-rnode :yparent yparent))
+         (nel (make-instance 'expr-label-rnode
+                             :yparent (rnode-ynode nec)
+                             :text "TREE"
+                             :bg color))
+         (ncc (make-instance 'content-container-rnode
+                             :yparent (rnode-ynode nec)))
+         (nar (make-instance 'attr-input-rnode
+                             :yparent (rnode-ynode ncc)
+                             :text (format-form form *fill-column*))))
+    (list nec nel ncc nar)))
 
 (defun handle-meta-form (yparent form)
   ;; (format t "~%Called handle-meta-form!~%: ~S~%" form)
   (declare (ignore form))
-  (let* ((color #(0 0 0 50))
-         (node (make-instance 'repr-node-top-level-container :yparent yparent))
-         (nt (make-instance 'repr-node-form-title
-                            :yparent (repr-node-ynode node)
-                            :text "META"
-                            :color color))
-         (nc (make-instance 'repr-node-content-form
-                            :yparent (repr-node-ynode node)))
+  (let* ((color mopr-def:+command-theme-expr-bg-6+)
+         (nec (make-instance 'expr-container-rnode :yparent yparent))
+         (nel (make-instance 'expr-label-rnode
+                             :yparent (rnode-ynode nec)
+                             :text "META"
+                             :color color))
+         (ncc (make-instance 'content-container-rnode
+                             :yparent (rnode-ynode nec)))
          ;; TODO : Add support for metadata handling.
          )
-    (list node nt nc)))
+    (list nec nel ncc)))
 
 (defun handle-data-subforms (yparent subforms)
   ;; (format t "~%Called handle-data-subforms!~%: ~S~%" subforms)
@@ -332,6 +524,10 @@
                   (funcall fn yparent (cdr l))
                   (unknown-form-error (car l) :debug))))
 
+;;
+;;; Top-Level API and Macros
+;;
+
 (defmacro with-repr-variables ((&key
                                   (enable-call nil))
                                &body body)
@@ -342,44 +538,21 @@
   (mopr-info:with-registry (:supported-cases '(:upcase))
     (mopr-plug:with-configuration ()
       (with-repr-variables (:enable-call t)
-        (let* ((root-node (make-instance 'repr-node-root)))
-          (cons root-node (handle-data-subforms (repr-node-ynode root-node) usds-data)))))))
+        (let* ((root-rnode (make-instance 'root-container-rnode)))
+          (cons root-rnode (handle-data-subforms (rnode-ynode root-rnode) usds-data)))))))
 
 (defmacro with-layout-settings (&body body)
   `(float-features:with-float-traps-masked (:invalid)
      ,@body))
 
-(defmacro %dim (node accessor)
-  (case accessor
-    (:left `(yoga-fun:node-layout-get-left ,node))
-    (:right `(yoga-fun:node-layout-get-right ,node))
-    (:top `(yoga-fun:node-layout-get-top ,node))
-    (:bottom `(yoga-fun:node-layout-get-bottom ,node))
-    (:width `(yoga-fun:node-layout-get-width ,node))
-    (:height `(yoga-fun:node-layout-get-height ,node))))
-
-(defmacro %set-values (obj accessor &rest key-value-plist)
-  `(progn
-     ,@(loop for (k v . rest) on key-value-plist by #'cddr
-             collecting `(setf (plus-c:c-ref ,obj ,@accessor ,k) ,v))))
-
-(defun recursive-get-left (ynode)
-  (if (autowrap:wrapper-null-p ynode) 0
-      (+ (%dim ynode :left)
-         (recursive-get-left (yoga-fun:node-get-parent ynode)))))
-
-(defun recursive-get-top (ynode)
-  (if (autowrap:wrapper-null-p ynode) 0
-      (+ (%dim ynode :top)
-         (recursive-get-top (yoga-fun:node-get-parent ynode)))))
-
 (defun populate-command-queue (cmd-queue usds-data)
   (with-layout-settings
       (let* ((pixels-w (plus-c:c-ref cmd-queue mopr-def:command-queue :pixels-w))
              ;; (pixels-h (plus-c:c-ref cmd-queue mopr-def:command-queue :pixels-h))
-             (nodes (build-repr-call-enabled usds-data))
-             (cmd-count (length nodes))
-             (ynode (repr-node-ynode (car nodes)))
+             (rnodes (build-repr-call-enabled usds-data))
+             (visible-rnodes (remove-if (lambda (x) (typep x 'hidden-rnode)) rnodes))
+             (cmd-count (length visible-rnodes))
+             (ynode (rnode-ynode (car visible-rnodes)))
              (commands (autowrap:alloc 'mopr-def:combined-command cmd-count)))
 
         (yoga-fun:node-calculate-layout ynode
@@ -387,23 +560,11 @@
                                         yoga-def:+undefined+ ;; pixels-h
                                         yoga-def:+direction-ltr+)
 
-        (loop for n in nodes
-              for y = (repr-node-ynode n)
+        (loop for n in visible-rnodes
               for i to cmd-count
-              for c = (autowrap:c-aref commands i 'mopr-def:combined-command)
-              do (%set-values c (mopr-def:combined-command :draw-rect)
-                              :c-type mopr-def:+command-type-draw-rect+
-                              :x (recursive-get-left y)
-                              :y (recursive-get-top y)
-                              :w (%dim y :width)
-                              :h (%dim y :height)
-                              :rounding 5.0f0
-                              :text (autowrap:alloc-string (repr-node-text n)))
-              do (%set-values c (mopr-def:combined-command :draw-rect :col)
-                              0 (aref (repr-node-color n) 0)
-                              1 (aref (repr-node-color n) 1)
-                              2 (aref (repr-node-color n) 2)
-                              3 (aref (repr-node-color n) 3)))
+              do (populate-command-from-rnode
+                  n
+                  (autowrap:c-aref commands i 'mopr-def:combined-command)))
 
         (%set-values cmd-queue (mopr-def:command-queue)
                      :nof-commands cmd-count
@@ -425,19 +586,34 @@
     (loop for i to cmd-count
           for c = (autowrap:c-aref commands i 'mopr-def:combined-command)
           for c-type = (plus-c:c-ref c mopr-def:combined-command :base :c-type)
-          do (when (eql c-type mopr-def:+command-type-draw-rect+)
-               ;; c-ref implements some convenience functionality based on the last field.
-               ;; However, in order to free the C string, we do need the pointer.  So we
-               ;; dereference and reference in the end, to inhibit foreign-string last-field
-               ;; convenience.
-               (autowrap::free (plus-c:c-ref c mopr-def:combined-command
-                                             :draw-rect :text plus-c:* plus-c:&))))
+
+          ;; TODO: Formalize cleanup.
+          ;;
+          ;; NOTE: c-ref implements some convenience functionality based on the
+          ;; last field.  However, in order to free the C string, we do need the
+          ;; pointer.  So we dereference and reference in the end, to inhibit
+          ;; foreign-string last-field convenience.
+          do (case c-type
+               (mopr-def:+command-type-draw-expr-label+
+                (autowrap::free (plus-c:c-ref c mopr-def:combined-command
+                                              :draw-expr-label
+                                              :text plus-c:* plus-c:&)))
+               (mopr-def:+command-type-draw-attr-label+
+                (autowrap::free (plus-c:c-ref c mopr-def:combined-command
+                                              :draw-attr-label
+                                              :text plus-c:* plus-c:&)))
+               (mopr-def:+command-type-draw-attr-input+
+                (autowrap::free (plus-c:c-ref c mopr-def:combined-command
+                                              :draw-attr-input
+                                              :text plus-c:* plus-c:&)))))
 
     (autowrap:free commands)
 
     (%set-values cmd-queue (mopr-def:command-queue) :nof-commands 0 :commands (autowrap:ptr nil))))
 
-;; TESTING
+;;
+;;; TESTING
+;;
 
 (defun dummy-yoga-layout (pixels-w pixels-h)
   ;; For disabling pixel rounding:
