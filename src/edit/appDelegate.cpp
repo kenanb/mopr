@@ -41,7 +41,9 @@ void
     //
 
     // Stage needs to be available for app state initialization.
-    Scene scene{ appEnvironment->getResolvedInputPath( ), appEnvironment->camera, 640.0, 960.0 };
+    Scene scene{
+        appEnvironment->getResolvedInputPath( ), appEnvironment->camera, 640.0, 960.0
+    };
 
     //
     // Init app state.
@@ -107,10 +109,37 @@ void
 
     ImGuiIO & io = ImGui::GetIO( );
 
-    double frame = appEnvironment->frameFirst;
-    double frameStep = 1.0 / scene.stage->GetFramesPerSecond( );
+    static const double refreshRate = 60.0;
+    static const double refreshWaitMS = 1000.0 / refreshRate;
+    const double frameStepMS = 1000.0 / scene.stage->GetFramesPerSecond( );
+
+    // Ensure initial update by subtracting refresh wait time.
+    Uint32 lastRenderedTick = SDL_GetTicks( ) - refreshWaitMS;
+
+    // Rely on last-frame-wraparound to ensure rendering the very first frame first.
+    double frameToRender = appEnvironment->frameLast + 1;
+
     while ( appState.quit == false )
     {
+        // TODO: Improve update scheduling.
+        Uint32 currentTick = SDL_GetTicks( );
+        Uint32 delta = currentTick - lastRenderedTick;
+        if ( delta <= refreshWaitMS )
+        {
+            SDL_Delay( 1 );
+            continue;
+        }
+        else
+        {
+            frameToRender += delta / frameStepMS;
+            lastRenderedTick = currentTick;
+        }
+
+        if ( frameToRender > appEnvironment->frameLast )
+        {
+            frameToRender = appEnvironment->frameFirst;
+        }
+
         //
         // Process queued events.
         //
@@ -146,7 +175,7 @@ void
         // so we maintain a separate VAO for it.
         GL_CALL( glBindVertexArray( vaoDrawTarget ) );
 
-        scene.draw( frame, &appState );
+        scene.draw( frameToRender, &appState );
 
         GL_CALL( glBindFramebuffer( GL_DRAW_FRAMEBUFFER, fboWindow ) );
         GL_CALL( glBindFramebuffer( GL_READ_FRAMEBUFFER,
@@ -207,9 +236,6 @@ void
 
         // Update screen.
         SDL_GL_SwapWindow( window );
-
-        frame += frameStep;
-        if ( frame > appEnvironment->frameLast ) frame = appEnvironment->frameFirst;
     }
 
     //
