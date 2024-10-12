@@ -3,8 +3,23 @@
 
 #include "core/command.h"
 
+#include "imgui.h"
+
 namespace mopr
 {
+
+typedef enum FontRole
+{
+    FONT_ROLE_DEFAULT = 0,
+    FONT_ROLE_HEADING,
+    FONT_ROLE_TERMINATOR
+} FontRole;
+
+struct FontInfo
+{
+    ImFont * fontPtr;
+    float fontSize;
+};
 
 //
 // Editor
@@ -12,12 +27,14 @@ namespace mopr
 
 struct Editor
 {
-    Editor( )
+    Editor( FontInfo const * const fontInfos ) : fontInfos( fontInfos )
     {
     }
 
     void
      draw( CommandQueue const * const q );
+
+    FontInfo const * fontInfos;
 };
 
 }   // namespace mopr

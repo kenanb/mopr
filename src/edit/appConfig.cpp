@@ -14,11 +14,17 @@
 namespace mopr
 {
 
+// Fallback values.
 AppConfig::AppConfig( )
-    // Fallback values.
-    : renderer( )
+    // Font settings:
+    : fontDefault( "" )
+    , fontHeading( "" )
+    , fontBaseSize( 14 )
+    // Screen settings:
     , screenW( 1024 )
     , screenH( 768 )
+    // Render and scene settings:
+    , renderer( )
     , complexity( 1.0 )
     , enableFrameAll( true )
     , enablePurposeGuide( true )
@@ -84,6 +90,9 @@ bool
         result = true;
         pxr::JsObject const & jsObj = jsonRoot.GetJsObject( );
         getJsValue< std::string >( jsObj, this->renderer, "renderer" );
+        getJsValue< std::string >( jsObj, this->fontDefault, "font-default" );
+        getJsValue< std::string >( jsObj, this->fontHeading, "font-heading" );
+        getJsValue< int >( jsObj, this->fontBaseSize, "font-base-size" );
         getJsValue< int >( jsObj, this->screenW, "screen-width" );
         getJsValue< int >( jsObj, this->screenH, "screen-height" );
         getJsValue< double >( jsObj, this->complexity, "complexity" );

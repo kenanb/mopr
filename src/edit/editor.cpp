@@ -1,7 +1,5 @@
 #include "editor.h"
 
-#include "imgui.h"
-
 namespace mopr
 {
 
@@ -39,6 +37,7 @@ struct CommandOptions
 struct CommandContext
 {
     ImVec2 offset;
+    FontInfo const * fontInfos;
     CommandOptions const * options;
 };
 
@@ -110,11 +109,14 @@ void
     const float rounding = 1.5 * ctxCmd->options->roundingFactor;
     CommandDrawExprLabel * c = &command.drawExprLabel;
     DrawBounds b{ &command, ctxCmd };
-    ImVec2 p_txt = { b.pMin.x + 8, b.pMin.y + 8 };
+    ImVec2 p_txt = { b.pMin.x + 8, b.pMin.y + 4 };
     draw_list->AddRectFilled(
      b.pMin, b.pMax, ctxCmd->options->colorTheme[ c->bg ], rounding );
-    draw_list->AddText(
-     p_txt, ctxCmd->options->colorTheme[ COMMAND_THEME_EXPR_LABEL_FG ], c->text );
+    draw_list->AddText( ctxCmd->fontInfos[ FONT_ROLE_HEADING ].fontPtr,
+                        ctxCmd->fontInfos[ FONT_ROLE_HEADING ].fontSize,
+                        p_txt,
+                        ctxCmd->options->colorTheme[ COMMAND_THEME_EXPR_LABEL_FG ],
+                        c->text );
 }
 
 void
@@ -129,8 +131,11 @@ void
     draw_list->AddRectFilled(
      b.pMin, b.pMax, ctxCmd->options->colorTheme[ c->bg ], rounding );
     draw_list->AddRect( b.pMin, b.pMax, ctxCmd->options->colorTheme[ c->bg ], rounding );
-    draw_list->AddText(
-     p_txt, ctxCmd->options->colorTheme[ COMMAND_THEME_ATTR_LABEL_FG ], c->text );
+    draw_list->AddText( ctxCmd->fontInfos[ FONT_ROLE_DEFAULT ].fontPtr,
+                        ctxCmd->fontInfos[ FONT_ROLE_DEFAULT ].fontSize,
+                        p_txt,
+                        ctxCmd->options->colorTheme[ COMMAND_THEME_ATTR_LABEL_FG ],
+                        c->text );
 }
 
 void
@@ -150,7 +155,11 @@ void
                         b.pMax,
                         ctxCmd->options->colorTheme[ COMMAND_THEME_ATTR_INPUT_FG ],
                         rounding );
-    draw_list->AddText( p_txt, IM_COL32_BLACK, c->text );
+    draw_list->AddText( ctxCmd->fontInfos[ FONT_ROLE_DEFAULT ].fontPtr,
+                        ctxCmd->fontInfos[ FONT_ROLE_DEFAULT ].fontSize,
+                        p_txt,
+                        IM_COL32_BLACK,
+                        c->text );
 }
 
 const fnDraw COMMANDS[] = {
@@ -186,9 +195,8 @@ void
 
     // Get the current ImGui cursor position
     ImVec2 offset = ImGui::GetCursorScreenPos( );
-
     static const CommandOptions cmdOpt;
-    const CommandContext ctxCmd{ offset, &cmdOpt };
+    CommandContext ctxCmd{ offset, this->fontInfos, &cmdOpt };
 
     for ( int i = 0; i < q->nofCommands; i++ )
     {

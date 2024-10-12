@@ -175,8 +175,8 @@
 (defmethod initialize-instance :after ((node expr-label-rnode) &key)
   (with-slots (ynode) node
     (yoga-fun:node-style-set-flex-grow ynode 0.0f0)
-    (yoga-fun:node-style-set-width ynode 48)
-    (yoga-fun:node-style-set-min-height ynode 20)))
+    (yoga-fun:node-style-set-width ynode 60)
+    (yoga-fun:node-style-set-min-height ynode 32)))
 
 (defmethod rnode-command-type ((n expr-label-rnode))
   mopr-def:+command-type-draw-expr-label+)
@@ -232,8 +232,8 @@
 (defmethod initialize-instance :after ((node attr-label-rnode) &key (h-co 1))
   (with-slots (ynode text) node
     (yoga-fun:node-style-set-flex-grow ynode 0.0f0)
-    (yoga-fun:node-style-set-min-width ynode (+ 16 (* (length text) 7)))
-    (yoga-fun:node-style-set-min-height ynode (+ 16 (* h-co 14)))))
+    (yoga-fun:node-style-set-min-width ynode (+ 16 (* (length text) 10)))
+    (yoga-fun:node-style-set-min-height ynode (+ 16 (* h-co 16)))))
 
 (defmethod rnode-command-type ((n attr-label-rnode))
   mopr-def:+command-type-draw-attr-label+)
@@ -255,7 +255,7 @@
   (with-slots (ynode) node
     (yoga-fun:node-style-set-flex-grow ynode 1.0f0)
     (yoga-fun:node-style-set-min-width ynode 200)
-    (yoga-fun:node-style-set-min-height ynode (+ 16 (* h-co 14)))))
+    (yoga-fun:node-style-set-min-height ynode (+ 16 (* h-co 16)))))
 
 (defmethod rnode-command-type ((n attr-input-rnode))
   mopr-def:+command-type-draw-attr-input+)

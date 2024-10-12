@@ -101,20 +101,61 @@ void
     // Init editor.
     //
 
-    Editor editor{ };
+    ImGuiIO & io = ImGui::GetIO( );
+    FontInfo fontInfos[ FONT_ROLE_TERMINATOR ];
+
+    {
+        int fontSize = appConfig.fontBaseSize;
+        fontInfos[ FONT_ROLE_DEFAULT ].fontSize = fontSize;
+
+        if ( appConfig.fontDefault.empty( ) )
+        {
+            fontInfos[ FONT_ROLE_DEFAULT ].fontPtr = NULL;
+        }
+        else
+        {
+            std::string relFontPath = "res/font/";
+            relFontPath += appConfig.fontDefault;
+            relFontPath += ".ttf";
+            std::string absFontPath =
+             appEnvironment->resolveAppRelativePath( relFontPath.c_str( ) );
+            fontInfos[ FONT_ROLE_DEFAULT ].fontPtr =
+             io.Fonts->AddFontFromFileTTF( absFontPath.c_str( ), fontSize );
+        }
+    }
+
+    {
+        int fontSize = appConfig.fontBaseSize + 4;
+        fontInfos[ FONT_ROLE_HEADING ].fontSize = fontSize;
+
+        if ( appConfig.fontHeading.empty( ) )
+        {
+            fontInfos[ FONT_ROLE_HEADING ].fontPtr = NULL;
+        }
+        else
+        {
+            std::string relFontPath = "res/font/";
+            relFontPath += appConfig.fontHeading;
+            relFontPath += ".ttf";
+            std::string absFontPath =
+             appEnvironment->resolveAppRelativePath( relFontPath.c_str( ) );
+            fontInfos[ FONT_ROLE_HEADING ].fontPtr =
+             io.Fonts->AddFontFromFileTTF( absFontPath.c_str( ), fontSize );
+        }
+    }
+
+    Editor editor{ fontInfos };
 
     //
     // Event loop.
     //
 
-    ImGuiIO & io = ImGui::GetIO( );
-
     static const double refreshRate = 60.0;
-    static const double refreshWaitMS = 1000.0 / refreshRate;
+    static const double timeStepMS = 1000.0 / refreshRate;
     const double frameStepMS = 1000.0 / scene.stage->GetFramesPerSecond( );
 
     // Ensure initial update by subtracting refresh wait time.
-    Uint32 lastRenderedTick = SDL_GetTicks( ) - refreshWaitMS;
+    Uint32 lastRenderedTick = SDL_GetTicks( ) - timeStepMS;
 
     // Rely on last-frame-wraparound to ensure rendering the very first frame first.
     double frameToRender = appEnvironment->frameLast + 1;
@@ -124,7 +165,7 @@ void
         // TODO: Improve update scheduling.
         Uint32 currentTick = SDL_GetTicks( );
         Uint32 delta = currentTick - lastRenderedTick;
-        if ( delta <= refreshWaitMS )
+        if ( delta <= timeStepMS )
         {
             SDL_Delay( 1 );
             continue;

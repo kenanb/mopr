@@ -12,9 +12,17 @@ namespace mopr
 
 struct AppConfig
 {
-    std::string renderer;
+    // Font settings:
+    std::string fontDefault;
+    std::string fontHeading;
+    int fontBaseSize;
+
+    // Screen settings:
     int screenW;
     int screenH;
+
+    // Render and scene settings:
+    std::string renderer;
     double complexity;
     bool enableFrameAll;
     bool enablePurposeGuide;
