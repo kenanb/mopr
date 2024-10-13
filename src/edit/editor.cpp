@@ -171,19 +171,22 @@ void
  Editor::draw( CommandQueue const * const q )
 {
     ImGuiViewport * viewport = ImGui::GetMainViewport( );
-    ImGui::SetNextWindowPos( ImVec2( viewport->Pos.x + 10, viewport->Pos.y + 10 ) );
-    ImGui::SetNextWindowSize(
-     ImVec2( viewport->Size.x / 2 + 30, viewport->Size.y - 20 ) );
+    int windowWidth = viewport->Size.x / 2 + 30;
+    int windowHeight = viewport->Size.y;
+    ImGui::SetNextWindowPos(
+     ImVec2( viewport->Pos.x + viewport->Size.x - windowWidth,   // Right align.
+             viewport->Pos.y ) );
+    ImGui::SetNextWindowSize( ImVec2( windowWidth, windowHeight ) );
     ImGui::SetNextWindowViewport( viewport->ID );
 
     ImGuiWindowFlags windowFlags =
-     ImGuiWindowFlags_NoDocking
-     // | ImGuiWindowFlags_NoTitleBar | ImGuiWindowFlags_NoCollapse | ImGuiWindowFlags_NoBackground
+     ImGuiWindowFlags_NoDocking | ImGuiWindowFlags_NoTitleBar
+     | ImGuiWindowFlags_NoCollapse | ImGuiWindowFlags_NoBackground
      | ImGuiWindowFlags_NoSavedSettings | ImGuiWindowFlags_NoResize
      | ImGuiWindowFlags_NoMove | ImGuiWindowFlags_NoBringToFrontOnFocus
      | ImGuiWindowFlags_NoNavFocus;
 
-    if ( !ImGui::Begin( "Mopr Editor", nullptr, windowFlags ) )
+    if ( !ImGui::Begin( "Procedural Tree", nullptr, windowFlags ) )
     {
         ImGui::End( );
         return;
@@ -206,8 +209,6 @@ void
     // Advance the ImGui cursor to claim space. If the "reserved" height and width were
     // not fully used, we expect the values to have already been adjusted to "used" area.
     ImGui::Dummy( ImVec2( q->pixelsW, q->pixelsH ) );
-
-    for ( int i = 0; i < 10; i++ ) ImGui::Text( "..." );
 
     ImGui::End( );
 }

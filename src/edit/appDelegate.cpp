@@ -49,7 +49,14 @@ void
     // Init app state.
     //
 
-    AppState appState = { appConfig.screenW, appConfig.screenH, false, false, 0.0, 0.0 };
+    AppState appState = { appConfig.screenW,
+                          appConfig.screenH,
+                          false,
+                          false,
+                          NAVIGATION_STATE_NONE,
+                          0.0,
+                          0.0 };
+
     appState.viewRotate[ 0 ] = appConfig.viewRotate[ 0 ];
     appState.viewRotate[ 1 ] = appConfig.viewRotate[ 1 ];
     if ( appConfig.enableFrameAll )
@@ -195,6 +202,12 @@ void
             {
                 case SDL_QUIT:
                     appState.quit = true;
+                    break;
+                case SDL_MOUSEBUTTONDOWN:
+                    if ( !io.WantCaptureMouse ) handleMouseButton( &appState, &e );
+                    break;
+                case SDL_MOUSEBUTTONUP:
+                    if ( !io.WantCaptureMouse ) handleMouseButton( &appState, &e );
                     break;
                 case SDL_MOUSEMOTION:
                     if ( !io.WantCaptureMouse ) handleMouseMotion( &appState, &e );
