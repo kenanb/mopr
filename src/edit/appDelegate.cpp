@@ -49,13 +49,7 @@ void
     // Init app state.
     //
 
-    AppState appState = { appConfig.screenW,
-                          appConfig.screenH,
-                          false,
-                          false,
-                          NAVIGATION_STATE_NONE,
-                          0.0,
-                          0.0 };
+    AppState appState{ appConfig.screenW, appConfig.screenH };
 
     appState.viewRotate[ 0 ] = appConfig.viewRotate[ 0 ];
     appState.viewRotate[ 1 ] = appConfig.viewRotate[ 1 ];
@@ -273,7 +267,7 @@ void
         ImGui_ImplSDL2_NewFrame( );
         ImGui::NewFrame( );
 
-        editor.draw( &scene.commandQueue );
+        editor.draw( &scene.commandQueue, &appState.idSelected );
 
         ImGui::Render( );
         GL_CALL( glViewport( 0, 0, ( int ) io.DisplaySize.x, ( int ) io.DisplaySize.y ) );

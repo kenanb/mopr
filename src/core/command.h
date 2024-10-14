@@ -16,9 +16,6 @@ extern "C"
         COMMAND_THEME_ROOT_CONTAINER_BG,
         COMMAND_THEME_EXPR_CONTAINER_FG,
         COMMAND_THEME_EXPR_CONTAINER_BG,
-        COMMAND_THEME_ATTR_INPUT_FG,
-        COMMAND_THEME_ATTR_INPUT_BG,
-        COMMAND_THEME_ATTR_LABEL_FG,
         COMMAND_THEME_EXPR_LABEL_FG,
         COMMAND_THEME_EXPR_BG_0,
         COMMAND_THEME_EXPR_BG_1,
@@ -30,6 +27,12 @@ extern "C"
         COMMAND_THEME_EXPR_BG_7,
         COMMAND_THEME_EXPR_BG_8,
         COMMAND_THEME_EXPR_BG_9,
+        COMMAND_THEME_ATTR_LABEL_FG,
+        COMMAND_THEME_ATTR_INPUT_FG,
+        COMMAND_THEME_ATTR_INPUT_BG,
+        COMMAND_THEME_ATTR_ACTIVE_FG,
+        COMMAND_THEME_ATTR_ACTIVE_INPUT_BG,
+        COMMAND_THEME_ATTR_SELECTED_INPUT_BG,
         COMMAND_THEME_TERMINATOR
     } CommandTheme;
 
@@ -45,6 +48,7 @@ extern "C"
 
 #define COMMAND_BASE_MEMBERS                                                             \
     CommandType cType;                                                                   \
+    unsigned int id;                                                                     \
     float x, y, w, h;
 
     typedef struct CommandBase

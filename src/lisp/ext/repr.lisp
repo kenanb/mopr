@@ -78,6 +78,9 @@
 ;;; RNODE and Generic Functions
 ;;
 
+;; Zero value is reserved for "no selection".
+(defvar *rnode-id-counter* 1)
+
 (defgeneric rnode-command-type (node)
   (:documentation "Command type to assign for the node."))
 
@@ -86,9 +89,8 @@
 
 (defclass rnode ()
   ((id
-    :initarg :id
-    :type integer
-    :initform 0
+    :type (unsigned-byte 32)
+    :initform (prog1 *rnode-id-counter* (incf *rnode-id-counter*))
     :reader rnode-id)
    (ynode
     :type yoga-def:node-ref
@@ -106,6 +108,7 @@
 (defmethod populate-command-from-rnode ((n rnode) c &aux (y (rnode-ynode n)))
   (%set-values c (mopr-def:combined-command :base)
                :c-type (rnode-command-type n)
+               :id (rnode-id n)
                :x (recursive-get-left y)
                :y (recursive-get-top y)
                :w (%dim y :width)
