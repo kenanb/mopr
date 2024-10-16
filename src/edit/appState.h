@@ -28,6 +28,7 @@ struct AppState
     bool showOverlays;
     NavigationState nav;
     unsigned int idSelected;
+    unsigned int idSubSelected;
     double mx;
     double my;
     double viewRotate[ 2 ];
@@ -40,6 +41,7 @@ struct AppState
         , showOverlays( false )
         , nav( NAVIGATION_STATE_NONE )
         , idSelected( 0 )
+        , idSubSelected( 0 )
         , mx( 0.0 )
         , my( 0.0 )
     {

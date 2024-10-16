@@ -267,7 +267,7 @@ void
         ImGui_ImplSDL2_NewFrame( );
         ImGui::NewFrame( );
 
-        editor.draw( &scene.commandQueue, &appState.idSelected );
+        editor.draw( &scene.commandQueue, &appState.idSelected, &appState.idSubSelected );
 
         ImGui::Render( );
         GL_CALL( glViewport( 0, 0, ( int ) io.DisplaySize.x, ( int ) io.DisplaySize.y ) );

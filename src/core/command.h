@@ -49,6 +49,7 @@ extern "C"
 #define COMMAND_BASE_MEMBERS                                                             \
     CommandType cType;                                                                   \
     unsigned int id;                                                                     \
+    unsigned int idSub;                                                                  \
     float x, y, w, h;
 
     typedef struct CommandBase

@@ -42,6 +42,7 @@ struct CommandOptions
 struct CommandContext
 {
     unsigned int idSelected;
+    unsigned int idSubSelected;
     ImVec2 offset;
     FontInfo const * fontInfos;
     CommandOptions const * options;
@@ -121,10 +122,12 @@ bool
 
     ImGui::SetCursorScreenPos( b.pMin );
     ImGui::PushID( c->id );
+    ImGui::PushID( c->idSub );
     ImGui::InvisibleButton( "canvas",
                             ImVec2( c->w, c->h ),
                             ImGuiButtonFlags_MouseButtonLeft
                              | ImGuiButtonFlags_MouseButtonRight );
+    ImGui::PopID( );
     ImGui::PopID( );
 
     float thickness = 1.0;
@@ -141,7 +144,7 @@ bool
         clrFg = ctxCmd->options->colorTheme[ COMMAND_THEME_ATTR_ACTIVE_FG ];
         clrTx = ctxCmd->options->colorTheme[ COMMAND_THEME_ATTR_ACTIVE_FG ];
     }
-    else if ( ctxCmd->idSelected == c->id )
+    else if ( ctxCmd->idSelected == c->id && ctxCmd->idSubSelected == c->idSub )
     {
         thickness = 2.0;
         clrBg = ctxCmd->options->colorTheme[ COMMAND_THEME_ATTR_SELECTED_INPUT_BG ];
@@ -151,7 +154,7 @@ bool
 
     draw_list->AddRectFilled( b.pMin, b.pMax, clrBg, rounding );
 
-    if ( ctxCmd->idSelected == c->id )
+    if ( ctxCmd->idSelected == c->id && ctxCmd->idSubSelected == c->idSub )
         draw_list->AddRect( b.pMin, b.pMax, clrFg, rounding, 0, thickness );
 
     draw_list->AddText( ctxCmd->fontInfos[ FONT_ROLE_DEFAULT ].fontPtr,
@@ -174,10 +177,12 @@ bool
 
     ImGui::SetCursorScreenPos( b.pMin );
     ImGui::PushID( c->id );
+    ImGui::PushID( c->idSub );
     ImGui::InvisibleButton( "canvas",
                             ImVec2( c->w, c->h ),
                             ImGuiButtonFlags_MouseButtonLeft
                              | ImGuiButtonFlags_MouseButtonRight );
+    ImGui::PopID( );
     ImGui::PopID( );
 
     float thickness = 1.0;
@@ -194,7 +199,7 @@ bool
         clrFg = ctxCmd->options->colorTheme[ COMMAND_THEME_ATTR_ACTIVE_FG ];
         clrTx = ctxCmd->options->colorTheme[ COMMAND_THEME_ATTR_ACTIVE_FG ];
     }
-    else if ( ctxCmd->idSelected == c->id )
+    else if ( ctxCmd->idSelected == c->id && ctxCmd->idSubSelected == c->idSub )
     {
         thickness = 2.0;
         clrBg = ctxCmd->options->colorTheme[ COMMAND_THEME_ATTR_SELECTED_INPUT_BG ];
@@ -226,10 +231,12 @@ bool
 
     ImGui::SetCursorScreenPos( b.pMin );
     ImGui::PushID( c->id );
+    ImGui::PushID( c->idSub );
     ImGui::InvisibleButton( "canvas",
                             ImVec2( c->w, c->h ),
                             ImGuiButtonFlags_MouseButtonLeft
                              | ImGuiButtonFlags_MouseButtonRight );
+    ImGui::PopID( );
     ImGui::PopID( );
 
     float thickness = 1.0;
@@ -246,7 +253,7 @@ bool
         clrFg = ctxCmd->options->colorTheme[ COMMAND_THEME_ATTR_ACTIVE_FG ];
         clrTx = ctxCmd->options->colorTheme[ COMMAND_THEME_ATTR_ACTIVE_FG ];
     }
-    else if ( ctxCmd->idSelected == c->id )
+    else if ( ctxCmd->idSelected == c->id && ctxCmd->idSubSelected == c->idSub )
     {
         thickness = 2.0;
         clrBg = ctxCmd->options->colorTheme[ COMMAND_THEME_ATTR_SELECTED_INPUT_BG ];
@@ -273,7 +280,9 @@ const fnDraw COMMANDS[] = {
 };
 
 void
- Editor::draw( CommandQueue const * const q, unsigned int * idSelected )
+ Editor::draw( CommandQueue const * const q,
+               unsigned int * idSelected,
+               unsigned int * idSubSelected )
 {
     ImGuiViewport * viewport = ImGui::GetMainViewport( );
     int windowWidth = viewport->Size.x / 2 + 30;
@@ -304,7 +313,9 @@ void
     // Get the current ImGui cursor position
     ImVec2 offset = ImGui::GetCursorScreenPos( );
     static const CommandOptions cmdOpt;
-    CommandContext ctxCmd{ *idSelected, offset, this->fontInfos, &cmdOpt };
+    CommandContext ctxCmd{
+        *idSelected, *idSubSelected, offset, this->fontInfos, &cmdOpt
+    };
 
     for ( int i = 0; i < q->nofCommands; i++ )
     {
@@ -312,11 +323,22 @@ void
               draw_list, q->commands[ i ], &ctxCmd ) )
         {
             const unsigned int id = q->commands[ i ].base.id;
-            ctxCmd.idSelected = ( ctxCmd.idSelected == id ) ? 0 : id;
+            const unsigned int idSub = q->commands[ i ].base.idSub;
+            if ( ctxCmd.idSelected == id && ctxCmd.idSubSelected == idSub )
+            {
+                ctxCmd.idSelected = 0;
+                ctxCmd.idSubSelected = 0;
+            }
+            else
+            {
+                ctxCmd.idSelected = id;
+                ctxCmd.idSubSelected = idSub;
+            }
         }
     }
 
     *idSelected = ctxCmd.idSelected;
+    *idSubSelected = ctxCmd.idSubSelected;
 
     // Advance the ImGui cursor to claim space. If the "reserved" height and width were
     // not fully used, we expect the values to have already been adjusted to "used" area.
