@@ -269,15 +269,52 @@
   (call-next-method))
 
 ;;
-;;; Form Handlers
+;;; RNODE and Generic Functions
 ;;
 
-(defun handle-var-form (yparent form
-                        &aux
-                          (var-name (car form))
-                          (var-aux (cadr form))
-                          (frest (cddr form)))
-  ;; (format t "~%Called handle-var-form!~%: ~S~%" form)
+;; Zero value is reserved for "no selection".
+(defvar *rnode-id-counter* 1)
+
+(defgeneric rnode-get-ynode-anchor (node)
+  (:documentation "Get the ynode that should contain child ynodes."))
+
+(defclass rnode ()
+  ((id
+    :type (unsigned-byte 32)
+    :initform (prog1 *rnode-id-counter* (incf *rnode-id-counter*))
+    :reader rnode-id)
+   (rdatas
+    :type list
+    :initform nil
+    :accessor rnode-rdatas)
+   (children
+    :type (vector rnode)
+    :initform (make-array 0 :element-type 'rnode :adjustable t :fill-pointer 0)
+    :accessor rnode-children)))
+
+(defmethod rnode-get-ynode-anchor ((n rnode))
+  (error (format nil "RNODE type ~A doesn't support children!" (class-name (class-of n)))))
+
+(defclass root-rnode (rnode)
+  ())
+
+(defmethod initialize-instance :after ((node root-rnode) &key)
+  (let* ((nrc (make-instance 'root-container-rdata)))
+    (setf (rnode-rdatas node)
+          (list nrc))))
+
+(defmethod rnode-get-ynode-anchor ((n root-rnode))
+  (rdata-ynode (car (rnode-rdatas n))))
+
+(defclass var-rnode (rnode)
+  ())
+
+(defmethod initialize-instance :after ((node var-rnode) &key rparent form
+                                       &aux
+                                         (yparent (rnode-get-ynode-anchor rparent))
+                                         (var-name (car form))
+                                         (var-aux (cadr form))
+                                         (frest (cddr form)))
   (multiple-value-bind (text-body line-count-body)
       (format-form frest *fill-column*)
     (let* ((color mopr-def:+command-theme-expr-bg-0+)
@@ -310,13 +347,18 @@
                                :yparent (rdata-ynode ncc)
                                :text text-body
                                :h-co line-count-body)))
-      (list nec nel ncc nac0 nal0 nai0 nac1 nal1 nai1 nar))))
+      (setf (rnode-rdatas node)
+            (list nec nel ncc nac0 nal0 nai0 nac1 nal1 nai1 nar)))))
 
-(defun handle-each-form (yparent form
-                         &aux
-                           (name (car form))
-                           (arg-aggrs (cadr form))
-                           (val-aggrs (cddr form)))
+(defclass each-rnode (rnode)
+  ())
+
+(defmethod initialize-instance :after ((node each-rnode) &key rparent form
+                                       &aux
+                                         (yparent (rnode-get-ynode-anchor rparent))
+                                         (name (car form))
+                                         (arg-aggrs (cadr form))
+                                         (val-aggrs (cddr form)))
   ;; (format t "~%Called handle-each-form!~%: ~S~%" form)
   (multiple-value-bind (text-val-aggrs line-count-val-aggrs)
       (format-form val-aggrs *fill-column*)
@@ -355,13 +397,18 @@
            (nai2 (make-instance 'attr-input-rdata
                                 :yparent (rdata-ynode nac2)
                                 :text (format nil "~S" val-aggrs))))
-      (list nec nel ncc nac0 nal0 nai0 nac1 nal1 nai1 nac2 nal2 nai2))))
+      (setf (rnode-rdatas node)
+            (list nec nel ncc nac0 nal0 nai0 nac1 nal1 nai1 nac2 nal2 nai2)))))
 
-(defun handle-iota-form (yparent form
-                         &aux
-                           (name (car form))
-                           (arg-aggr (cadr form))
-                           (val-aggr (caddr form)))
+(defclass iota-rnode (rnode)
+  ())
+
+(defmethod initialize-instance :after ((node iota-rnode) &key rparent form
+                                       &aux
+                                         (yparent (rnode-get-ynode-anchor rparent))
+                                         (name (car form))
+                                         (arg-aggr (cadr form))
+                                         (val-aggr (caddr form)))
   ;; (format t "~%Called handle-iota-form!~%: ~S~%" form)
   (let* ((color mopr-def:+command-theme-expr-bg-2+)
          (nec (make-instance 'expr-container-rdata :yparent yparent))
@@ -398,12 +445,17 @@
          (nai2 (make-instance 'attr-input-rdata
                               :yparent (rdata-ynode nac2)
                               :text (format nil "~S" val-aggr))))
-    (list nec nel ncc nac0 nal0 nai0 nac1 nal1 nai1 nac2 nal2 nai2)))
+    (setf (rnode-rdatas node)
+          (list nec nel ncc nac0 nal0 nai0 nac1 nal1 nai1 nac2 nal2 nai2))))
 
-(defun handle-call-form (yparent form
-                         &aux
-                           (call-aux (car form))
-                           (call-body (cdr form)))
+(defclass call-rnode (rnode)
+  ())
+
+(defmethod initialize-instance :after ((node call-rnode) &key rparent form
+                                       &aux
+                                         (yparent (rnode-get-ynode-anchor rparent))
+                                         (call-aux (car form))
+                                         (call-body (cdr form)))
   ;; (format t "~%Called handle-call-form!~%: ~S~%" form)
   (multiple-value-bind (text-call-body line-count-call-body)
       (format-form call-body *fill-column*)
@@ -428,13 +480,17 @@
                                :yparent (rdata-ynode ncc)
                                :text text-call-body
                                :h-co line-count-call-body)))
-      (list nec nel ncc nac0 nal0 nai0 nar))))
+      (setf (rnode-rdatas node)
+            (list nec nel ncc nac0 nal0 nai0 nar)))))
 
-(defun handle-prim-form (yparent form
-                         &aux
-                           (fpath (car form))
-                           (fmeta (cadr form))
-                           (frest (cddr form)))
+(defclass prim-rnode (rnode)
+  ())
+
+(defmethod initialize-instance :after ((node prim-rnode) &key rparent form
+                                       &aux
+                                         (yparent (rnode-get-ynode-anchor rparent))
+                                         (fpath (car form))
+                                         (fmeta (cadr form)))
   ;; (format t "~%Called handle-prim-form!~%: ~S~%" form)
   (let* ((color mopr-def:+command-theme-expr-bg-4+)
          (nec (make-instance 'expr-container-rdata :yparent yparent))
@@ -461,20 +517,19 @@
                               :bg color))
          (nai1 (make-instance 'attr-input-rdata
                               :yparent (rdata-ynode nac1)
-                              :text (format nil "~S" fmeta)))
-         (nested-rdatas
-           (loop for l in frest
-                 for i from 0
-                 for fn = (case (car l)
-                            ;; TODO : Handle other forms.
-                            (:call   #'handle-call-form)
-                            (:|call| #'handle-call-form))
-                 nconc (if fn
-                           (funcall fn (rdata-ynode ncc) (cdr l))
-                           (unknown-form-error (car l) :debug)))))
-    (concatenate 'list (list nec nel ncc nac0 nal0 nai0 nac1 nal1 nai1) nested-rdatas)))
+                              :text (format nil "~S" fmeta))))
+    (setf (rnode-rdatas node)
+          (list nec nel ncc nac0 nal0 nai0 nac1 nal1 nai1))))
 
-(defun handle-tree-form (yparent form)
+(defmethod rnode-get-ynode-anchor ((n prim-rnode))
+  (rdata-ynode (caddr (rnode-rdatas n))))
+
+(defclass tree-rnode (rnode)
+  ())
+
+(defmethod initialize-instance :after ((node tree-rnode) &key rparent form
+                                       &aux
+                                         (yparent (rnode-get-ynode-anchor rparent)))
   ;; (format t "~%Called handle-tree-form!~%: ~S~%" form)
   (let* ((color mopr-def:+command-theme-expr-bg-5+)
          (nec (make-instance 'expr-container-rdata :yparent yparent))
@@ -487,9 +542,15 @@
          (nar (make-instance 'attr-input-rdata
                              :yparent (rdata-ynode ncc)
                              :text (format-form form *fill-column*))))
-    (list nec nel ncc nar)))
+    (setf (rnode-rdatas node)
+          (list nec nel ncc nar))))
 
-(defun handle-meta-form (yparent form)
+(defclass meta-rnode (rnode)
+  ())
+
+(defmethod initialize-instance :after ((node meta-rnode) &key rparent form
+                                       &aux
+                                         (yparent (rnode-get-ynode-anchor rparent)))
   ;; (format t "~%Called handle-meta-form!~%: ~S~%" form)
   (declare (ignore form))
   (let* ((color mopr-def:+command-theme-expr-bg-6+)
@@ -502,9 +563,58 @@
                              :yparent (rdata-ynode nec)))
          ;; TODO : Add support for metadata handling.
          )
-    (list nec nel ncc)))
+    (setf (rnode-rdatas node)
+          (list nec nel ncc))))
 
-(defun handle-data-subforms (yparent subforms)
+;;
+;;; Form Handlers
+;;
+
+(defun handle-var-form (rparent form)
+  ;; (format t "~%Called handle-var-form!~%: ~S~%" form)
+  (vector-push-extend (make-instance 'var-rnode :rparent rparent :form form)
+                      (rnode-children rparent)))
+
+(defun handle-each-form (rparent form)
+  ;; (format t "~%Called handle-each-form!~%: ~S~%" form)
+  (vector-push-extend (make-instance 'each-rnode :rparent rparent :form form)
+                      (rnode-children rparent)))
+
+(defun handle-iota-form (rparent form)
+  ;; (format t "~%Called handle-iota-form!~%: ~S~%" form)
+  (vector-push-extend (make-instance 'iota-rnode :rparent rparent :form form)
+                      (rnode-children rparent)))
+
+(defun handle-call-form (rparent form)
+  ;; (format t "~%Called handle-call-form!~%: ~S~%" form)
+  (vector-push-extend (make-instance 'call-rnode :rparent rparent :form form)
+                      (rnode-children rparent)))
+
+(defun handle-prim-form (rparent form)
+  ;; (format t "~%Called handle-prim-form!~%: ~S~%" form)
+  (let* ((pn (make-instance 'prim-rnode :rparent rparent :form form)))
+    (vector-push-extend pn (rnode-children rparent))
+    (loop for l in (cddr form)
+          for i from 0
+          for fn = (case (car l)
+                     ;; TODO : Handle other forms.
+                     (:call   #'handle-call-form)
+                     (:|call| #'handle-call-form))
+          do (if fn
+                 (funcall fn pn (cdr l))
+                 (unknown-form-error (car l) :debug)))))
+
+(defun handle-tree-form (rparent form)
+  ;; (format t "~%Called handle-tree-form!~%: ~S~%" form)
+  (vector-push-extend (make-instance 'tree-rnode :rparent rparent :form form)
+                      (rnode-children rparent)))
+
+(defun handle-meta-form (rparent form)
+  ;; (format t "~%Called handle-meta-form!~%: ~S~%" form)
+  (vector-push-extend (make-instance 'meta-rnode :rparent rparent :form form)
+                      (rnode-children rparent)))
+
+(defun handle-data-subforms (rparent subforms)
   ;; (format t "~%Called handle-data-subforms!~%: ~S~%" subforms)
   (loop for l in subforms
         for i from 0
@@ -523,9 +633,9 @@
                    (:|tree| #'handle-tree-form)
                    (:prim   #'handle-prim-form)
                    (:|prim| #'handle-prim-form))
-        nconc (if fn
-                  (funcall fn yparent (cdr l))
-                  (unknown-form-error (car l) :debug))))
+        do (if fn
+               (funcall fn rparent (cdr l))
+               (unknown-form-error (car l) :debug))))
 
 ;;
 ;;; Top-Level API and Macros
@@ -541,18 +651,22 @@
   (mopr-info:with-registry (:supported-cases '(:upcase))
     (mopr-plug:with-configuration ()
       (with-repr-variables (:enable-call t)
-        (let* ((root-rdata (make-instance 'root-container-rdata)))
-          (cons root-rdata (handle-data-subforms (rdata-ynode root-rdata) usds-data)))))))
+        (let* ((n (make-instance 'root-rnode))) (handle-data-subforms n usds-data) n)))))
 
 (defmacro with-layout-settings (&body body)
   `(float-features:with-float-traps-masked (:invalid)
      ,@body))
 
+(defun rnode-get-rdatas-recursive (n)
+  (concatenate 'list (rnode-rdatas n)
+               (loop for c across (rnode-children n)
+                     nconc (rnode-get-rdatas-recursive c))))
+
 (defun populate-command-queue (cmd-queue usds-data)
   (with-layout-settings
       (let* ((pixels-w (plus-c:c-ref cmd-queue mopr-def:command-queue :pixels-w))
              ;; (pixels-h (plus-c:c-ref cmd-queue mopr-def:command-queue :pixels-h))
-             (rdatas (build-repr-call-enabled usds-data))
+             (rdatas (rnode-get-rdatas-recursive (build-repr-call-enabled usds-data)))
              (visible-rdatas (remove-if (lambda (x) (typep x 'hidden-rdata)) rdatas))
              (cmd-count (length visible-rdatas))
              (ynode (rdata-ynode (car visible-rdatas)))
