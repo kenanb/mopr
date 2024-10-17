@@ -107,6 +107,15 @@ extern "C"
     MOPR_API void
      mopr_print_command_queue( CommandQueue const * const commandQueue );
 
+    typedef struct CommandOptions
+    {
+        int nofOptions;
+        char ** options;
+    } CommandOptions;
+
+    MOPR_API void
+     mopr_print_command_options( CommandOptions const * const commandOptions );
+
 #ifdef __cplusplus
 }
 #endif

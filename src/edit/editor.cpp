@@ -3,12 +3,12 @@
 namespace mopr
 {
 
-struct CommandOptions
+struct CommandSettings
 {
     float roundingFactor;
     ImU32 colorTheme[ COMMAND_THEME_TERMINATOR ];
 
-    CommandOptions( )
+    CommandSettings( )
     {
         roundingFactor = 4.0f;
         colorTheme[ COMMAND_THEME_NONE ] = IM_COL32( 0, 0, 0, 255 );
@@ -45,7 +45,7 @@ struct CommandContext
     unsigned int idSubSelected;
     ImVec2 offset;
     FontInfo const * fontInfos;
-    CommandOptions const * options;
+    CommandSettings const * settings;
 };
 
 struct DrawBounds
@@ -76,17 +76,17 @@ bool
                        CombinedCommand command,
                        CommandContext const * ctxCmd )
 {
-    const float rounding = 3 * ctxCmd->options->roundingFactor;
+    const float rounding = 3 * ctxCmd->settings->roundingFactor;
     // CommandDrawRootContainer * c = &command.drawRootContainer;
     DrawBounds b{ &command, ctxCmd };
     draw_list->AddRectFilled(
      b.pMin,
      b.pMax,
-     ctxCmd->options->colorTheme[ COMMAND_THEME_ROOT_CONTAINER_BG ],
+     ctxCmd->settings->colorTheme[ COMMAND_THEME_ROOT_CONTAINER_BG ],
      rounding );
     draw_list->AddRect( b.pMin,
                         b.pMax,
-                        ctxCmd->options->colorTheme[ COMMAND_THEME_ROOT_CONTAINER_FG ],
+                        ctxCmd->settings->colorTheme[ COMMAND_THEME_ROOT_CONTAINER_FG ],
                         rounding );
     return false;
 }
@@ -96,17 +96,17 @@ bool
                        CombinedCommand command,
                        CommandContext const * ctxCmd )
 {
-    const float rounding = 2 * ctxCmd->options->roundingFactor;
+    const float rounding = 2 * ctxCmd->settings->roundingFactor;
     // CommandDrawExprContainer * c = &command.drawExprContainer;
     DrawBounds b{ &command, ctxCmd };
     draw_list->AddRectFilled(
      b.pMin,
      b.pMax,
-     ctxCmd->options->colorTheme[ COMMAND_THEME_EXPR_CONTAINER_BG ],
+     ctxCmd->settings->colorTheme[ COMMAND_THEME_EXPR_CONTAINER_BG ],
      rounding );
     draw_list->AddRect( b.pMin,
                         b.pMax,
-                        ctxCmd->options->colorTheme[ COMMAND_THEME_EXPR_CONTAINER_FG ],
+                        ctxCmd->settings->colorTheme[ COMMAND_THEME_EXPR_CONTAINER_FG ],
                         rounding );
     return false;
 }
@@ -116,7 +116,7 @@ bool
                    CombinedCommand command,
                    CommandContext const * ctxCmd )
 {
-    const float rounding = 1.5 * ctxCmd->options->roundingFactor;
+    const float rounding = 1.5 * ctxCmd->settings->roundingFactor;
     CommandDrawExprLabel * c = &command.drawExprLabel;
     DrawBounds b{ &command, ctxCmd };
 
@@ -131,25 +131,25 @@ bool
     ImGui::PopID( );
 
     float thickness = 1.0;
-    ImU32 clrBg = ctxCmd->options->colorTheme[ c->bg ];
-    ImU32 clrFg = ctxCmd->options->colorTheme[ COMMAND_THEME_ATTR_INPUT_FG ];
-    ImU32 clrTx = ctxCmd->options->colorTheme[ COMMAND_THEME_EXPR_LABEL_FG ];
+    ImU32 clrBg = ctxCmd->settings->colorTheme[ c->bg ];
+    ImU32 clrFg = ctxCmd->settings->colorTheme[ COMMAND_THEME_ATTR_INPUT_FG ];
+    ImU32 clrTx = ctxCmd->settings->colorTheme[ COMMAND_THEME_EXPR_LABEL_FG ];
 
     bool retVal =
      ImGui::IsItemHovered( ) && ImGui::IsMouseClicked( ImGuiMouseButton_Left );
 
     if ( ImGui::IsItemActive( ) )
     {
-        clrBg = ctxCmd->options->colorTheme[ COMMAND_THEME_ATTR_ACTIVE_INPUT_BG ];
-        clrFg = ctxCmd->options->colorTheme[ COMMAND_THEME_ATTR_ACTIVE_FG ];
-        clrTx = ctxCmd->options->colorTheme[ COMMAND_THEME_ATTR_ACTIVE_FG ];
+        clrBg = ctxCmd->settings->colorTheme[ COMMAND_THEME_ATTR_ACTIVE_INPUT_BG ];
+        clrFg = ctxCmd->settings->colorTheme[ COMMAND_THEME_ATTR_ACTIVE_FG ];
+        clrTx = ctxCmd->settings->colorTheme[ COMMAND_THEME_ATTR_ACTIVE_FG ];
     }
     else if ( ctxCmd->idSelected == c->id && ctxCmd->idSubSelected == c->idSub )
     {
         thickness = 2.0;
-        clrBg = ctxCmd->options->colorTheme[ COMMAND_THEME_ATTR_SELECTED_INPUT_BG ];
-        clrFg = ctxCmd->options->colorTheme[ COMMAND_THEME_ATTR_ACTIVE_FG ];
-        clrTx = ctxCmd->options->colorTheme[ COMMAND_THEME_ATTR_ACTIVE_FG ];
+        clrBg = ctxCmd->settings->colorTheme[ COMMAND_THEME_ATTR_SELECTED_INPUT_BG ];
+        clrFg = ctxCmd->settings->colorTheme[ COMMAND_THEME_ATTR_ACTIVE_FG ];
+        clrTx = ctxCmd->settings->colorTheme[ COMMAND_THEME_ATTR_ACTIVE_FG ];
     }
 
     draw_list->AddRectFilled( b.pMin, b.pMax, clrBg, rounding );
@@ -171,7 +171,7 @@ bool
                    CombinedCommand command,
                    CommandContext const * ctxCmd )
 {
-    const float rounding = 1 * ctxCmd->options->roundingFactor;
+    const float rounding = 1 * ctxCmd->settings->roundingFactor;
     CommandDrawAttrLabel * c = &command.drawAttrLabel;
     DrawBounds b{ &command, ctxCmd };
 
@@ -186,25 +186,25 @@ bool
     ImGui::PopID( );
 
     float thickness = 1.0;
-    ImU32 clrBg = ctxCmd->options->colorTheme[ c->bg ];
-    ImU32 clrFg = ctxCmd->options->colorTheme[ c->bg ];
-    ImU32 clrTx = ctxCmd->options->colorTheme[ COMMAND_THEME_ATTR_LABEL_FG ];
+    ImU32 clrBg = ctxCmd->settings->colorTheme[ c->bg ];
+    ImU32 clrFg = ctxCmd->settings->colorTheme[ c->bg ];
+    ImU32 clrTx = ctxCmd->settings->colorTheme[ COMMAND_THEME_ATTR_LABEL_FG ];
 
     bool retVal =
      ImGui::IsItemHovered( ) && ImGui::IsMouseClicked( ImGuiMouseButton_Left );
 
     if ( ImGui::IsItemActive( ) )
     {
-        clrBg = ctxCmd->options->colorTheme[ COMMAND_THEME_ATTR_ACTIVE_INPUT_BG ];
-        clrFg = ctxCmd->options->colorTheme[ COMMAND_THEME_ATTR_ACTIVE_FG ];
-        clrTx = ctxCmd->options->colorTheme[ COMMAND_THEME_ATTR_ACTIVE_FG ];
+        clrBg = ctxCmd->settings->colorTheme[ COMMAND_THEME_ATTR_ACTIVE_INPUT_BG ];
+        clrFg = ctxCmd->settings->colorTheme[ COMMAND_THEME_ATTR_ACTIVE_FG ];
+        clrTx = ctxCmd->settings->colorTheme[ COMMAND_THEME_ATTR_ACTIVE_FG ];
     }
     else if ( ctxCmd->idSelected == c->id && ctxCmd->idSubSelected == c->idSub )
     {
         thickness = 2.0;
-        clrBg = ctxCmd->options->colorTheme[ COMMAND_THEME_ATTR_SELECTED_INPUT_BG ];
-        clrFg = ctxCmd->options->colorTheme[ COMMAND_THEME_ATTR_ACTIVE_FG ];
-        clrTx = ctxCmd->options->colorTheme[ COMMAND_THEME_ATTR_ACTIVE_FG ];
+        clrBg = ctxCmd->settings->colorTheme[ COMMAND_THEME_ATTR_SELECTED_INPUT_BG ];
+        clrFg = ctxCmd->settings->colorTheme[ COMMAND_THEME_ATTR_ACTIVE_FG ];
+        clrTx = ctxCmd->settings->colorTheme[ COMMAND_THEME_ATTR_ACTIVE_FG ];
     }
 
     draw_list->AddRectFilled( b.pMin, b.pMax, clrBg, rounding );
@@ -225,7 +225,7 @@ bool
                    CombinedCommand command,
                    CommandContext const * ctxCmd )
 {
-    const float rounding = 1 * ctxCmd->options->roundingFactor;
+    const float rounding = 1 * ctxCmd->settings->roundingFactor;
     CommandDrawAttrInput * c = &command.drawAttrInput;
     DrawBounds b{ &command, ctxCmd };
 
@@ -240,8 +240,8 @@ bool
     ImGui::PopID( );
 
     float thickness = 1.0;
-    ImU32 clrBg = ctxCmd->options->colorTheme[ COMMAND_THEME_ATTR_INPUT_BG ];
-    ImU32 clrFg = ctxCmd->options->colorTheme[ COMMAND_THEME_ATTR_INPUT_FG ];
+    ImU32 clrBg = ctxCmd->settings->colorTheme[ COMMAND_THEME_ATTR_INPUT_BG ];
+    ImU32 clrFg = ctxCmd->settings->colorTheme[ COMMAND_THEME_ATTR_INPUT_FG ];
     ImU32 clrTx = IM_COL32_BLACK;
 
     bool retVal =
@@ -249,16 +249,16 @@ bool
 
     if ( ImGui::IsItemActive( ) )
     {
-        clrBg = ctxCmd->options->colorTheme[ COMMAND_THEME_ATTR_ACTIVE_INPUT_BG ];
-        clrFg = ctxCmd->options->colorTheme[ COMMAND_THEME_ATTR_ACTIVE_FG ];
-        clrTx = ctxCmd->options->colorTheme[ COMMAND_THEME_ATTR_ACTIVE_FG ];
+        clrBg = ctxCmd->settings->colorTheme[ COMMAND_THEME_ATTR_ACTIVE_INPUT_BG ];
+        clrFg = ctxCmd->settings->colorTheme[ COMMAND_THEME_ATTR_ACTIVE_FG ];
+        clrTx = ctxCmd->settings->colorTheme[ COMMAND_THEME_ATTR_ACTIVE_FG ];
     }
     else if ( ctxCmd->idSelected == c->id && ctxCmd->idSubSelected == c->idSub )
     {
         thickness = 2.0;
-        clrBg = ctxCmd->options->colorTheme[ COMMAND_THEME_ATTR_SELECTED_INPUT_BG ];
-        clrFg = ctxCmd->options->colorTheme[ COMMAND_THEME_ATTR_ACTIVE_FG ];
-        clrTx = ctxCmd->options->colorTheme[ COMMAND_THEME_ATTR_ACTIVE_FG ];
+        clrBg = ctxCmd->settings->colorTheme[ COMMAND_THEME_ATTR_SELECTED_INPUT_BG ];
+        clrFg = ctxCmd->settings->colorTheme[ COMMAND_THEME_ATTR_ACTIVE_FG ];
+        clrTx = ctxCmd->settings->colorTheme[ COMMAND_THEME_ATTR_ACTIVE_FG ];
     }
 
     draw_list->AddRectFilled( b.pMin, b.pMax, clrBg, rounding );
@@ -312,9 +312,9 @@ void
 
     // Get the current ImGui cursor position
     ImVec2 offset = ImGui::GetCursorScreenPos( );
-    static const CommandOptions cmdOpt;
+    static const CommandSettings settings;
     CommandContext ctxCmd{
-        *idSelected, *idSubSelected, offset, this->fontInfos, &cmdOpt
+        *idSelected, *idSubSelected, offset, this->fontInfos, &settings
     };
 
     for ( int i = 0; i < q->nofCommands; i++ )
@@ -343,6 +343,111 @@ void
     // Advance the ImGui cursor to claim space. If the "reserved" height and width were
     // not fully used, we expect the values to have already been adjusted to "used" area.
     ImGui::SetCursorScreenPos( ImVec2( offset.x + q->pixelsW, offset.y + q->pixelsH ) );
+
+    ImGui::End( );
+}
+
+bool
+ drawOption( ImDrawList * draw_list,
+             const char * name,
+             unsigned int i,
+             CommandContext const * ctxCmd,
+             unsigned int optSelected )
+{
+    int width = 300;
+    int height = 36;
+    const float rounding = 1 * ctxCmd->settings->roundingFactor;
+    ImVec2 pMin = { ctxCmd->offset.x, ctxCmd->offset.y + ( i - 1 ) * ( height + 4 ) };
+    ImVec2 pMax = { pMin.x + width, pMin.y + height };
+
+    ImGui::SetCursorScreenPos( pMin );
+    ImGui::PushID( name );
+    ImGui::InvisibleButton( "canvas",
+                            ImVec2( width, height ),
+                            ImGuiButtonFlags_MouseButtonLeft
+                             | ImGuiButtonFlags_MouseButtonRight );
+    ImGui::PopID( );
+
+    float thickness = 1.0;
+    ImU32 clrBg = ctxCmd->settings->colorTheme[ COMMAND_THEME_ATTR_INPUT_BG ];
+    ImU32 clrFg = ctxCmd->settings->colorTheme[ COMMAND_THEME_ATTR_INPUT_FG ];
+    ImU32 clrTx = IM_COL32_BLACK;
+
+    bool retVal =
+     ImGui::IsItemHovered( ) && ImGui::IsMouseClicked( ImGuiMouseButton_Left );
+
+    if ( ImGui::IsItemActive( ) )
+    {
+        clrBg = ctxCmd->settings->colorTheme[ COMMAND_THEME_ATTR_ACTIVE_INPUT_BG ];
+        clrFg = ctxCmd->settings->colorTheme[ COMMAND_THEME_ATTR_ACTIVE_FG ];
+        clrTx = ctxCmd->settings->colorTheme[ COMMAND_THEME_ATTR_ACTIVE_FG ];
+    }
+    else if ( i == optSelected )
+    {
+        thickness = 2.0;
+        clrBg = ctxCmd->settings->colorTheme[ COMMAND_THEME_ATTR_SELECTED_INPUT_BG ];
+        clrFg = ctxCmd->settings->colorTheme[ COMMAND_THEME_ATTR_ACTIVE_FG ];
+        clrTx = ctxCmd->settings->colorTheme[ COMMAND_THEME_ATTR_ACTIVE_FG ];
+    }
+
+    draw_list->AddRectFilled( pMin, pMax, clrBg, rounding );
+
+    draw_list->AddRect( pMin, pMax, clrFg, rounding, 0, thickness );
+
+    draw_list->AddText( ctxCmd->fontInfos[ FONT_ROLE_DEFAULT ].fontPtr,
+                        ctxCmd->fontInfos[ FONT_ROLE_DEFAULT ].fontSize,
+                        ImVec2{ pMin.x + 8, pMin.y + 8 },
+                        clrTx,
+                        name );
+
+    return retVal;
+}
+
+void
+ Editor::drawOptions( CommandOptions const * const o, unsigned int * optSelected )
+{
+    ImGuiViewport * viewport = ImGui::GetMainViewport( );
+    int windowWidth = viewport->Size.x / 2;
+    int windowHeight = viewport->Size.y;
+    ImGui::SetNextWindowPos( ImVec2( viewport->Pos.x, viewport->Pos.y ) );
+    ImGui::SetNextWindowSize( ImVec2( windowWidth, windowHeight ) );
+    ImGui::SetNextWindowViewport( viewport->ID );
+
+    ImGuiWindowFlags windowFlags =
+     ImGuiWindowFlags_NoDocking | ImGuiWindowFlags_NoTitleBar
+     | ImGuiWindowFlags_NoCollapse | ImGuiWindowFlags_NoBackground
+     | ImGuiWindowFlags_NoSavedSettings | ImGuiWindowFlags_NoResize
+     | ImGuiWindowFlags_NoMove | ImGuiWindowFlags_NoBringToFrontOnFocus
+     | ImGuiWindowFlags_NoNavFocus;
+
+    if ( !ImGui::Begin( "Command Options", nullptr, windowFlags ) )
+    {
+        ImGui::End( );
+        return;
+    }
+
+    // ImGui::Text( "..." );
+
+    ImDrawList * draw_list = ImGui::GetWindowDrawList( );
+
+    // Get the current ImGui cursor position
+    ImVec2 offset = ImGui::GetCursorScreenPos( );
+    static const CommandSettings settings;
+    CommandContext ctxCmd{ 0, 0, offset, this->fontInfos, &settings };
+
+    for ( int i = 0; i < o->nofOptions; i++ )
+    {
+        unsigned int idx = i + 1;
+        if ( drawOption( draw_list, o->options[ i ], idx, &ctxCmd, *optSelected ) )
+        {
+            *optSelected = idx;
+        }
+    }
+
+    // Advance the ImGui cursor to claim space. If the "reserved" height and width were
+    // not fully used, we expect the values to have already been adjusted to "used" area.
+    ImGui::SetCursorScreenPos(
+     ImVec2( offset.x + 300, offset.y + ( o->nofOptions * 40 ) ) );
 
     ImGui::End( );
 }

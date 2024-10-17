@@ -161,6 +161,9 @@ void
     // Rely on last-frame-wraparound to ensure rendering the very first frame first.
     double frameToRender = appEnvironment->frameLast + 1;
 
+    unsigned int idPrev = appState.idSelected;
+    unsigned int idSubPrev = appState.idSubSelected;
+    unsigned int optSelected = 0;
     while ( appState.quit == false )
     {
         // TODO: Improve update scheduling.
@@ -212,6 +215,25 @@ void
                 default:
                     break;
             }
+        }
+
+        if ( optSelected )
+        {
+            scene.applyOption( appState.idSelected, appState.idSubSelected, optSelected );
+
+            // Reset.
+            optSelected = 0;
+        }
+
+        if ( idPrev != appState.idSelected || idSubPrev != appState.idSubSelected )
+        {
+            scene.resetCommandOptions( );
+            if ( appState.idSelected )
+                scene.getCommandOptions( appState.idSelected, appState.idSubSelected );
+
+            // Reset.
+            idPrev = appState.idSelected;
+            idSubPrev = appState.idSubSelected;
         }
 
         //
@@ -268,6 +290,10 @@ void
         ImGui::NewFrame( );
 
         editor.draw( &scene.commandQueue, &appState.idSelected, &appState.idSubSelected );
+        if ( scene.commandOptions.nofOptions )
+        {
+            editor.drawOptions( &scene.commandOptions, &optSelected );
+        }
 
         ImGui::Render( );
         GL_CALL( glViewport( 0, 0, ( int ) io.DisplaySize.x, ( int ) io.DisplaySize.y ) );

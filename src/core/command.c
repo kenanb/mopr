@@ -33,3 +33,15 @@ void
         }
     }
 }
+
+void
+ mopr_print_command_options( CommandOptions const * const commandOptions )
+{
+    printf( "COMMAND OPTIONS INFO:\n" );
+    printf( "commandOptions->nofOptions = %d\n", commandOptions->nofOptions );
+    for ( int i = 0; i < commandOptions->nofOptions; ++i )
+    {
+        const char * cmdName = commandOptions->options[ i ];
+        printf( "  OPTION %d: %s\n", i, cmdName );
+    }
+}

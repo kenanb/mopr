@@ -11,6 +11,9 @@
   (:export
    #:populate-command-queue
    #:destruct-command-queue
+   #:populate-command-options
+   #:destruct-command-options
+   #:apply-command-option
    #:with-layout-settings
    #:testing))
 
@@ -270,6 +273,8 @@
 ;;; RNODE and Generic Functions
 ;;
 
+(defvar *root-rnode* nil)
+
 ;; Zero value is reserved for "no selection".
 (defvar *rnode-id-counter* 1)
 
@@ -299,6 +304,14 @@
 
 (defmethod rnode-get-ynode-anchor ((n rnode))
   (error (format nil "RNODE type ~A doesn't support children!" (class-name (class-of n)))))
+
+(defun find-rnode-by-id (n id)
+  (if (eql (rnode-id n) id) n
+      (loop for c across (rnode-children n) for x = (find-rnode-by-id c id) if x return x)))
+
+(defun get-rdata-options (n id-sub)
+  ;; TODO
+  (list "option-1" "option-2" "option-3" "option-4" "option-5" "option-6"))
 
 (defun populate-command-from-rnode (n c)
   (%set-values c (mopr-def:combined-command :base)
@@ -774,29 +787,31 @@
 
 (defun populate-command-queue (cmd-queue usds-data)
   (with-layout-settings
-      (let* ((pixels-w (plus-c:c-ref cmd-queue mopr-def:command-queue :pixels-w))
-             ;; (pixels-h (plus-c:c-ref cmd-queue mopr-def:command-queue :pixels-h))
-             (root-rn (build-repr-call-enabled usds-data))
-             (root-yn (rdata-ynode (car (rnode-rdatas root-rn))))
-             (wcmds
-               (make-instance 'cvec
-                              :ctype 'mopr-def:combined-command
-                              :size (%count-visible-rdata-recursive root-rn))))
+      ;; TODO : Implement cleanup.
+      (setf *root-rnode* (build-repr-call-enabled usds-data))
+    (let* ((pixels-w (plus-c:c-ref cmd-queue mopr-def:command-queue :pixels-w))
+           ;; (pixels-h (plus-c:c-ref cmd-queue mopr-def:command-queue :pixels-h))
+           (root-yn (rdata-ynode (car (rnode-rdatas *root-rnode*))))
+           (wcmds
+             (make-instance 'cvec
+                            :ctype 'mopr-def:combined-command
+                            :size (%count-visible-rdata-recursive *root-rnode*))))
 
-        (yoga-fun:node-calculate-layout root-yn
-                                        pixels-w
-                                        yoga-def:+undefined+ ;; pixels-h
-                                        yoga-def:+direction-ltr+)
+      (yoga-fun:node-calculate-layout root-yn
+                                      pixels-w
+                                      yoga-def:+undefined+ ;; pixels-h
+                                      yoga-def:+direction-ltr+)
 
-        (%populate-commands-recursive root-rn wcmds)
+      (%populate-commands-recursive *root-rnode* wcmds)
 
-        (%set-values cmd-queue (mopr-def:command-queue)
-                     :nof-commands (cvec-size wcmds)
-                     :commands (autowrap:ptr (cvec-wrapper wcmds))
-                     ;; Adjust height to the actual "used" height.
-                     :pixels-h (%dim root-yn :height))
+      (%set-values cmd-queue (mopr-def:command-queue)
+                   :nof-commands (cvec-size wcmds)
+                   :commands (autowrap:ptr (cvec-wrapper wcmds))
+                   ;; Adjust height to the actual "used" height.
+                   :pixels-h (%dim root-yn :height))
 
-        (yoga-fun:node-free-recursive root-yn))))
+      ;; TODO : Defer.
+      (yoga-fun:node-free-recursive root-yn))))
 
 ;; NOTE: Free calls are made from the same module the allocations were made from,
 ;;       to avoid possible issues with multiple malloc implementations in runtime.
@@ -807,7 +822,7 @@
   (let* ((cmd-count (plus-c:c-ref cmd-queue mopr-def:command-queue :nof-commands))
          (commands (plus-c:c-ref cmd-queue mopr-def:command-queue :commands)))
 
-    (loop for i to cmd-count
+    (loop for i below cmd-count
           for c = (autowrap:c-aref commands i 'mopr-def:combined-command)
           for c-type = (plus-c:c-ref c mopr-def:combined-command :base :c-type)
 
@@ -819,21 +834,57 @@
           ;; foreign-string last-field convenience.
           do (case c-type
                (mopr-def:+command-type-draw-expr-label+
-                (autowrap::free (plus-c:c-ref c mopr-def:combined-command
-                                              :draw-expr-label
-                                              :text plus-c:* plus-c:&)))
+                (autowrap:free (plus-c:c-ref c mopr-def:combined-command
+                                             :draw-expr-label
+                                             :text plus-c:* plus-c:&)))
                (mopr-def:+command-type-draw-attr-label+
-                (autowrap::free (plus-c:c-ref c mopr-def:combined-command
-                                              :draw-attr-label
-                                              :text plus-c:* plus-c:&)))
+                (autowrap:free (plus-c:c-ref c mopr-def:combined-command
+                                             :draw-attr-label
+                                             :text plus-c:* plus-c:&)))
                (mopr-def:+command-type-draw-attr-input+
-                (autowrap::free (plus-c:c-ref c mopr-def:combined-command
-                                              :draw-attr-input
-                                              :text plus-c:* plus-c:&)))))
+                (autowrap:free (plus-c:c-ref c mopr-def:combined-command
+                                             :draw-attr-input
+                                             :text plus-c:* plus-c:&)))))
 
     (autowrap:free commands)
 
     (%set-values cmd-queue (mopr-def:command-queue) :nof-commands 0 :commands (autowrap:ptr nil))))
+
+(defun destruct-command-options (cmd-options-ptr
+                                 &aux
+                                   (cmd-options (autowrap:wrap-pointer
+                                                 cmd-options-ptr 'mopr-def:command-options)))
+  (let* ((opt-count (plus-c:c-ref cmd-options mopr-def:command-options :nof-options))
+         (options (plus-c:c-ref cmd-options mopr-def:command-options :options)))
+
+    (loop for i below opt-count
+          do (autowrap:free (autowrap:c-aref options i :pointer)))
+
+    (autowrap:free options)
+
+    (%set-values cmd-options (mopr-def:command-options) :nof-options 0 :options (autowrap:ptr nil))))
+
+(defun populate-command-options (cmd-options-ptr id id-sub
+                                 &aux
+                                   (cmd-options (autowrap:wrap-pointer
+                                                 cmd-options-ptr 'mopr-def:command-options)))
+  (let* ((n (find-rnode-by-id *root-rnode* id))
+         (opts (get-rdata-options n id-sub))
+         (nof-opts (length opts))
+         (vopts (autowrap:alloc :pointer nof-opts)))
+
+    (loop for o in opts for i from 0
+          do (setf (autowrap:c-aref vopts i :pointer) (autowrap:alloc-string o)))
+
+    (%set-values cmd-options (mopr-def:command-options)
+                 :nof-options nof-opts
+                 :options (autowrap:ptr vopts))))
+
+(defun apply-command-option (id id-sub id-opt)
+  (let* ((n (find-rnode-by-id *root-rnode* id))
+         (opts (get-rdata-options n id-sub))
+         (idx (1- id-opt)))
+    (format t "APPLIED OPTION: ~A~%" (nth idx opts))))
 
 ;;
 ;;; TESTING

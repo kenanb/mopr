@@ -32,7 +32,12 @@ struct Editor
     }
 
     void
-     draw( CommandQueue const * const q, unsigned int * idSelected, unsigned int * idSubSelected );
+     draw( CommandQueue const * const q,
+           unsigned int * idSelected,
+           unsigned int * idSubSelected );
+
+    void
+     drawOptions( CommandOptions const * const o, unsigned int * optSelected );
 
     FontInfo const * fontInfos;
 };

@@ -33,6 +33,10 @@ Scene::Scene( const std::string & usdsPath,
               float pixelsH )
     : stage( ), camera( ), drawTarget( ), lighting( ), renderSettings( )
 {
+    this->commandOptions.nofOptions = 0;
+    this->commandOptions.options = NULL;
+    this->commandQueue.nofCommands = 0;
+    this->commandQueue.commands = NULL;
     this->commandQueue.pixelsW = pixelsW;
     this->commandQueue.pixelsH = pixelsH;
     this->initStageAndCamera( usdsPath, camera );
@@ -57,9 +61,20 @@ static bool
     return true;
 }
 
+static bool
+ destructCommandOptions( CommandOptions * options )
+{
+    cl_object hOptions_l = ecl_make_pointer( options );
+    cl_object pkgMoprExtRepr_l = ecl_find_package( "MOPR-EXT/REPR" );
+    cl_object symFn_l = getSymbol( "DESTRUCT-COMMAND-OPTIONS", pkgMoprExtRepr_l );
+    cl_funcall( 2, symFn_l, hOptions_l );
+    return true;
+}
+
 Scene::~Scene( )
 {
     destructCommandQueue( &this->commandQueue );
+    destructCommandOptions( &this->commandOptions );
 }
 
 void
@@ -143,6 +158,49 @@ void
     ( void ) result;
     this->stage = pxr::UsdStage::Open( layer, pxr::UsdStage::LoadAll );
     if ( camera ) this->camera = pxr::SdfPath( camera );
+}
+
+static bool
+ populateCommandOptions( CommandOptions * opts, unsigned int id, unsigned int idSub )
+{
+    cl_object id_l = ecl_make_unsigned_integer( id );
+    cl_object idSub_l = ecl_make_unsigned_integer( idSub );
+    cl_object hOpts_l = ecl_make_pointer( opts );
+    cl_object pkgMoprExtUtil_l = ecl_find_package( "MOPR-EXT/UTIL" );
+    cl_object symFn_l = getSymbol( "POPULATE-COMMAND-OPTIONS", pkgMoprExtUtil_l );
+    cl_funcall( 4, symFn_l, hOpts_l, id_l, idSub_l );
+    return true;
+}
+
+void
+ Scene::getCommandOptions( unsigned int id, unsigned int idSub )
+{
+    populateCommandOptions( &this->commandOptions, id, idSub );
+    // mopr_print_command_options( &this->commandOptions );
+}
+
+void
+ Scene::resetCommandOptions( )
+{
+    destructCommandOptions( &this->commandOptions );
+}
+
+static bool
+ applyOptionInternal( unsigned int id, unsigned int idSub, unsigned int idOpt )
+{
+    cl_object id_l = ecl_make_unsigned_integer( id );
+    cl_object idSub_l = ecl_make_unsigned_integer( idSub );
+    cl_object idOpt_l = ecl_make_unsigned_integer( idOpt );
+    cl_object pkgMoprExtUtil_l = ecl_find_package( "MOPR-EXT/UTIL" );
+    cl_object symFn_l = getSymbol( "APPLY-COMMAND-OPTION", pkgMoprExtUtil_l );
+    cl_funcall( 4, symFn_l, id_l, idSub_l, idOpt_l );
+    return true;
+}
+
+void
+ Scene::applyOption( unsigned int id, unsigned int idSub, unsigned int idOpt )
+{
+    applyOptionInternal( id, idSub, idOpt );
 }
 
 void
