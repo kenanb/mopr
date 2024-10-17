@@ -706,6 +706,39 @@
                (unknown-form-error (car l) :debug))))
 
 ;;
+;;; Trivial Vector Type Backed by a C Array
+;;
+
+(defclass cvec ()
+  ((ctype
+    :type symbol
+    :initarg :ctype
+    :initform (error "Ctype must be specified!")
+    :accessor cvec-ctype)
+   (size
+    :type (unsigned-byte 32)
+    :initarg :size
+    :initform 0
+    :accessor cvec-size)
+   (idx
+    :type (unsigned-byte 32)
+    :initform 0
+    :accessor cvec-idx)
+   (wrapper
+    :accessor cvec-wrapper)))
+
+(defmethod initialize-instance :after ((vec cvec) &key)
+  (setf (cvec-wrapper vec)
+        (autowrap:alloc (cvec-ctype vec) (cvec-size vec))))
+
+(defun cvec-get-incrementing-counter (vec)
+  (prog1
+      (autowrap:c-aref (cvec-wrapper vec)
+                       (cvec-idx vec)
+                       (cvec-ctype vec))
+    (incf (cvec-idx vec))))
+
+;;
 ;;; Top-Level API and Macros
 ;;
 
@@ -725,34 +758,10 @@
   `(float-features:with-float-traps-masked (:invalid)
      ,@body))
 
-(defclass wcommands ()
-  ((size
-    :type (unsigned-byte 32)
-    :initarg :size
-    :initform 0
-    :accessor wcommands-size)
-   (idx
-    :type (unsigned-byte 32)
-    :initform 0
-    :accessor wcommands-idx)
-   (ptr
-    :accessor wcommands-ptr)))
-
-(defmethod initialize-instance :after ((wcmds wcommands) &key)
-  (setf (wcommands-ptr wcmds)
-        (autowrap:alloc 'mopr-def:combined-command (wcommands-size wcmds))))
-
-(defun wcommands-get-available-and-increment (wcmds)
-  (prog1
-      (autowrap:c-aref (wcommands-ptr wcmds)
-                       (wcommands-idx wcmds)
-                       'mopr-def:combined-command)
-    (incf (wcommands-idx wcmds))))
-
 (defun %populate-commands-recursive (n wcmds)
   (loop for rd in (rnode-rdatas n)
         unless (typep rd 'hidden-rdata)
-          do (let ((cmd (wcommands-get-available-and-increment wcmds)))
+          do (let ((cmd (cvec-get-incrementing-counter wcmds)))
                (populate-command-from-rnode n cmd)
                (populate-command-from-rdata rd cmd)))
   (loop for c across (rnode-children n)
@@ -770,7 +779,8 @@
              (root-rn (build-repr-call-enabled usds-data))
              (root-yn (rdata-ynode (car (rnode-rdatas root-rn))))
              (wcmds
-               (make-instance 'wcommands
+               (make-instance 'cvec
+                              :ctype 'mopr-def:combined-command
                               :size (%count-visible-rdata-recursive root-rn))))
 
         (yoga-fun:node-calculate-layout root-yn
@@ -781,8 +791,8 @@
         (%populate-commands-recursive root-rn wcmds)
 
         (%set-values cmd-queue (mopr-def:command-queue)
-                     :nof-commands (wcommands-size wcmds)
-                     :commands (autowrap:ptr (wcommands-ptr wcmds))
+                     :nof-commands (cvec-size wcmds)
+                     :commands (autowrap:ptr (cvec-wrapper wcmds))
                      ;; Adjust height to the actual "used" height.
                      :pixels-h (%dim root-yn :height))
 
