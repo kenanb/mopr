@@ -281,6 +281,9 @@
 (defgeneric rnode-get-ynode-anchor (node)
   (:documentation "Get the ynode that should contain child ynodes."))
 
+(defgeneric get-rdata-options (node id-sub)
+  (:documentation "Get the options available for the selected rdata of given node."))
+
 (defclass rnode ()
   ((id
     :type (unsigned-byte 32)
@@ -305,13 +308,12 @@
 (defmethod rnode-get-ynode-anchor ((n rnode))
   (error (format nil "RNODE type ~A doesn't support children!" (class-name (class-of n)))))
 
+(defmethod get-rdata-options ((node rnode) id-sub)
+  nil)
+
 (defun find-rnode-by-id (n id)
   (if (eql (rnode-id n) id) n
       (loop for c across (rnode-children n) for x = (find-rnode-by-id c id) if x return x)))
-
-(defun get-rdata-options (n id-sub)
-  ;; TODO
-  (list "option-1" "option-2" "option-3" "option-4" "option-5" "option-6"))
 
 (defun populate-command-from-rnode (n c)
   (%set-values c (mopr-def:combined-command :base)
@@ -384,6 +386,16 @@
       (setf (rnode-rdatas node)
             (list nec nel ncc nac0 nal0 nai0 nac1 nal1 nai1 nar)))))
 
+;; TODO
+(defmethod get-rdata-options ((node var-rnode) id-sub)
+  (case id-sub
+    (1 (list "var expr-label-rdata"))
+    (4 (list "var attr-label-rdata NAME"))
+    (5 (list "var attr-input-rdata NAME"))
+    (7 (list "var attr-label-rdata LET"))
+    (8 (list "var attr-input-rdata LET"))
+    (9 (list "var attr-input-rdata CONTENT"))))
+
 (defclass each-rnode (rnode)
   ())
 
@@ -446,6 +458,18 @@
       (setf (rnode-rdatas node)
             (list nec nel ncc nac0 nal0 nai0 nac1 nal1 nai1 nac2 nal2 nai2)))))
 
+;; TODO
+(defmethod get-rdata-options ((node each-rnode) id-sub)
+  (case id-sub
+    (1 (list "each expr-label-rdata"))
+    (4 (list "each attr-label-rdata NAME"))
+    (5 (list "each attr-input-rdata NAME"))
+    (7 (list "each attr-label-rdata ARG-AGGR(S)"))
+    (8 (list "each attr-input-rdata ARG-AGGR(S)"))
+    (10 (list "each attr-label-rdata VAL-AGGR(S)"))
+    (11 (list "each attr-input-rdata VAL-AGGR(S)"))
+    (12 (list "each attr-input-rdata CONTENT"))))
+
 (defclass iota-rnode (rnode)
   ())
 
@@ -506,6 +530,18 @@
     (setf (rnode-rdatas node)
           (list nec nel ncc nac0 nal0 nai0 nac1 nal1 nai1 nac2 nal2 nai2))))
 
+;; TODO
+(defmethod get-rdata-options ((node iota-rnode) id-sub)
+  (case id-sub
+    (1 (list "iota expr-label-rdata"))
+    (4 (list "iota attr-label-rdata NAME"))
+    (5 (list "iota attr-input-rdata NAME"))
+    (7 (list "iota attr-label-rdata ARG-AGGR"))
+    (8 (list "iota attr-input-rdata ARG-AGGR"))
+    (10 (list "iota attr-label-rdata VAL-AGGR"))
+    (11 (list "iota attr-input-rdata VAL-AGGR"))
+    (12 (list "iota attr-input-rdata CONTENT"))))
+
 (defclass call-rnode (rnode)
   ())
 
@@ -547,6 +583,14 @@
                                :h-co line-count-call-body)))
       (setf (rnode-rdatas node)
             (list nec nel ncc nac0 nal0 nai0 nar)))))
+
+;; TODO
+(defmethod get-rdata-options ((node call-rnode) id-sub)
+  (case id-sub
+    (1 (list "call expr-label-rdata"))
+    (4 (list "call attr-label-rdata LET"))
+    (5 (list "call attr-input-rdata LET"))
+    (6 (list "call attr-input-rdata CONTENT"))))
 
 (defclass prim-rnode (rnode)
   ())
@@ -595,6 +639,16 @@
     (setf (rnode-rdatas node)
           (list nec nel ncc nac0 nal0 nai0 nac1 nal1 nai1))))
 
+;; TODO
+(defmethod get-rdata-options ((node prim-rnode) id-sub)
+  (case id-sub
+    (1 (list "prim expr-label-rdata"))
+    (4 (list "prim attr-label-rdata PATH"))
+    (5 (list "prim attr-input-rdata PATH"))
+    (7 (list "prim attr-label-rdata META"))
+    (8 (list "prim attr-input-rdata META"))
+    (9 (list "prim attr-input-rdata CONTENT"))))
+
 (defmethod rnode-get-ynode-anchor ((n prim-rnode))
   (rdata-ynode (caddr (rnode-rdatas n))))
 
@@ -623,6 +677,12 @@
     (setf (rnode-rdatas node)
           (list nec nel ncc nar))))
 
+;; TODO
+(defmethod get-rdata-options ((node tree-rnode) id-sub)
+  (case id-sub
+    (1 (list "tree expr-label-rdata"))
+    (3 (list "tree attr-input-rdata CONTENT"))))
+
 (defclass meta-rnode (rnode)
   ())
 
@@ -646,6 +706,11 @@
          )
     (setf (rnode-rdatas node)
           (list nec nel ncc))))
+
+;; TODO
+(defmethod get-rdata-options ((node meta-rnode) id-sub)
+  (case id-sub
+    (1 (list "meta expr-label-rdata"))))
 
 ;;
 ;;; Form Handlers
