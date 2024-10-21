@@ -54,7 +54,17 @@ registered to call tables can be dangerous, if enabled."
             (*print-readably* nil)
             (*read-eval* nil))
         (let ((expr (read in nil)))
-          (populate-command-queue (autowrap:wrap-pointer cmd-queue 'mopr-def:command-queue) expr)
+
+          ;; Representation.
+          ;;
+
+          (create-rnode-tree expr)
+          (populate-command-queue (autowrap:wrap-pointer cmd-queue 'mopr-def:command-queue))
+          (delete-rnode-tree) ; TODO : Defer.
+
+          ;; Evaluation.
+          ;;
+
           (funcall (if call-enabled
                        #'write-to-layer-call-enabled
                        #'write-to-layer)
