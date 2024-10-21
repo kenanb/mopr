@@ -15,10 +15,6 @@
 
 (in-package :mopr-ext/repr-shared)
 
-;;
-;;; Utilities
-;;
-
 (defmacro layout-dimension (ynode accessor)
   (case accessor
     (:left `(yoga-fun:node-layout-get-left ,ynode))

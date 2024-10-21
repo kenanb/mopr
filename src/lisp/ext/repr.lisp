@@ -21,20 +21,11 @@
 
 (in-package :mopr-ext/repr)
 
-(defvar *fill-column* 70)
-
 (defvar *debug-mode* t)
 
 (defvar *enable-call* nil)
 
 (defvar *root-rnode* nil)
-
-(defun format-form (form margin)
-  (let ((*print-pretty* t)
-        (*print-right-margin* margin))
-    (let* ((text (format nil "~S" form))
-           (line-count (1+ (count #\newline text))))
-      (values text line-count))))
 
 ;;
 ;;; Utilities

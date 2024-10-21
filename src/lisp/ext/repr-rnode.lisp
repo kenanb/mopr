@@ -29,9 +29,9 @@
 
 (defvar *fill-column* 70)
 
-(defvar *debug-mode* t)
-
-(defvar *enable-call* nil)
+;;
+;;; Utilities
+;;
 
 (defun format-form (form margin)
   (let ((*print-pretty* t)
