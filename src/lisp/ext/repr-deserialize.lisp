@@ -46,27 +46,45 @@
 
 (defun handle-var-form (rparent form)
   ;; (format t "~%Called handle-var-form!~%: ~S~%" form)
-  (vector-push-extend (make-instance 'mopr-ext/repr-rnode:var-rnode :rparent rparent :form form)
+  (vector-push-extend (make-instance 'mopr-ext/repr-rnode:var-rnode
+                                     :rparent rparent
+                                     :name-param (car form)
+                                     :aux-form-param (cadr form)
+                                     :val-form-param (cddr form))
                       (mopr-ext/repr-rnode:rnode-children rparent)))
 
 (defun handle-each-form (rparent form)
   ;; (format t "~%Called handle-each-form!~%: ~S~%" form)
-  (vector-push-extend (make-instance 'mopr-ext/repr-rnode:each-rnode :rparent rparent :form form)
+  (vector-push-extend (make-instance 'mopr-ext/repr-rnode:each-rnode
+                                     :rparent rparent
+                                     :name-param (car form)
+                                     :keys-form-param (cadr form)
+                                     :vals-form-param (cddr form))
                       (mopr-ext/repr-rnode:rnode-children rparent)))
 
 (defun handle-iota-form (rparent form)
   ;; (format t "~%Called handle-iota-form!~%: ~S~%" form)
-  (vector-push-extend (make-instance 'mopr-ext/repr-rnode:iota-rnode :rparent rparent :form form)
+  (vector-push-extend (make-instance 'mopr-ext/repr-rnode:iota-rnode
+                                     :rparent rparent
+                                     :name-param (car form)
+                                     :key-param (cadr form)
+                                     :end-param (caddr form))
                       (mopr-ext/repr-rnode:rnode-children rparent)))
 
 (defun handle-call-form (rparent form)
   ;; (format t "~%Called handle-call-form!~%: ~S~%" form)
-  (vector-push-extend (make-instance 'mopr-ext/repr-rnode:call-rnode :rparent rparent :form form)
+  (vector-push-extend (make-instance 'mopr-ext/repr-rnode:call-rnode
+                                     :rparent rparent
+                                     :aux-form-param (car form)
+                                     :body-form-param (cdr form))
                       (mopr-ext/repr-rnode:rnode-children rparent)))
 
 (defun handle-prim-form (rparent form)
   ;; (format t "~%Called handle-prim-form!~%: ~S~%" form)
-  (let* ((pn (make-instance 'mopr-ext/repr-rnode:prim-rnode :rparent rparent :form form)))
+  (let* ((pn (make-instance 'mopr-ext/repr-rnode:prim-rnode
+                            :rparent rparent
+                            :path-form-param (car form)
+                            :meta-form-param (cadr form))))
     (vector-push-extend pn (mopr-ext/repr-rnode:rnode-children rparent))
     (loop for l in (cddr form)
           for i from 0
@@ -80,12 +98,16 @@
 
 (defun handle-tree-form (rparent form)
   ;; (format t "~%Called handle-tree-form!~%: ~S~%" form)
-  (vector-push-extend (make-instance 'mopr-ext/repr-rnode:tree-rnode :rparent rparent :form form)
+  (vector-push-extend (make-instance 'mopr-ext/repr-rnode:tree-rnode
+                                     :rparent rparent
+                                     :body-form-param form)
                       (mopr-ext/repr-rnode:rnode-children rparent)))
 
 (defun handle-meta-form (rparent form)
   ;; (format t "~%Called handle-meta-form!~%: ~S~%" form)
-  (vector-push-extend (make-instance 'mopr-ext/repr-rnode:meta-rnode :rparent rparent :form form)
+  (vector-push-extend (make-instance 'mopr-ext/repr-rnode:meta-rnode
+                                     :rparent rparent
+                                     :body-form-param form)
                       (mopr-ext/repr-rnode:rnode-children rparent)))
 
 (defun handle-data-subforms (rparent subforms)
