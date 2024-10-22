@@ -11,7 +11,7 @@
                 #:with-layout-settings)
   (:import-from :mopr-ext/repr-rdata)
   (:import-from :mopr-ext/repr-rnode)
-  (:import-from :mopr-ext/repr-deserialize)
+  (:import-from :mopr-ext/repr-serialization)
   (:use :cl)
   (:export
    #:create-rnode-tree
@@ -31,7 +31,7 @@
 ;;
 
 (defun create-rnode-tree (usds-data)
-  (setf *root-rnode* (mopr-ext/repr-deserialize:deserialize-call-enabled usds-data)))
+  (setf *root-rnode* (mopr-ext/repr-serialization:deserialize-call-enabled usds-data)))
 
 (defun delete-rnode-tree ()
   (yoga-fun:node-free-recursive (mopr-ext/repr-rdata:rdata-ynode

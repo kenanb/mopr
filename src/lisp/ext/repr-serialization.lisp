@@ -3,7 +3,7 @@
 
 (in-package :cl-user)
 
-(defpackage :mopr-ext/repr-deserialize
+(defpackage :mopr-ext/repr-serialization
   (:import-from :mopr)
   (:import-from :mopr-ext/repr-shared
                 #:with-layout-settings)
@@ -14,7 +14,7 @@
    #:deserialize-call-enabled
    #:rnode-serialize))
 
-(in-package :mopr-ext/repr-deserialize)
+(in-package :mopr-ext/repr-serialization)
 
 ;;
 ;;; Mapping between RNODE and USDS Forms
