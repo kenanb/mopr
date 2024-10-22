@@ -244,9 +244,6 @@
       (mopr-info:with-registry (:supported-cases '(:upcase))
         (mopr-plug:with-configuration ()
           (with-repr-variables (:enable-call t)
-            (let* ((rn (make-rnode-instance
-                        'root-rnode
-                        nil
-                        usds-data)))
+            (let* ((rn (make-rnode-instance 'root-rnode nil usds-data)))
               (handle-data-subforms rn (list-rnode-children 'root-rnode usds-data))
               rn))))))
