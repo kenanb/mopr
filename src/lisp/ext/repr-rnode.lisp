@@ -97,21 +97,19 @@
     :type (unsigned-byte 32)
     :initform (prog1 *rnode-id-counter* (incf *rnode-id-counter*))
     :reader rnode-id)
-   (rdatas
-    :type list
-    :initform nil
-    :accessor rnode-rdatas)
    (parent
     :type (or null rnode)
+    :initarg :parent
     :initform nil
     :accessor rnode-parent)
    (children
     :type (vector rnode)
     :initform (make-array 0 :element-type 'rnode :adjustable t :fill-pointer 0)
-    :accessor rnode-children)))
-
-(defmethod initialize-instance :after ((node rnode) &key rparent)
-  (setf (rnode-parent node) rparent))
+    :accessor rnode-children)
+   (rdatas
+    :type list
+    :initform nil
+    :accessor rnode-rdatas)))
 
 (defmethod rnode-get-ynode-anchor ((n rnode))
   (error (format nil "RNODE type ~A doesn't support children!" (class-name (class-of n)))))

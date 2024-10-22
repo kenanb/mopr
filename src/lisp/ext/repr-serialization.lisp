@@ -117,7 +117,7 @@
 
 (defun make-rnode-instance (class rparent form)
   (apply #'make-instance class
-         :rparent rparent
+         :parent rparent
          (funcall
           (case class
             ('root-rnode #'root-form-params)
