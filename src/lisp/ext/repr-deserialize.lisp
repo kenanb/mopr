@@ -8,20 +8,142 @@
   (:import-from :mopr-ext/repr-shared
                 #:with-layout-settings)
   (:import-from :mopr-ext/repr-rdata)
-  (:import-from :mopr-ext/repr-rnode)
+  (:use :mopr-ext/repr-rnode)
   (:use :cl)
   (:export
-   #:deserialize-call-enabled))
+   #:deserialize-call-enabled
+   #:rnode-serialize))
 
 (in-package :mopr-ext/repr-deserialize)
+
+;;
+;;; Mapping between RNODE and USDS Forms
+;;
+
+(defgeneric rnode-serialize (node)
+  (:documentation "Get the list that represents the rnode in USDS form."))
+
+(defmethod rnode-serialize ((n rnode))
+  (loop for c across (rnode-children n)
+        collecting (rnode-serialize c)))
+
+(defmethod rnode-serialize ((n root-rnode))
+  (call-next-method))
+
+(defun root-form-params (form)
+  nil)
+
+(defun root-form-children (form)
+  form)
+
+(defmethod rnode-serialize ((n var-rnode))
+  `(:var
+    ,(var-rnode-name-param n)
+    ,(var-rnode-aux-form-param n)
+    ,@(var-rnode-val-form-param n)
+    ,@(call-next-method)))
+
+(defun var-form-params (form)
+  (list :name-param (car form)
+        :aux-form-param (cadr form)
+        :val-form-param (cddr form)))
+
+(defmethod rnode-serialize ((n each-rnode))
+  `(:each
+    ,(each-rnode-name-param n)
+    ,(each-rnode-keys-form-param n)
+    ,@(each-rnode-vals-form-param n)
+    ,@(call-next-method)))
+
+(defun each-form-params (form)
+  (list :name-param (car form)
+        :keys-form-param (cadr form)
+        :vals-form-param (cddr form)))
+
+(defmethod rnode-serialize ((n iota-rnode))
+  `(:iota
+    ,(iota-rnode-name-param n)
+    ,(iota-rnode-key-param n)
+    ,(iota-rnode-end-param n)
+    ,@(call-next-method)))
+
+(defun iota-form-params (form)
+  (list :name-param (car form)
+        :key-param (cadr form)
+        :end-param (caddr form)))
+
+(defmethod rnode-serialize ((n call-rnode))
+  `(:call
+    ,(call-rnode-aux-form-param n)
+    ,@(call-rnode-body-form-param n)
+    ,@(call-next-method)))
+
+(defun call-form-params (form)
+  (list :aux-form-param (car form)
+        :body-form-param (cdr form)))
+
+(defmethod rnode-serialize ((n prim-rnode))
+  `(:prim
+    ,(prim-rnode-path-form-param n)
+    ,(prim-rnode-meta-form-param n)
+    ,@(call-next-method)))
+
+(defun prim-form-params (form)
+  (list :path-form-param (car form)
+        :meta-form-param (cadr form)))
+
+(defun prim-form-children (form)
+  (cddr form))
+
+(defmethod rnode-serialize ((n tree-rnode))
+  `(:tree
+    ,@(tree-rnode-body-form-param n)
+    ,@(call-next-method)))
+
+(defun tree-form-params (form)
+  (list :body-form-param form))
+
+(defmethod rnode-serialize ((n meta-rnode))
+  `(:meta
+    ,@(meta-rnode-body-form-param n)
+    ,@(call-next-method)))
+
+(defun meta-form-params (form)
+  (list :body-form-param form))
+
+;;
+;;; Unified Deserialization APIs
+;;
+
+(defun make-rnode-instance (class rparent form)
+  (apply #'make-instance class
+         :rparent rparent
+         (funcall
+          (case class
+            ('root-rnode #'root-form-params)
+            ('var-rnode #'var-form-params)
+            ('each-rnode #'each-form-params)
+            ('iota-rnode #'iota-form-params)
+            ('call-rnode #'call-form-params)
+            ('prim-rnode #'prim-form-params)
+            ('tree-rnode #'tree-form-params)
+            ('meta-rnode #'meta-form-params))
+          form)))
+
+(defun list-rnode-children (class form)
+  (funcall
+   (case class
+     ('root-rnode #'root-form-children)
+     ('prim-rnode #'prim-form-children))
+   form))
+
+;;
+;;; Form Handlers
+;;
 
 (defvar *debug-mode* t)
 
 (defvar *enable-call* nil)
-
-;;
-;;; Utilities
-;;
 
 (defun unknown-form-error (form action)
   (format t "
@@ -40,53 +162,31 @@
   (when (and (eq action :debug) *debug-mode*)
     (error "Cannot handle form: ~S~%" form)))
 
-;;
-;;; Form Handlers
-;;
-
 (defun handle-var-form (rparent form)
   ;; (format t "~%Called handle-var-form!~%: ~S~%" form)
-  (vector-push-extend (make-instance 'mopr-ext/repr-rnode:var-rnode
-                                     :rparent rparent
-                                     :name-param (car form)
-                                     :aux-form-param (cadr form)
-                                     :val-form-param (cddr form))
-                      (mopr-ext/repr-rnode:rnode-children rparent)))
+  (vector-push-extend (make-rnode-instance 'var-rnode rparent form)
+                      (rnode-children rparent)))
 
 (defun handle-each-form (rparent form)
   ;; (format t "~%Called handle-each-form!~%: ~S~%" form)
-  (vector-push-extend (make-instance 'mopr-ext/repr-rnode:each-rnode
-                                     :rparent rparent
-                                     :name-param (car form)
-                                     :keys-form-param (cadr form)
-                                     :vals-form-param (cddr form))
-                      (mopr-ext/repr-rnode:rnode-children rparent)))
+  (vector-push-extend (make-rnode-instance 'each-rnode rparent form)
+                      (rnode-children rparent)))
 
 (defun handle-iota-form (rparent form)
   ;; (format t "~%Called handle-iota-form!~%: ~S~%" form)
-  (vector-push-extend (make-instance 'mopr-ext/repr-rnode:iota-rnode
-                                     :rparent rparent
-                                     :name-param (car form)
-                                     :key-param (cadr form)
-                                     :end-param (caddr form))
-                      (mopr-ext/repr-rnode:rnode-children rparent)))
+  (vector-push-extend (make-rnode-instance 'iota-rnode rparent form)
+                      (rnode-children rparent)))
 
 (defun handle-call-form (rparent form)
   ;; (format t "~%Called handle-call-form!~%: ~S~%" form)
-  (vector-push-extend (make-instance 'mopr-ext/repr-rnode:call-rnode
-                                     :rparent rparent
-                                     :aux-form-param (car form)
-                                     :body-form-param (cdr form))
-                      (mopr-ext/repr-rnode:rnode-children rparent)))
+  (vector-push-extend (make-rnode-instance 'call-rnode rparent form)
+                      (rnode-children rparent)))
 
 (defun handle-prim-form (rparent form)
   ;; (format t "~%Called handle-prim-form!~%: ~S~%" form)
-  (let* ((pn (make-instance 'mopr-ext/repr-rnode:prim-rnode
-                            :rparent rparent
-                            :path-form-param (car form)
-                            :meta-form-param (cadr form))))
-    (vector-push-extend pn (mopr-ext/repr-rnode:rnode-children rparent))
-    (loop for l in (cddr form)
+  (let* ((pn (make-rnode-instance 'prim-rnode rparent form)))
+    (vector-push-extend pn (rnode-children rparent))
+    (loop for l in (list-rnode-children 'prim-rnode form)
           for i from 0
           for fn = (case (car l)
                      ;; TODO : Handle other forms.
@@ -98,17 +198,13 @@
 
 (defun handle-tree-form (rparent form)
   ;; (format t "~%Called handle-tree-form!~%: ~S~%" form)
-  (vector-push-extend (make-instance 'mopr-ext/repr-rnode:tree-rnode
-                                     :rparent rparent
-                                     :body-form-param form)
-                      (mopr-ext/repr-rnode:rnode-children rparent)))
+  (vector-push-extend (make-rnode-instance 'tree-rnode rparent form)
+                      (rnode-children rparent)))
 
 (defun handle-meta-form (rparent form)
   ;; (format t "~%Called handle-meta-form!~%: ~S~%" form)
-  (vector-push-extend (make-instance 'mopr-ext/repr-rnode:meta-rnode
-                                     :rparent rparent
-                                     :body-form-param form)
-                      (mopr-ext/repr-rnode:rnode-children rparent)))
+  (vector-push-extend (make-rnode-instance 'meta-rnode rparent form)
+                      (rnode-children rparent)))
 
 (defun handle-data-subforms (rparent subforms)
   ;; (format t "~%Called handle-data-subforms!~%: ~S~%" subforms)
@@ -148,5 +244,9 @@
       (mopr-info:with-registry (:supported-cases '(:upcase))
         (mopr-plug:with-configuration ()
           (with-repr-variables (:enable-call t)
-            (let* ((n (make-instance 'mopr-ext/repr-rnode:root-rnode)))
-              (handle-data-subforms n usds-data) n))))))
+            (let* ((rn (make-rnode-instance
+                        'root-rnode
+                        nil
+                        usds-data)))
+              (handle-data-subforms rn (list-rnode-children 'root-rnode usds-data))
+              rn))))))

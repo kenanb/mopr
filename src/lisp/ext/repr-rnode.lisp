@@ -10,20 +10,37 @@
   (:import-from :mopr-ext/repr-rdata)
   (:use :cl)
   (:export
+   #:rnode
    #:rnode-get-ynode-anchor
    #:get-rdata-options
    #:rnode-rdatas
+   #:rnode-parent
    #:rnode-children
    #:find-rnode-by-id
    #:populate-command-from-rnode
    #:root-rnode
    #:var-rnode
+   #:var-rnode-name-param
+   #:var-rnode-aux-form-param
+   #:var-rnode-val-form-param
    #:each-rnode
+   #:each-rnode-name-params
+   #:each-rnode-keys-form-param
+   #:each-rnode-vals-form-param
    #:iota-rnode
+   #:iota-rnode-name-param
+   #:iota-rnode-key-param
+   #:iota-rnode-end-param
    #:call-rnode
+   #:call-rnode-aux-form-param
+   #:call-rnode-body-form-param
    #:prim-rnode
+   #:prim-rnode-path-form-param
+   #:prim-rnode-meta-form-param
    #:tree-rnode
-   #:meta-rnode))
+   #:tree-rnode-body-form-param
+   #:meta-rnode
+   #:meta-rnode-body-form-param))
 
 (in-package :mopr-ext/repr-rnode)
 
