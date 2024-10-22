@@ -10,37 +10,59 @@
   (:import-from :mopr-ext/repr-rdata)
   (:use :cl)
   (:export
-   #:rnode
+
+   ;; Generic APIs
    #:rnode-get-ynode-anchor
-   #:get-rdata-options
+   #:rnode-get-rdata-options
+   #:find-rnode-by-id
+   #:populate-command-from-rnode
+
+   ;; RNODE API
+   #:rnode
    #:rnode-rdatas
    #:rnode-parent
    #:rnode-children
-   #:find-rnode-by-id
-   #:populate-command-from-rnode
+
+   ;; ROOT-RNODE
    #:root-rnode
+
+   ;; VAR-RNODE
    #:var-rnode
    #:var-rnode-name-param
    #:var-rnode-aux-form-param
    #:var-rnode-val-form-param
+
+   ;; EACH-RNODE
    #:each-rnode
    #:each-rnode-name-params
    #:each-rnode-keys-form-param
    #:each-rnode-vals-form-param
+
+   ;; IOTA-RNODE
    #:iota-rnode
    #:iota-rnode-name-param
    #:iota-rnode-key-param
    #:iota-rnode-end-param
+
+   ;; CALL-RNODE
    #:call-rnode
    #:call-rnode-aux-form-param
    #:call-rnode-body-form-param
+
+   ;; PRIM-RNODE
    #:prim-rnode
    #:prim-rnode-path-form-param
    #:prim-rnode-meta-form-param
+
+   ;; TREE-RNODE
    #:tree-rnode
    #:tree-rnode-body-form-param
+
+   ;; META-RNODE
    #:meta-rnode
-   #:meta-rnode-body-form-param))
+   #:meta-rnode-body-form-param
+
+   ))
 
 (in-package :mopr-ext/repr-rnode)
 
@@ -67,7 +89,7 @@
 (defgeneric rnode-get-ynode-anchor (node)
   (:documentation "Get the ynode that should contain child ynodes."))
 
-(defgeneric get-rdata-options (node id-sub)
+(defgeneric rnode-get-rdata-options (node id-sub)
   (:documentation "Get the options available for the selected rdata of given node."))
 
 (defclass rnode ()
@@ -94,7 +116,7 @@
 (defmethod rnode-get-ynode-anchor ((n rnode))
   (error (format nil "RNODE type ~A doesn't support children!" (class-name (class-of n)))))
 
-(defmethod get-rdata-options ((node rnode) id-sub)
+(defmethod rnode-get-rdata-options ((node rnode) id-sub)
   nil)
 
 (defun find-rnode-by-id (n id)
@@ -182,7 +204,7 @@
             (list nec nel ncc nac0 nal0 nai0 nac1 nal1 nai1 nar)))))
 
 ;; TODO
-(defmethod get-rdata-options ((node var-rnode) id-sub)
+(defmethod rnode-get-rdata-options ((node var-rnode) id-sub)
   (case id-sub
     (1 (list "var expr-label-rdata"))
     (4 (list "var attr-label-rdata NAME"))
@@ -264,7 +286,7 @@
             (list nec nel ncc nac0 nal0 nai0 nac1 nal1 nai1 nac2 nal2 nai2)))))
 
 ;; TODO
-(defmethod get-rdata-options ((node each-rnode) id-sub)
+(defmethod rnode-get-rdata-options ((node each-rnode) id-sub)
   (case id-sub
     (1 (list "each expr-label-rdata"))
     (4 (list "each attr-label-rdata NAME"))
@@ -341,7 +363,7 @@
           (list nec nel ncc nac0 nal0 nai0 nac1 nal1 nai1 nac2 nal2 nai2))))
 
 ;; TODO
-(defmethod get-rdata-options ((node iota-rnode) id-sub)
+(defmethod rnode-get-rdata-options ((node iota-rnode) id-sub)
   (case id-sub
     (1 (list "iota expr-label-rdata"))
     (4 (list "iota attr-label-rdata NAME"))
@@ -398,7 +420,7 @@
             (list nec nel ncc nac0 nal0 nai0 nar)))))
 
 ;; TODO
-(defmethod get-rdata-options ((node call-rnode) id-sub)
+(defmethod rnode-get-rdata-options ((node call-rnode) id-sub)
   (case id-sub
     (1 (list "call expr-label-rdata"))
     (4 (list "call attr-label-rdata AUX"))
@@ -456,7 +478,7 @@
           (list nec nel ncc nac0 nal0 nai0 nac1 nal1 nai1))))
 
 ;; TODO
-(defmethod get-rdata-options ((node prim-rnode) id-sub)
+(defmethod rnode-get-rdata-options ((node prim-rnode) id-sub)
   (case id-sub
     (1 (list "prim expr-label-rdata"))
     (4 (list "prim attr-label-rdata PATH"))
@@ -498,7 +520,7 @@
             (list nec nel ncc nar)))))
 
 ;; TODO
-(defmethod get-rdata-options ((node tree-rnode) id-sub)
+(defmethod rnode-get-rdata-options ((node tree-rnode) id-sub)
   (case id-sub
     (1 (list "tree expr-label-rdata"))
     (3 (list "tree attr-input-rdata BODY"))))
@@ -535,7 +557,7 @@
             (list nec nel ncc nar)))))
 
 ;; TODO
-(defmethod get-rdata-options ((node meta-rnode) id-sub)
+(defmethod rnode-get-rdata-options ((node meta-rnode) id-sub)
   (case id-sub
     (1 (list "meta expr-label-rdata"))
     (3 (list "meta attr-input-rdata BODY"))))
