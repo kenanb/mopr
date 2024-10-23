@@ -31,6 +31,7 @@
   (call-next-method))
 
 (defun root-form-params (form)
+  (declare (ignore form))
   nil)
 
 (defun root-form-children (form)
@@ -82,18 +83,24 @@
   (list :aux-form-param (car form)
         :body-form-param (cdr form)))
 
+(defmethod rnode-serialize ((n prim-type-rnode))
+  `(:type
+    ,(prim-type-rnode-name-param n)
+    ,@(call-next-method)))
+
+(defun prim-type-form-params (form)
+  (list :name-param (car form)))
+
 (defmethod rnode-serialize ((n prim-rnode))
   `(:prim
     ,(prim-rnode-path-form-param n)
-    ,(prim-rnode-meta-form-param n)
     ,@(call-next-method)))
 
 (defun prim-form-params (form)
-  (list :path-form-param (car form)
-        :meta-form-param (cadr form)))
+  (list :path-form-param (car form)))
 
 (defun prim-form-children (form)
-  (cddr form))
+  (cdr form))
 
 (defmethod rnode-serialize ((n tree-rnode))
   `(:tree
@@ -125,6 +132,8 @@
             ('each-rnode #'each-form-params)
             ('iota-rnode #'iota-form-params)
             ('call-rnode #'call-form-params)
+            ('prim-call-rnode #'call-form-params)
+            ('prim-type-rnode #'prim-type-form-params)
             ('prim-rnode #'prim-form-params)
             ('tree-rnode #'tree-form-params)
             ('meta-rnode #'meta-form-params))
@@ -182,19 +191,43 @@
   (vector-push-extend (make-rnode-instance 'call-rnode rparent form)
                       (rnode-children rparent)))
 
+(defun handle-prim-call-form (rparent form)
+  ;; (format t "~%Called handle-call-form!~%: ~S~%" form)
+  (vector-push-extend (make-rnode-instance 'prim-call-rnode rparent form)
+                      (rnode-children rparent)))
+
+(defun handle-prim-type-form (rparent form)
+  ;; (format t "~%Called handle-type-form!~%: ~S~%" form)
+  (vector-push-extend (make-rnode-instance 'prim-type-rnode rparent form)
+                      (rnode-children rparent)))
+
+(defun handle-prim-subforms (pn subforms)
+  ;; (format t "~%Called handle-prim-subforms!~%: ~S~%" subforms)
+  (loop for l in subforms
+        for fn = (case (car l)
+                   ;; TODO : Handle other forms.
+                   (:call   #'handle-prim-call-form)
+                   (:|call| #'handle-prim-call-form)
+                   (:type   #'handle-prim-type-form)
+                   (:|type| #'handle-prim-type-form)
+                   ;; (:meta   #'handle-prim-meta-form)
+                   ;; (:|meta| #'handle-prim-meta-form)
+                   ;; (:attr   #'handle-prim-attr-form)
+                   ;; (:|attr| #'handle-prim-attr-form)
+                   ;; (:rel    #'handle-prim-rel-form)
+                   ;; (:|rel|  #'handle-prim-rel-form)
+                   ;; (:ns     #'handle-prim-ns-form)
+                   ;; (:|ns|   #'handle-prim-ns-form)
+                   )
+        do (if fn
+               (funcall fn pn (cdr l))
+               (unknown-form-error (car l) :debug))))
+
 (defun handle-prim-form (rparent form)
   ;; (format t "~%Called handle-prim-form!~%: ~S~%" form)
   (let* ((pn (make-rnode-instance 'prim-rnode rparent form)))
     (vector-push-extend pn (rnode-children rparent))
-    (loop for l in (list-rnode-children 'prim-rnode form)
-          for i from 0
-          for fn = (case (car l)
-                     ;; TODO : Handle other forms.
-                     (:call   #'handle-call-form)
-                     (:|call| #'handle-call-form))
-          do (if fn
-                 (funcall fn pn (cdr l))
-                 (unknown-form-error (car l) :debug)))))
+    (handle-prim-subforms pn (list-rnode-children 'prim-rnode form))))
 
 (defun handle-tree-form (rparent form)
   ;; (format t "~%Called handle-tree-form!~%: ~S~%" form)
@@ -209,7 +242,6 @@
 (defun handle-data-subforms (rparent subforms)
   ;; (format t "~%Called handle-data-subforms!~%: ~S~%" subforms)
   (loop for l in subforms
-        for i from 0
         for fn = (case (car l)
                    (:var    #'handle-var-form)
                    (:|var|  #'handle-var-form)
