@@ -134,6 +134,7 @@
             ('call-rnode #'call-form-params)
             ('prim-call-rnode #'call-form-params)
             ('prim-type-rnode #'prim-type-form-params)
+            ('prim-meta-rnode #'meta-form-params)
             ('prim-rnode #'prim-form-params)
             ('tree-rnode #'tree-form-params)
             ('meta-rnode #'meta-form-params))
@@ -201,6 +202,11 @@
   (vector-push-extend (make-rnode-instance 'prim-type-rnode rparent form)
                       (rnode-children rparent)))
 
+(defun handle-prim-meta-form (rparent form)
+  ;; (format t "~%Called handle-prim-meta-form!~%: ~S~%" form)
+  (vector-push-extend (make-rnode-instance 'prim-meta-rnode rparent form)
+                      (rnode-children rparent)))
+
 (defun handle-prim-subforms (pn subforms)
   ;; (format t "~%Called handle-prim-subforms!~%: ~S~%" subforms)
   (loop for l in subforms
@@ -210,8 +216,8 @@
                    (:|call| #'handle-prim-call-form)
                    (:type   #'handle-prim-type-form)
                    (:|type| #'handle-prim-type-form)
-                   ;; (:meta   #'handle-prim-meta-form)
-                   ;; (:|meta| #'handle-prim-meta-form)
+                   (:meta   #'handle-prim-meta-form)
+                   (:|meta| #'handle-prim-meta-form)
                    ;; (:attr   #'handle-prim-attr-form)
                    ;; (:|attr| #'handle-prim-attr-form)
                    ;; (:rel    #'handle-prim-rel-form)

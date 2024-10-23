@@ -68,6 +68,9 @@
    #:meta-rnode
    #:meta-rnode-body-form-param
 
+   ;; PRIM-META-RNODE
+   #:prim-meta-rnode
+
    ))
 
 (in-package :mopr-ext/repr-rnode)
@@ -593,3 +596,6 @@
   (case id-sub
     (1 (list "meta expr-label-rdata"))
     (3 (list "meta attr-input-rdata BODY"))))
+
+(defclass prim-meta-rnode (meta-rnode)
+  ())
