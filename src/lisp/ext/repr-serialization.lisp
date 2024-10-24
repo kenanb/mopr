@@ -176,6 +176,7 @@
 (defun make-enode-instance (class rparent form)
   (apply #'make-instance class
          :parent rparent
+         :extensions (list (make-instance 'rnode))
          (funcall
           (case class
             ('root-enode #'root-form-params)
