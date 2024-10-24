@@ -64,6 +64,12 @@
    #:prim-attr-rnode-type-param
    #:prim-attr-rnode-body-form-param
 
+   ;; PRIM-REL-RNODE
+   #:prim-rel-rnode
+   #:prim-rel-rnode-name-param
+   #:prim-rel-rnode-meta-form-param
+   #:prim-rel-rnode-body-form-param
+
    ;; PRIM-META-RNODE
    #:prim-meta-rnode
 
@@ -599,6 +605,82 @@
     (13 (list "prim-attr attr-label-rdata TYPE"))
     (14 (list "prim-attr attr-input-rdata TYPE"))
     (15 (list "prim-attr attr-input-rdata BODY"))))
+
+(defclass prim-rel-rnode (rnode)
+  ((name-param
+    :type (or symbol base-string)
+    :initarg :name-param
+    :accessor prim-rel-rnode-name-param)
+   (meta-form-param
+    :type list
+    :initarg :meta-form-param
+    :initform nil
+    :accessor prim-rel-rnode-meta-form-param)
+   (body-form-param
+    :type list
+    :initarg :body-form-param
+    :accessor prim-rel-rnode-body-form-param)))
+
+(defmethod initialize-instance :after ((node prim-rel-rnode) &key)
+  (multiple-value-bind (body-form-param-text
+                        body-form-param-line-count)
+      (format-form (prim-rel-rnode-body-form-param node) *fill-column*)
+    (let* ((color mopr-def:+command-theme-expr-bg-8+)
+           (nec (make-instance 'mopr-ext/repr-rdata:expr-container-rdata
+                               :id 0
+                               :yparent (rnode-get-ynode-anchor (rnode-parent node))))
+           (nel (make-instance 'mopr-ext/repr-rdata:expr-label-rdata
+                               :id 1
+                               :yparent (mopr-ext/repr-rdata:rdata-ynode nec)
+                               :text "ATTR"
+                               :bg color))
+           (ncc (make-instance 'mopr-ext/repr-rdata:content-container-rdata
+                               :id 2
+                               :yparent (mopr-ext/repr-rdata:rdata-ynode nec)))
+           (nac0 (make-instance 'mopr-ext/repr-rdata:attr-container-rdata
+                                :id 3
+                                :yparent (mopr-ext/repr-rdata:rdata-ynode ncc)))
+           (nal0 (make-instance 'mopr-ext/repr-rdata:attr-label-rdata
+                                :id 4
+                                :yparent (mopr-ext/repr-rdata:rdata-ynode nac0)
+                                :text "NAME"
+                                :bg color))
+           (nai0 (make-instance 'mopr-ext/repr-rdata:attr-input-rdata
+                                :id 5
+                                :yparent (mopr-ext/repr-rdata:rdata-ynode nac0)
+                                :text (format nil "~S" (prim-rel-rnode-name-param node))))
+           (nac1 (make-instance 'mopr-ext/repr-rdata:attr-container-rdata
+                                :id 6
+                                :yparent (mopr-ext/repr-rdata:rdata-ynode ncc)))
+           (nal1 (make-instance 'mopr-ext/repr-rdata:attr-label-rdata
+                                :id 7
+                                :yparent (mopr-ext/repr-rdata:rdata-ynode nac1)
+                                :text "META"
+                                :bg color))
+           (nai1 (make-instance 'mopr-ext/repr-rdata:attr-input-rdata
+                                :id 8
+                                :yparent (mopr-ext/repr-rdata:rdata-ynode nac1)
+                                :text (format nil "~S" (prim-rel-rnode-meta-form-param node))))
+           (nar (make-instance 'mopr-ext/repr-rdata:attr-input-rdata
+                               :id 9
+                               :yparent (mopr-ext/repr-rdata:rdata-ynode ncc)
+                               :text body-form-param-text
+                               :h-co body-form-param-line-count)))
+      (setf (rnode-rdatas node)
+            (list nec nel ncc
+                  nac0 nal0 nai0
+                  nac1 nal1 nai1
+                  nar)))))
+
+;; TODO
+(defmethod rnode-get-rdata-options ((node prim-rel-rnode) id-sub)
+  (case id-sub
+    (1 (list "prim-rel expr-label-rdata"))
+    (4 (list "prim-rel attr-label-rdata NAME"))
+    (5 (list "prim-rel attr-input-rdata NAME"))
+    (7 (list "prim-rel attr-label-rdata META"))
+    (8 (list "prim-rel attr-input-rdata META"))
+    (9 (list "prim-rel attr-input-rdata BODY"))))
 
 (defclass prim-rnode (rnode)
   ((path-form-param

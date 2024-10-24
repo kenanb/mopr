@@ -113,6 +113,24 @@
          :type-param (caddr form)
          :body-form-param (cdddr form))))
 
+(defmethod rnode-serialize ((n prim-rel-rnode))
+  `(:attr
+    ,(if (prim-rel-rnode-meta-form-param n)
+         (list
+          (prim-rel-rnode-name-param n)
+          (prim-rel-rnode-meta-form-param n))
+         (prim-rel-rnode-name-param n))
+    ,@(prim-rel-rnode-body-form-param n)
+    ,@(call-next-method)))
+
+(defun prim-rel-form-params (form &aux (data (car form)))
+  (nconc
+   (etypecase data
+     (symbol (list :name-param data :meta-form-param nil))
+     (string (list :name-param data :meta-form-param nil))
+     (list (list :name-param (car data) :meta-form-param (cdr data))))
+   (list :body-form-param (cdr form))))
+
 (defmethod rnode-serialize ((n prim-rnode))
   `(:prim
     ,(prim-rnode-path-form-param n)
@@ -157,6 +175,7 @@
             ('prim-call-rnode #'call-form-params)
             ('prim-type-rnode #'prim-type-form-params)
             ('prim-attr-rnode #'prim-attr-form-params)
+            ('prim-rel-rnode #'prim-rel-form-params)
             ('prim-meta-rnode #'meta-form-params)
             ('prim-rnode #'prim-form-params)
             ('tree-rnode #'tree-form-params)
@@ -235,6 +254,11 @@
   (vector-push-extend (make-rnode-instance 'prim-attr-rnode rparent form)
                       (rnode-children rparent)))
 
+(defun handle-prim-rel-form (rparent form)
+  ;; (format t "~%Called handle-prim-rel-form!~%: ~S~%" form)
+  (vector-push-extend (make-rnode-instance 'prim-rel-rnode rparent form)
+                      (rnode-children rparent)))
+
 (defun handle-prim-subforms (pn subforms)
   ;; (format t "~%Called handle-prim-subforms!~%: ~S~%" subforms)
   (loop for l in subforms
@@ -248,8 +272,8 @@
                    (:|meta| #'handle-prim-meta-form)
                    (:attr   #'handle-prim-attr-form)
                    (:|attr| #'handle-prim-attr-form)
-                   ;; (:rel    #'handle-prim-rel-form)
-                   ;; (:|rel|  #'handle-prim-rel-form)
+                   (:rel    #'handle-prim-rel-form)
+                   (:|rel|  #'handle-prim-rel-form)
                    ;; (:ns     #'handle-prim-ns-form)
                    ;; (:|ns|   #'handle-prim-ns-form)
                    )
