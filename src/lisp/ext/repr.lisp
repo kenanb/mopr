@@ -28,6 +28,14 @@
 (defvar *root-enode* nil)
 
 ;;
+;;; Utilities
+;;
+
+(defun enode-rdatas (node)
+  (let ((rn (mopr-ext/enode:enode-find-extension node 'mopr-ext/repr-rnode:rnode)))
+    (mopr-ext/repr-rnode:rnode-rdatas rn)))
+
+;;
 ;;; ENODE Tree
 ;;
 
@@ -36,7 +44,7 @@
 
 (defun delete-enode-tree ()
   (yoga-fun:node-free-recursive (mopr-ext/repr-rdata:rdata-ynode
-                                 (car (mopr-ext/repr-rnode:enode-rdatas *root-enode*)))))
+                                 (car (enode-rdatas *root-enode*)))))
 
 ;;
 ;;; Trivial Vector Type Backed by a C Array
@@ -75,18 +83,22 @@
 ;;; Top-Level API and Macros
 ;;
 
-(defun %populate-commands-recursive (n wcmds)
-  (loop for rd in (mopr-ext/repr-rnode:enode-rdatas n)
+(defun %populate-commands-recursive (n wcmds
+                                     &aux
+                                       (rn (mopr-ext/enode:enode-find-extension
+                                            n
+                                            'mopr-ext/repr-rnode:rnode)))
+  (loop for rd in (mopr-ext/repr-rnode:rnode-rdatas rn)
         unless (typep rd 'mopr-ext/repr-rdata:hidden-rdata)
           do (let ((cmd (cvec-get-incrementing-counter wcmds)))
-               (mopr-ext/repr-rnode:populate-command-from-enode n cmd)
+               (mopr-ext/repr-rnode:populate-command-from-rnode rn cmd)
                (mopr-ext/repr-rdata:populate-command-from-rdata rd cmd)))
   (loop for c across (mopr-ext/enode:enode-children n)
         do (%populate-commands-recursive c wcmds)))
 
 (defun %count-visible-rdata-recursive (n)
   (+ (count-if-not (lambda (x) (typep x 'mopr-ext/repr-rdata:hidden-rdata))
-                   (mopr-ext/repr-rnode:enode-rdatas n))
+                   (enode-rdatas n))
      (loop for c across (mopr-ext/enode:enode-children n)
            summing (%count-visible-rdata-recursive c))))
 
@@ -95,7 +107,7 @@
       (let* ((pixels-w (plus-c:c-ref cmd-queue mopr-def:command-queue :pixels-w))
              ;; (pixels-h (plus-c:c-ref cmd-queue mopr-def:command-queue :pixels-h))
              (root-yn (mopr-ext/repr-rdata:rdata-ynode
-                       (car (mopr-ext/repr-rnode:enode-rdatas *root-enode*))))
+                       (car (enode-rdatas *root-enode*))))
              (wcmds
                (make-instance 'cvec
                               :ctype 'mopr-def:combined-command
@@ -171,7 +183,7 @@
                                  &aux
                                    (cmd-options (autowrap:wrap-pointer
                                                  cmd-options-ptr 'mopr-def:command-options)))
-  (let* ((n (mopr-ext/repr-rnode:find-enode-by-id *root-enode* id))
+  (let* ((n (mopr-ext/repr-rnode:find-enode-by-rnode-id *root-enode* id))
          (opts (mopr-ext/repr-rnode:enode-get-rdata-options n id-sub))
          (nof-opts (length opts))
          (vopts (autowrap:alloc :pointer nof-opts)))
@@ -184,7 +196,7 @@
                         :options (autowrap:ptr vopts))))
 
 (defun apply-command-option (id id-sub id-opt)
-  (let* ((n (mopr-ext/repr-rnode:find-enode-by-id *root-enode* id))
+  (let* ((n (mopr-ext/repr-rnode:find-enode-by-rnode-id *root-enode* id))
          (opts (mopr-ext/repr-rnode:enode-get-rdata-options n id-sub))
          (idx (1- id-opt)))
     (format t "APPLIED OPTION: ~A~%" (nth idx opts))))

@@ -13,16 +13,14 @@
   (:export
 
    ;; Generic APIs
-   #:enode-get-ynode-anchor
    #:enode-get-rdata-options
-   #:find-enode-by-id
-   #:populate-command-from-enode
+   #:find-enode-by-rnode-id
+   #:populate-command-from-rnode
 
    ;; RNODE API
    #:rnode
    #:rnode-id
    #:rnode-rdatas
-   #:enode-rdatas
 
    ))
 
@@ -62,37 +60,30 @@
 ;;; ENODE API
 ;;
 
-(defgeneric enode-get-ynode-anchor (node)
-  (:documentation "Get the ynode that should contain child ynodes."))
+(defgeneric enode-get-ynode-anchor-index (node)
+  (:documentation "Get the index of ynode that should contain child ynodes."))
+
+(defun enode-get-ynode-anchor (n &aux (rn (enode-find-extension n 'rnode)))
+  (mopr-ext/repr-rdata:rdata-ynode
+   (elt (rnode-rdatas rn)
+        (enode-get-ynode-anchor-index n))))
 
 (defgeneric enode-get-rdata-options (node id-sub)
   (:documentation "Get the options available for the selected rdata of given node."))
 
-(defun enode-id (node &aux (rn (enode-find-extension node 'rnode)))
-  (rnode-id rn))
-
-(defun enode-rdatas (node &aux (rn (enode-find-extension node 'rnode)))
-  (rnode-rdatas rn))
-
-(defun set-enode-rdatas (node rdatas-val &aux (rn (enode-find-extension node 'rnode)))
-  (unless rn (error "Cannot set rdatas for an enode that has no rnode bound!"))
-  (setf (rnode-rdatas rn) rdatas-val))
-
-(defsetf enode-rdatas set-enode-rdatas)
-
-(defmethod enode-get-ynode-anchor ((n enode))
+(defmethod enode-get-ynode-anchor-index ((n enode))
   (error (format nil "ENODE type ~A doesn't support children!" (class-name (class-of n)))))
 
 (defmethod enode-get-rdata-options ((node enode) id-sub)
   nil)
 
-(defun find-enode-by-id (n id)
-  (if (eql (enode-id n) id) n
-      (loop for c across (enode-children n) for x = (find-enode-by-id c id) if x return x)))
+(defun find-enode-by-rnode-id (n id &aux (rn (enode-find-extension n 'rnode)))
+  (if (eql (rnode-id rn) id) n
+      (loop for c across (enode-children n) for x = (find-enode-by-rnode-id c id) if x return x)))
 
-(defun populate-command-from-enode (n c)
+(defun populate-command-from-rnode (rn c)
   (multiple-set-c-ref c (mopr-def:combined-command :base)
-                      :id (enode-id n)))
+                      :id (rnode-id rn)))
 
 ;;
 ;;; ROOT-ENODE API
@@ -104,8 +95,7 @@
     (setf (rnode-rdatas ext)
           (list nrc))))
 
-(defmethod enode-get-ynode-anchor ((n root-enode))
-  (mopr-ext/repr-rdata:rdata-ynode (car (enode-rdatas n))))
+(defmethod enode-get-ynode-anchor-index ((n root-enode)) 0)
 
 ;;
 ;;; VAR-ENODE API
@@ -593,8 +583,7 @@
     (4 (list "prim-ns attr-label-rdata NAME"))
     (5 (list "prim-ns attr-input-rdata NAME"))))
 
-(defmethod enode-get-ynode-anchor ((n prim-ns-enode))
-  (mopr-ext/repr-rdata:rdata-ynode (caddr (enode-rdatas n))))
+(defmethod enode-get-ynode-anchor-index ((n prim-ns-enode)) 2)
 
 ;;
 ;;; PRIM-ENODE API
@@ -635,8 +624,7 @@
     (4 (list "prim attr-label-rdata PATH"))
     (5 (list "prim attr-input-rdata PATH"))))
 
-(defmethod enode-get-ynode-anchor ((n prim-enode))
-  (mopr-ext/repr-rdata:rdata-ynode (caddr (enode-rdatas n))))
+(defmethod enode-get-ynode-anchor-index ((n prim-enode)) 2)
 
 ;;
 ;;; TREE-ENODE API
