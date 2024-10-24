@@ -9,9 +9,10 @@
   (:import-from :mopr-ext/repr-shared
                 #:multiple-set-c-ref
                 #:with-layout-settings)
+  (:import-from :mopr-ext/enode)
+  (:import-from :mopr-ext/serialization)
   (:import-from :mopr-ext/repr-rdata)
   (:import-from :mopr-ext/repr-rnode)
-  (:import-from :mopr-ext/repr-serialization)
   (:use :cl)
   (:export
    #:create-enode-tree
@@ -31,7 +32,7 @@
 ;;
 
 (defun create-enode-tree (usds-data)
-  (setf *root-enode* (mopr-ext/repr-serialization:deserialize-call-enabled usds-data)))
+  (setf *root-enode* (mopr-ext/serialization:deserialize-call-enabled usds-data)))
 
 (defun delete-enode-tree ()
   (yoga-fun:node-free-recursive (mopr-ext/repr-rdata:rdata-ynode
@@ -80,13 +81,13 @@
           do (let ((cmd (cvec-get-incrementing-counter wcmds)))
                (mopr-ext/repr-rnode:populate-command-from-enode n cmd)
                (mopr-ext/repr-rdata:populate-command-from-rdata rd cmd)))
-  (loop for c across (mopr-ext/repr-rnode:enode-children n)
+  (loop for c across (mopr-ext/enode:enode-children n)
         do (%populate-commands-recursive c wcmds)))
 
 (defun %count-visible-rdata-recursive (n)
   (+ (count-if-not (lambda (x) (typep x 'mopr-ext/repr-rdata:hidden-rdata))
                    (mopr-ext/repr-rnode:enode-rdatas n))
-     (loop for c across (mopr-ext/repr-rnode:enode-children n)
+     (loop for c across (mopr-ext/enode:enode-children n)
            summing (%count-visible-rdata-recursive c))))
 
 (defun populate-command-queue (cmd-queue)

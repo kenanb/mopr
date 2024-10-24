@@ -3,18 +3,18 @@
 
 (in-package :cl-user)
 
-(defpackage :mopr-ext/repr-serialization
+(defpackage :mopr-ext/serialization
   (:import-from :mopr)
   (:import-from :mopr-ext/repr-shared
                 #:with-layout-settings)
-  (:import-from :mopr-ext/repr-rdata)
-  (:use :mopr-ext/repr-rnode)
+  (:import-from :mopr-ext/repr-rnode)
+  (:use :mopr-ext/enode)
   (:use :cl)
   (:export
    #:deserialize-call-enabled
    #:enode-serialize))
 
-(in-package :mopr-ext/repr-serialization)
+(in-package :mopr-ext/serialization)
 
 ;;
 ;;; Mapping between ENODE and USDS Forms
@@ -176,7 +176,7 @@
 (defun make-enode-instance (class rparent form)
   (apply #'make-instance class
          :parent rparent
-         :extensions (list (make-instance 'rnode))
+         :extensions (list (make-instance 'mopr-ext/repr-rnode:rnode))
          (funcall
           (case class
             ('root-enode #'root-form-params)
