@@ -56,6 +56,10 @@
    #:prim-type-rnode
    #:prim-type-rnode-name-param
 
+   ;; PRIM-NS-RNODE
+   #:prim-ns-rnode
+   #:prim-ns-rnode-name-param
+
    ;; PRIM-ATTR-RNODE
    #:prim-attr-rnode
    #:prim-attr-rnode-name-param
@@ -632,7 +636,7 @@
            (nel (make-instance 'mopr-ext/repr-rdata:expr-label-rdata
                                :id 1
                                :yparent (mopr-ext/repr-rdata:rdata-ynode nec)
-                               :text "ATTR"
+                               :text "REL"
                                :bg color))
            (ncc (make-instance 'mopr-ext/repr-rdata:content-container-rdata
                                :id 2
@@ -682,6 +686,50 @@
     (8 (list "prim-rel attr-input-rdata META"))
     (9 (list "prim-rel attr-input-rdata BODY"))))
 
+(defclass prim-ns-rnode (rnode)
+  ((name-param
+    :type base-string
+    :initarg :name-param
+    :accessor prim-ns-rnode-name-param)))
+
+(defmethod initialize-instance :after ((node prim-ns-rnode) &key)
+  (let* ((color mopr-def:+command-theme-expr-bg-9+)
+         (nec (make-instance 'mopr-ext/repr-rdata:expr-container-rdata
+                             :id 0
+                             :yparent (rnode-get-ynode-anchor (rnode-parent node))))
+         (nel (make-instance 'mopr-ext/repr-rdata:expr-label-rdata
+                             :id 1
+                             :yparent (mopr-ext/repr-rdata:rdata-ynode nec)
+                             :text "NS"
+                             :bg color))
+         (ncc (make-instance 'mopr-ext/repr-rdata:content-container-rdata
+                             :id 2
+                             :yparent (mopr-ext/repr-rdata:rdata-ynode nec)))
+         (nac0 (make-instance 'mopr-ext/repr-rdata:attr-container-rdata
+                              :id 3
+                              :yparent (mopr-ext/repr-rdata:rdata-ynode ncc)))
+         (nal0 (make-instance 'mopr-ext/repr-rdata:attr-label-rdata
+                              :id 4
+                              :yparent (mopr-ext/repr-rdata:rdata-ynode nac0)
+                              :text "NAME"
+                              :bg color))
+         (nai0 (make-instance 'mopr-ext/repr-rdata:attr-input-rdata
+                              :id 5
+                              :yparent (mopr-ext/repr-rdata:rdata-ynode nac0)
+                              :text (format nil "~S" (prim-ns-rnode-name-param node)))))
+    (setf (rnode-rdatas node)
+          (list nec nel ncc nac0 nal0 nai0))))
+
+;; TODO
+(defmethod rnode-get-rdata-options ((node prim-ns-rnode) id-sub)
+  (case id-sub
+    (1 (list "prim-ns expr-label-rdata"))
+    (4 (list "prim-ns attr-label-rdata NAME"))
+    (5 (list "prim-ns attr-input-rdata NAME"))))
+
+(defmethod rnode-get-ynode-anchor ((n prim-ns-rnode))
+  (mopr-ext/repr-rdata:rdata-ynode (caddr (rnode-rdatas n))))
+
 (defclass prim-rnode (rnode)
   ((path-form-param
     :type list
@@ -721,9 +769,7 @@
   (case id-sub
     (1 (list "prim expr-label-rdata"))
     (4 (list "prim attr-label-rdata PATH"))
-    (5 (list "prim attr-input-rdata PATH"))
-    (7 (list "prim attr-label-rdata META"))
-    (8 (list "prim attr-input-rdata META"))))
+    (5 (list "prim attr-input-rdata PATH"))))
 
 (defmethod rnode-get-ynode-anchor ((n prim-rnode))
   (mopr-ext/repr-rdata:rdata-ynode (caddr (rnode-rdatas n))))
