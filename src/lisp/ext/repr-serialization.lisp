@@ -91,6 +91,28 @@
 (defun prim-type-form-params (form)
   (list :name-param (car form)))
 
+(defmethod rnode-serialize ((n prim-attr-rnode))
+  `(:attr
+    ,(if (prim-attr-rnode-meta-form-param n)
+         (list
+          (prim-attr-rnode-name-param n)
+          (prim-attr-rnode-meta-form-param n))
+         (prim-attr-rnode-name-param n))
+    ,(prim-attr-rnode-category-param n)
+    ,(prim-attr-rnode-type-param n)
+    ,@(prim-attr-rnode-body-form-param n)
+    ,@(call-next-method)))
+
+(defun prim-attr-form-params (form &aux (data (car form)))
+  (nconc
+   (etypecase data
+     (symbol (list :name-param data :meta-form-param nil))
+     (string (list :name-param data :meta-form-param nil))
+     (list (list :name-param (car data) :meta-form-param (cdr data))))
+   (list :category-param (cadr form)
+         :type-param (caddr form)
+         :body-form-param (cdddr form))))
+
 (defmethod rnode-serialize ((n prim-rnode))
   `(:prim
     ,(prim-rnode-path-form-param n)
@@ -134,6 +156,7 @@
             ('call-rnode #'call-form-params)
             ('prim-call-rnode #'call-form-params)
             ('prim-type-rnode #'prim-type-form-params)
+            ('prim-attr-rnode #'prim-attr-form-params)
             ('prim-meta-rnode #'meta-form-params)
             ('prim-rnode #'prim-form-params)
             ('tree-rnode #'tree-form-params)
@@ -207,6 +230,11 @@
   (vector-push-extend (make-rnode-instance 'prim-meta-rnode rparent form)
                       (rnode-children rparent)))
 
+(defun handle-prim-attr-form (rparent form)
+  ;; (format t "~%Called handle-prim-attr-form!~%: ~S~%" form)
+  (vector-push-extend (make-rnode-instance 'prim-attr-rnode rparent form)
+                      (rnode-children rparent)))
+
 (defun handle-prim-subforms (pn subforms)
   ;; (format t "~%Called handle-prim-subforms!~%: ~S~%" subforms)
   (loop for l in subforms
@@ -218,8 +246,8 @@
                    (:|type| #'handle-prim-type-form)
                    (:meta   #'handle-prim-meta-form)
                    (:|meta| #'handle-prim-meta-form)
-                   ;; (:attr   #'handle-prim-attr-form)
-                   ;; (:|attr| #'handle-prim-attr-form)
+                   (:attr   #'handle-prim-attr-form)
+                   (:|attr| #'handle-prim-attr-form)
                    ;; (:rel    #'handle-prim-rel-form)
                    ;; (:|rel|  #'handle-prim-rel-form)
                    ;; (:ns     #'handle-prim-ns-form)
