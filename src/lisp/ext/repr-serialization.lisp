@@ -12,22 +12,22 @@
   (:use :cl)
   (:export
    #:deserialize-call-enabled
-   #:rnode-serialize))
+   #:enode-serialize))
 
 (in-package :mopr-ext/repr-serialization)
 
 ;;
-;;; Mapping between RNODE and USDS Forms
+;;; Mapping between ENODE and USDS Forms
 ;;
 
-(defgeneric rnode-serialize (node)
-  (:documentation "Get the list that represents the rnode in USDS form."))
+(defgeneric enode-serialize (node)
+  (:documentation "Get the list that represents the enode in USDS form."))
 
-(defmethod rnode-serialize ((n rnode))
-  (loop for c across (rnode-children n)
-        collecting (rnode-serialize c)))
+(defmethod enode-serialize ((n enode))
+  (loop for c across (enode-children n)
+        collecting (enode-serialize c)))
 
-(defmethod rnode-serialize ((n root-rnode))
+(defmethod enode-serialize ((n root-enode))
   (call-next-method))
 
 (defun root-form-params (form)
@@ -37,11 +37,11 @@
 (defun root-form-children (form)
   form)
 
-(defmethod rnode-serialize ((n var-rnode))
+(defmethod enode-serialize ((n var-enode))
   `(:var
-    ,(var-rnode-name-param n)
-    ,(var-rnode-aux-form-param n)
-    ,@(var-rnode-val-form-param n)
+    ,(var-enode-name-param n)
+    ,(var-enode-aux-form-param n)
+    ,@(var-enode-val-form-param n)
     ,@(call-next-method)))
 
 (defun var-form-params (form)
@@ -49,11 +49,11 @@
         :aux-form-param (cadr form)
         :val-form-param (cddr form)))
 
-(defmethod rnode-serialize ((n each-rnode))
+(defmethod enode-serialize ((n each-enode))
   `(:each
-    ,(each-rnode-name-param n)
-    ,(each-rnode-keys-form-param n)
-    ,@(each-rnode-vals-form-param n)
+    ,(each-enode-name-param n)
+    ,(each-enode-keys-form-param n)
+    ,@(each-enode-vals-form-param n)
     ,@(call-next-method)))
 
 (defun each-form-params (form)
@@ -61,11 +61,11 @@
         :keys-form-param (cadr form)
         :vals-form-param (cddr form)))
 
-(defmethod rnode-serialize ((n iota-rnode))
+(defmethod enode-serialize ((n iota-enode))
   `(:iota
-    ,(iota-rnode-name-param n)
-    ,(iota-rnode-key-param n)
-    ,(iota-rnode-end-param n)
+    ,(iota-enode-name-param n)
+    ,(iota-enode-key-param n)
+    ,(iota-enode-end-param n)
     ,@(call-next-method)))
 
 (defun iota-form-params (form)
@@ -73,34 +73,34 @@
         :key-param (cadr form)
         :end-param (caddr form)))
 
-(defmethod rnode-serialize ((n call-rnode))
+(defmethod enode-serialize ((n call-enode))
   `(:call
-    ,(call-rnode-aux-form-param n)
-    ,@(call-rnode-body-form-param n)
+    ,(call-enode-aux-form-param n)
+    ,@(call-enode-body-form-param n)
     ,@(call-next-method)))
 
 (defun call-form-params (form)
   (list :aux-form-param (car form)
         :body-form-param (cdr form)))
 
-(defmethod rnode-serialize ((n prim-type-rnode))
+(defmethod enode-serialize ((n prim-type-enode))
   `(:type
-    ,(prim-type-rnode-name-param n)
+    ,(prim-type-enode-name-param n)
     ,@(call-next-method)))
 
 (defun prim-type-form-params (form)
   (list :name-param (car form)))
 
-(defmethod rnode-serialize ((n prim-attr-rnode))
+(defmethod enode-serialize ((n prim-attr-enode))
   `(:attr
-    ,(if (prim-attr-rnode-meta-form-param n)
+    ,(if (prim-attr-enode-meta-form-param n)
          (cons
-          (prim-attr-rnode-name-param n)
-          (prim-attr-rnode-meta-form-param n))
-         (prim-attr-rnode-name-param n))
-    ,(prim-attr-rnode-category-param n)
-    ,(prim-attr-rnode-type-param n)
-    ,@(prim-attr-rnode-body-form-param n)
+          (prim-attr-enode-name-param n)
+          (prim-attr-enode-meta-form-param n))
+         (prim-attr-enode-name-param n))
+    ,(prim-attr-enode-category-param n)
+    ,(prim-attr-enode-type-param n)
+    ,@(prim-attr-enode-body-form-param n)
     ,@(call-next-method)))
 
 (defun prim-attr-form-params (form &aux (data (car form)))
@@ -113,14 +113,14 @@
          :type-param (caddr form)
          :body-form-param (cdddr form))))
 
-(defmethod rnode-serialize ((n prim-rel-rnode))
+(defmethod enode-serialize ((n prim-rel-enode))
   `(:rel
-    ,(if (prim-rel-rnode-meta-form-param n)
+    ,(if (prim-rel-enode-meta-form-param n)
          (cons
-          (prim-rel-rnode-name-param n)
-          (prim-rel-rnode-meta-form-param n))
-         (prim-rel-rnode-name-param n))
-    ,@(prim-rel-rnode-body-form-param n)
+          (prim-rel-enode-name-param n)
+          (prim-rel-enode-meta-form-param n))
+         (prim-rel-enode-name-param n))
+    ,@(prim-rel-enode-body-form-param n)
     ,@(call-next-method)))
 
 (defun prim-rel-form-params (form &aux (data (car form)))
@@ -131,9 +131,9 @@
      (list (list :name-param (car data) :meta-form-param (cdr data))))
    (list :body-form-param (cdr form))))
 
-(defmethod rnode-serialize ((n prim-ns-rnode))
+(defmethod enode-serialize ((n prim-ns-enode))
   `(:ns
-    ,(prim-ns-rnode-name-param n)
+    ,(prim-ns-enode-name-param n)
     ,@(call-next-method)))
 
 (defun prim-ns-form-params (form)
@@ -142,9 +142,9 @@
 (defun prim-ns-form-children (form)
   (cdr form))
 
-(defmethod rnode-serialize ((n prim-rnode))
+(defmethod enode-serialize ((n prim-enode))
   `(:prim
-    ,(prim-rnode-path-form-param n)
+    ,(prim-enode-path-form-param n)
     ,@(call-next-method)))
 
 (defun prim-form-params (form)
@@ -153,17 +153,17 @@
 (defun prim-form-children (form)
   (cdr form))
 
-(defmethod rnode-serialize ((n tree-rnode))
+(defmethod enode-serialize ((n tree-enode))
   `(:tree
-    ,@(tree-rnode-body-form-param n)
+    ,@(tree-enode-body-form-param n)
     ,@(call-next-method)))
 
 (defun tree-form-params (form)
   (list :body-form-param form))
 
-(defmethod rnode-serialize ((n meta-rnode))
+(defmethod enode-serialize ((n meta-enode))
   `(:meta
-    ,@(meta-rnode-body-form-param n)
+    ,@(meta-enode-body-form-param n)
     ,@(call-next-method)))
 
 (defun meta-form-params (form)
@@ -173,33 +173,33 @@
 ;;; Unified Deserialization APIs
 ;;
 
-(defun make-rnode-instance (class rparent form)
+(defun make-enode-instance (class rparent form)
   (apply #'make-instance class
          :parent rparent
          (funcall
           (case class
-            ('root-rnode #'root-form-params)
-            ('var-rnode #'var-form-params)
-            ('each-rnode #'each-form-params)
-            ('iota-rnode #'iota-form-params)
-            ('call-rnode #'call-form-params)
-            ('prim-call-rnode #'call-form-params)
-            ('prim-type-rnode #'prim-type-form-params)
-            ('prim-attr-rnode #'prim-attr-form-params)
-            ('prim-rel-rnode #'prim-rel-form-params)
-            ('prim-meta-rnode #'meta-form-params)
-            ('prim-ns-rnode #'prim-ns-form-params)
-            ('prim-rnode #'prim-form-params)
-            ('tree-rnode #'tree-form-params)
-            ('meta-rnode #'meta-form-params))
+            ('root-enode #'root-form-params)
+            ('var-enode #'var-form-params)
+            ('each-enode #'each-form-params)
+            ('iota-enode #'iota-form-params)
+            ('call-enode #'call-form-params)
+            ('prim-call-enode #'call-form-params)
+            ('prim-type-enode #'prim-type-form-params)
+            ('prim-attr-enode #'prim-attr-form-params)
+            ('prim-rel-enode #'prim-rel-form-params)
+            ('prim-meta-enode #'meta-form-params)
+            ('prim-ns-enode #'prim-ns-form-params)
+            ('prim-enode #'prim-form-params)
+            ('tree-enode #'tree-form-params)
+            ('meta-enode #'meta-form-params))
           form)))
 
-(defun list-rnode-children (class form)
+(defun list-enode-children (class form)
   (funcall
    (case class
-     ('root-rnode #'root-form-children)
-     ('prim-rnode #'prim-form-children)
-     ('prim-ns-rnode #'prim-ns-form-children))
+     ('root-enode #'root-form-children)
+     ('prim-enode #'prim-form-children)
+     ('prim-ns-enode #'prim-ns-form-children))
    form))
 
 ;;
@@ -229,54 +229,54 @@
 
 (defun handle-var-form (rparent form)
   ;; (format t "~%Called handle-var-form!~%: ~S~%" form)
-  (vector-push-extend (make-rnode-instance 'var-rnode rparent form)
-                      (rnode-children rparent)))
+  (vector-push-extend (make-enode-instance 'var-enode rparent form)
+                      (enode-children rparent)))
 
 (defun handle-each-form (rparent form)
   ;; (format t "~%Called handle-each-form!~%: ~S~%" form)
-  (vector-push-extend (make-rnode-instance 'each-rnode rparent form)
-                      (rnode-children rparent)))
+  (vector-push-extend (make-enode-instance 'each-enode rparent form)
+                      (enode-children rparent)))
 
 (defun handle-iota-form (rparent form)
   ;; (format t "~%Called handle-iota-form!~%: ~S~%" form)
-  (vector-push-extend (make-rnode-instance 'iota-rnode rparent form)
-                      (rnode-children rparent)))
+  (vector-push-extend (make-enode-instance 'iota-enode rparent form)
+                      (enode-children rparent)))
 
 (defun handle-call-form (rparent form)
   ;; (format t "~%Called handle-call-form!~%: ~S~%" form)
-  (vector-push-extend (make-rnode-instance 'call-rnode rparent form)
-                      (rnode-children rparent)))
+  (vector-push-extend (make-enode-instance 'call-enode rparent form)
+                      (enode-children rparent)))
 
 (defun handle-prim-call-form (rparent form)
   ;; (format t "~%Called handle-call-form!~%: ~S~%" form)
-  (vector-push-extend (make-rnode-instance 'prim-call-rnode rparent form)
-                      (rnode-children rparent)))
+  (vector-push-extend (make-enode-instance 'prim-call-enode rparent form)
+                      (enode-children rparent)))
 
 (defun handle-prim-type-form (rparent form)
   ;; (format t "~%Called handle-type-form!~%: ~S~%" form)
-  (vector-push-extend (make-rnode-instance 'prim-type-rnode rparent form)
-                      (rnode-children rparent)))
+  (vector-push-extend (make-enode-instance 'prim-type-enode rparent form)
+                      (enode-children rparent)))
 
 (defun handle-prim-meta-form (rparent form)
   ;; (format t "~%Called handle-prim-meta-form!~%: ~S~%" form)
-  (vector-push-extend (make-rnode-instance 'prim-meta-rnode rparent form)
-                      (rnode-children rparent)))
+  (vector-push-extend (make-enode-instance 'prim-meta-enode rparent form)
+                      (enode-children rparent)))
 
 (defun handle-prim-attr-form (rparent form)
   ;; (format t "~%Called handle-prim-attr-form!~%: ~S~%" form)
-  (vector-push-extend (make-rnode-instance 'prim-attr-rnode rparent form)
-                      (rnode-children rparent)))
+  (vector-push-extend (make-enode-instance 'prim-attr-enode rparent form)
+                      (enode-children rparent)))
 
 (defun handle-prim-rel-form (rparent form)
   ;; (format t "~%Called handle-prim-rel-form!~%: ~S~%" form)
-  (vector-push-extend (make-rnode-instance 'prim-rel-rnode rparent form)
-                      (rnode-children rparent)))
+  (vector-push-extend (make-enode-instance 'prim-rel-enode rparent form)
+                      (enode-children rparent)))
 
 (defun handle-prim-ns-form (rparent form)
   ;; (format t "~%Called handle-prim-ns-form!~%: ~S~%" form)
-  (let* ((nn (make-rnode-instance 'prim-ns-rnode rparent form)))
-    (vector-push-extend nn (rnode-children rparent))
-    (loop for l in (list-rnode-children 'prim-ns-rnode form)
+  (let* ((nn (make-enode-instance 'prim-ns-enode rparent form)))
+    (vector-push-extend nn (enode-children rparent))
+    (loop for l in (list-enode-children 'prim-ns-enode form)
           for fn = (case (car l)
                      (:attr   #'handle-prim-attr-form)
                      (:|attr| #'handle-prim-attr-form)
@@ -311,19 +311,19 @@
 
 (defun handle-prim-form (rparent form)
   ;; (format t "~%Called handle-prim-form!~%: ~S~%" form)
-  (let* ((pn (make-rnode-instance 'prim-rnode rparent form)))
-    (vector-push-extend pn (rnode-children rparent))
-    (handle-prim-subforms pn (list-rnode-children 'prim-rnode form))))
+  (let* ((pn (make-enode-instance 'prim-enode rparent form)))
+    (vector-push-extend pn (enode-children rparent))
+    (handle-prim-subforms pn (list-enode-children 'prim-enode form))))
 
 (defun handle-tree-form (rparent form)
   ;; (format t "~%Called handle-tree-form!~%: ~S~%" form)
-  (vector-push-extend (make-rnode-instance 'tree-rnode rparent form)
-                      (rnode-children rparent)))
+  (vector-push-extend (make-enode-instance 'tree-enode rparent form)
+                      (enode-children rparent)))
 
 (defun handle-meta-form (rparent form)
   ;; (format t "~%Called handle-meta-form!~%: ~S~%" form)
-  (vector-push-extend (make-rnode-instance 'meta-rnode rparent form)
-                      (rnode-children rparent)))
+  (vector-push-extend (make-enode-instance 'meta-enode rparent form)
+                      (enode-children rparent)))
 
 (defun handle-data-subforms (rparent subforms)
   ;; (format t "~%Called handle-data-subforms!~%: ~S~%" subforms)
@@ -362,6 +362,6 @@
       (mopr-info:with-registry (:supported-cases '(:upcase))
         (mopr-plug:with-configuration ()
           (with-repr-variables (:enable-call t)
-            (let* ((rn (make-rnode-instance 'root-rnode nil usds-data)))
-              (handle-data-subforms rn (list-rnode-children 'root-rnode usds-data))
+            (let* ((rn (make-enode-instance 'root-enode nil usds-data)))
+              (handle-data-subforms rn (list-enode-children 'root-enode usds-data))
               rn))))))

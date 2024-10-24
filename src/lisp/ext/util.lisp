@@ -58,9 +58,9 @@ registered to call tables can be dangerous, if enabled."
           ;; Representation.
           ;;
 
-          (create-rnode-tree expr)
+          (create-enode-tree expr)
           (populate-command-queue (autowrap:wrap-pointer cmd-queue 'mopr-def:command-queue))
-          (delete-rnode-tree) ; TODO : Defer.
+          (delete-enode-tree) ; TODO : Defer.
 
           ;; Evaluation.
           ;;

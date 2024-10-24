@@ -14,8 +14,8 @@
   (:import-from :mopr-ext/repr-serialization)
   (:use :cl)
   (:export
-   #:create-rnode-tree
-   #:delete-rnode-tree
+   #:create-enode-tree
+   #:delete-enode-tree
    #:populate-command-queue
    #:destruct-command-queue
    #:populate-command-options
@@ -24,18 +24,18 @@
 
 (in-package :mopr-ext/repr)
 
-(defvar *root-rnode* nil)
+(defvar *root-enode* nil)
 
 ;;
-;;; RNODE Tree
+;;; ENODE Tree
 ;;
 
-(defun create-rnode-tree (usds-data)
-  (setf *root-rnode* (mopr-ext/repr-serialization:deserialize-call-enabled usds-data)))
+(defun create-enode-tree (usds-data)
+  (setf *root-enode* (mopr-ext/repr-serialization:deserialize-call-enabled usds-data)))
 
-(defun delete-rnode-tree ()
+(defun delete-enode-tree ()
   (yoga-fun:node-free-recursive (mopr-ext/repr-rdata:rdata-ynode
-                                 (car (mopr-ext/repr-rnode:rnode-rdatas *root-rnode*)))))
+                                 (car (mopr-ext/repr-rnode:enode-rdatas *root-enode*)))))
 
 ;;
 ;;; Trivial Vector Type Backed by a C Array
@@ -75,18 +75,18 @@
 ;;
 
 (defun %populate-commands-recursive (n wcmds)
-  (loop for rd in (mopr-ext/repr-rnode:rnode-rdatas n)
+  (loop for rd in (mopr-ext/repr-rnode:enode-rdatas n)
         unless (typep rd 'mopr-ext/repr-rdata:hidden-rdata)
           do (let ((cmd (cvec-get-incrementing-counter wcmds)))
-               (mopr-ext/repr-rnode:populate-command-from-rnode n cmd)
+               (mopr-ext/repr-rnode:populate-command-from-enode n cmd)
                (mopr-ext/repr-rdata:populate-command-from-rdata rd cmd)))
-  (loop for c across (mopr-ext/repr-rnode:rnode-children n)
+  (loop for c across (mopr-ext/repr-rnode:enode-children n)
         do (%populate-commands-recursive c wcmds)))
 
 (defun %count-visible-rdata-recursive (n)
   (+ (count-if-not (lambda (x) (typep x 'mopr-ext/repr-rdata:hidden-rdata))
-                   (mopr-ext/repr-rnode:rnode-rdatas n))
-     (loop for c across (mopr-ext/repr-rnode:rnode-children n)
+                   (mopr-ext/repr-rnode:enode-rdatas n))
+     (loop for c across (mopr-ext/repr-rnode:enode-children n)
            summing (%count-visible-rdata-recursive c))))
 
 (defun populate-command-queue (cmd-queue)
@@ -94,18 +94,18 @@
       (let* ((pixels-w (plus-c:c-ref cmd-queue mopr-def:command-queue :pixels-w))
              ;; (pixels-h (plus-c:c-ref cmd-queue mopr-def:command-queue :pixels-h))
              (root-yn (mopr-ext/repr-rdata:rdata-ynode
-                       (car (mopr-ext/repr-rnode:rnode-rdatas *root-rnode*))))
+                       (car (mopr-ext/repr-rnode:enode-rdatas *root-enode*))))
              (wcmds
                (make-instance 'cvec
                               :ctype 'mopr-def:combined-command
-                              :size (%count-visible-rdata-recursive *root-rnode*))))
+                              :size (%count-visible-rdata-recursive *root-enode*))))
 
         (yoga-fun:node-calculate-layout root-yn
                                         pixels-w
                                         yoga-def:+undefined+ ;; pixels-h
                                         yoga-def:+direction-ltr+)
 
-        (%populate-commands-recursive *root-rnode* wcmds)
+        (%populate-commands-recursive *root-enode* wcmds)
 
         (multiple-set-c-ref cmd-queue (mopr-def:command-queue)
                             :nof-commands (cvec-size wcmds)
@@ -170,8 +170,8 @@
                                  &aux
                                    (cmd-options (autowrap:wrap-pointer
                                                  cmd-options-ptr 'mopr-def:command-options)))
-  (let* ((n (mopr-ext/repr-rnode:find-rnode-by-id *root-rnode* id))
-         (opts (mopr-ext/repr-rnode:rnode-get-rdata-options n id-sub))
+  (let* ((n (mopr-ext/repr-rnode:find-enode-by-id *root-enode* id))
+         (opts (mopr-ext/repr-rnode:enode-get-rdata-options n id-sub))
          (nof-opts (length opts))
          (vopts (autowrap:alloc :pointer nof-opts)))
 
@@ -183,7 +183,7 @@
                         :options (autowrap:ptr vopts))))
 
 (defun apply-command-option (id id-sub id-opt)
-  (let* ((n (mopr-ext/repr-rnode:find-rnode-by-id *root-rnode* id))
-         (opts (mopr-ext/repr-rnode:rnode-get-rdata-options n id-sub))
+  (let* ((n (mopr-ext/repr-rnode:find-enode-by-id *root-enode* id))
+         (opts (mopr-ext/repr-rnode:enode-get-rdata-options n id-sub))
          (idx (1- id-opt)))
     (format t "APPLIED OPTION: ~A~%" (nth idx opts))))
