@@ -39,8 +39,10 @@
 ;;; ENODE Tree
 ;;
 
-(defun create-enode-tree (usds-data)
-  (setf *root-enode* (mopr-ext/serialization:deserialize-call-enabled usds-data)))
+(defun create-enode-tree (usds-data &aux (ext-classes '(mopr-ext/repr-rnode:rnode)))
+  (setf *root-enode*
+        (with-layout-settings
+            (mopr-ext/serialization:deserialize-call-enabled usds-data ext-classes))))
 
 (defun delete-enode-tree ()
   (yoga-fun:node-free-recursive (mopr-ext/repr-rdata:rdata-ynode

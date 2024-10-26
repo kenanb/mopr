@@ -5,9 +5,6 @@
 
 (defpackage :mopr-ext/serialization
   (:import-from :mopr)
-  (:import-from :mopr-ext/repr-shared
-                #:with-layout-settings)
-  (:import-from :mopr-ext/repr-rnode)
   (:use :mopr-ext/enode)
   (:use :cl)
   (:export
@@ -378,18 +375,17 @@
 ;;; Top-Level API and Macros
 ;;
 
-(defmacro with-repr-variables ((&key
-                                  (enable-call nil))
-                               &body body)
+(defmacro with-serialization-variables ((&key
+                                           (enable-call nil))
+                                        &body body)
   `(let* ((*enable-call* ,enable-call))
      ,@body))
 
-(defun deserialize-call-enabled (usds-data &aux (ext-classes '(mopr-ext/repr-rnode:rnode)))
-  (with-layout-settings
-      (mopr-info:with-registry (:supported-cases '(:upcase))
-        (mopr-plug:with-configuration ()
-          (with-repr-variables (:enable-call t)
-            (let* ((rn (make-enode-instance 'root-enode usds-data
-                                            :ext-classes ext-classes)))
-              (handle-data-subforms rn (list-enode-children 'root-enode usds-data) ext-classes)
-              rn))))))
+(defun deserialize-call-enabled (usds-data ext-classes)
+  (mopr-info:with-registry (:supported-cases '(:upcase))
+    (mopr-plug:with-configuration ()
+      (with-serialization-variables (:enable-call t)
+        (let* ((rn (make-enode-instance 'root-enode usds-data
+                                        :ext-classes ext-classes)))
+          (handle-data-subforms rn (list-enode-children 'root-enode usds-data) ext-classes)
+          rn)))))
