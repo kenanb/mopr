@@ -173,10 +173,10 @@
 ;;; Unified Deserialization APIs
 ;;
 
-(defun make-enode-instance (class rparent form)
+(defun make-enode-instance (class form &key parent ext-classes)
   (apply #'make-instance class
-         :parent rparent
-         :extensions (list (make-instance 'mopr-ext/repr-rnode:rnode))
+         :parent parent
+         :extensions (loop for e in ext-classes collecting (make-instance e))
          (funcall
           (case class
             ('root-enode #'root-form-params)
@@ -228,55 +228,75 @@
   (when (and (eq action :debug) *debug-mode*)
     (error "Cannot handle form: ~S~%" form)))
 
-(defun handle-var-form (rparent form)
+(defun handle-var-form (parent form ext-classes)
   ;; (format t "~%Called handle-var-form!~%: ~S~%" form)
-  (vector-push-extend (make-enode-instance 'var-enode rparent form)
-                      (enode-children rparent)))
+  (vector-push-extend (make-enode-instance 'var-enode form
+                                           :parent parent
+                                           :ext-classes ext-classes)
+                      (enode-children parent)))
 
-(defun handle-each-form (rparent form)
+(defun handle-each-form (parent form ext-classes)
   ;; (format t "~%Called handle-each-form!~%: ~S~%" form)
-  (vector-push-extend (make-enode-instance 'each-enode rparent form)
-                      (enode-children rparent)))
+  (vector-push-extend (make-enode-instance 'each-enode form
+                                           :parent parent
+                                           :ext-classes ext-classes)
+                      (enode-children parent)))
 
-(defun handle-iota-form (rparent form)
+(defun handle-iota-form (parent form ext-classes)
   ;; (format t "~%Called handle-iota-form!~%: ~S~%" form)
-  (vector-push-extend (make-enode-instance 'iota-enode rparent form)
-                      (enode-children rparent)))
+  (vector-push-extend (make-enode-instance 'iota-enode form
+                                           :parent parent
+                                           :ext-classes ext-classes)
+                      (enode-children parent)))
 
-(defun handle-call-form (rparent form)
+(defun handle-call-form (parent form ext-classes)
   ;; (format t "~%Called handle-call-form!~%: ~S~%" form)
-  (vector-push-extend (make-enode-instance 'call-enode rparent form)
-                      (enode-children rparent)))
+  (vector-push-extend (make-enode-instance 'call-enode form
+                                           :parent parent
+                                           :ext-classes ext-classes)
+                      (enode-children parent)))
 
-(defun handle-prim-call-form (rparent form)
+(defun handle-prim-call-form (parent form ext-classes)
   ;; (format t "~%Called handle-call-form!~%: ~S~%" form)
-  (vector-push-extend (make-enode-instance 'prim-call-enode rparent form)
-                      (enode-children rparent)))
+  (vector-push-extend (make-enode-instance 'prim-call-enode form
+                                           :parent parent
+                                           :ext-classes ext-classes)
+                      (enode-children parent)))
 
-(defun handle-prim-type-form (rparent form)
+(defun handle-prim-type-form (parent form ext-classes)
   ;; (format t "~%Called handle-type-form!~%: ~S~%" form)
-  (vector-push-extend (make-enode-instance 'prim-type-enode rparent form)
-                      (enode-children rparent)))
+  (vector-push-extend (make-enode-instance 'prim-type-enode form
+                                           :parent parent
+                                           :ext-classes ext-classes)
+                      (enode-children parent)))
 
-(defun handle-prim-meta-form (rparent form)
+(defun handle-prim-meta-form (parent form ext-classes)
   ;; (format t "~%Called handle-prim-meta-form!~%: ~S~%" form)
-  (vector-push-extend (make-enode-instance 'prim-meta-enode rparent form)
-                      (enode-children rparent)))
+  (vector-push-extend (make-enode-instance 'prim-meta-enode form
+                                           :parent parent
+                                           :ext-classes ext-classes)
+                      (enode-children parent)))
 
-(defun handle-prim-attr-form (rparent form)
+(defun handle-prim-attr-form (parent form ext-classes)
   ;; (format t "~%Called handle-prim-attr-form!~%: ~S~%" form)
-  (vector-push-extend (make-enode-instance 'prim-attr-enode rparent form)
-                      (enode-children rparent)))
+  (vector-push-extend (make-enode-instance 'prim-attr-enode form
+                                           :parent parent
+                                           :ext-classes ext-classes)
+                      (enode-children parent)))
 
-(defun handle-prim-rel-form (rparent form)
+(defun handle-prim-rel-form (parent form ext-classes)
   ;; (format t "~%Called handle-prim-rel-form!~%: ~S~%" form)
-  (vector-push-extend (make-enode-instance 'prim-rel-enode rparent form)
-                      (enode-children rparent)))
+  (vector-push-extend (make-enode-instance 'prim-rel-enode form
+                                           :parent parent
+                                           :ext-classes ext-classes)
+                      (enode-children parent)))
 
-(defun handle-prim-ns-form (rparent form)
+(defun handle-prim-ns-form (parent form ext-classes)
   ;; (format t "~%Called handle-prim-ns-form!~%: ~S~%" form)
-  (let* ((nn (make-enode-instance 'prim-ns-enode rparent form)))
-    (vector-push-extend nn (enode-children rparent))
+  (let* ((nn (make-enode-instance 'prim-ns-enode form
+                                  :parent parent
+                                  :ext-classes ext-classes)))
+    (vector-push-extend nn (enode-children parent))
     (loop for l in (list-enode-children 'prim-ns-enode form)
           for fn = (case (car l)
                      (:attr   #'handle-prim-attr-form)
@@ -286,10 +306,10 @@
                      (:ns     #'handle-prim-ns-form)
                      (:|ns|   #'handle-prim-ns-form))
           do (if fn
-                 (funcall fn nn (cdr l))
+                 (funcall fn nn (cdr l) ext-classes)
                  (unknown-form-error (car l) :debug)))))
 
-(defun handle-prim-subforms (pn subforms)
+(defun handle-prim-subforms (pn subforms ext-classes)
   ;; (format t "~%Called handle-prim-subforms!~%: ~S~%" subforms)
   (loop for l in subforms
         for fn = (case (car l)
@@ -307,26 +327,32 @@
                    (:ns     #'handle-prim-ns-form)
                    (:|ns|   #'handle-prim-ns-form))
         do (if fn
-               (funcall fn pn (cdr l))
+               (funcall fn pn (cdr l) ext-classes)
                (unknown-form-error (car l) :debug))))
 
-(defun handle-prim-form (rparent form)
+(defun handle-prim-form (parent form ext-classes)
   ;; (format t "~%Called handle-prim-form!~%: ~S~%" form)
-  (let* ((pn (make-enode-instance 'prim-enode rparent form)))
-    (vector-push-extend pn (enode-children rparent))
-    (handle-prim-subforms pn (list-enode-children 'prim-enode form))))
+  (let* ((pn (make-enode-instance 'prim-enode form
+                                  :parent parent
+                                  :ext-classes ext-classes)))
+    (vector-push-extend pn (enode-children parent))
+    (handle-prim-subforms pn (list-enode-children 'prim-enode form) ext-classes)))
 
-(defun handle-tree-form (rparent form)
+(defun handle-tree-form (parent form ext-classes)
   ;; (format t "~%Called handle-tree-form!~%: ~S~%" form)
-  (vector-push-extend (make-enode-instance 'tree-enode rparent form)
-                      (enode-children rparent)))
+  (vector-push-extend (make-enode-instance 'tree-enode form
+                                           :parent parent
+                                           :ext-classes ext-classes)
+                      (enode-children parent)))
 
-(defun handle-meta-form (rparent form)
+(defun handle-meta-form (parent form ext-classes)
   ;; (format t "~%Called handle-meta-form!~%: ~S~%" form)
-  (vector-push-extend (make-enode-instance 'meta-enode rparent form)
-                      (enode-children rparent)))
+  (vector-push-extend (make-enode-instance 'meta-enode form
+                                           :parent parent
+                                           :ext-classes ext-classes)
+                      (enode-children parent)))
 
-(defun handle-data-subforms (rparent subforms)
+(defun handle-data-subforms (parent subforms ext-classes)
   ;; (format t "~%Called handle-data-subforms!~%: ~S~%" subforms)
   (loop for l in subforms
         for fn = (case (car l)
@@ -345,7 +371,7 @@
                    (:prim   #'handle-prim-form)
                    (:|prim| #'handle-prim-form))
         do (if fn
-               (funcall fn rparent (cdr l))
+               (funcall fn parent (cdr l) ext-classes)
                (unknown-form-error (car l) :debug))))
 
 ;;
@@ -358,11 +384,12 @@
   `(let* ((*enable-call* ,enable-call))
      ,@body))
 
-(defun deserialize-call-enabled (usds-data)
+(defun deserialize-call-enabled (usds-data &aux (ext-classes '(mopr-ext/repr-rnode:rnode)))
   (with-layout-settings
       (mopr-info:with-registry (:supported-cases '(:upcase))
         (mopr-plug:with-configuration ()
           (with-repr-variables (:enable-call t)
-            (let* ((rn (make-enode-instance 'root-enode nil usds-data)))
-              (handle-data-subforms rn (list-enode-children 'root-enode usds-data))
+            (let* ((rn (make-enode-instance 'root-enode usds-data
+                                            :ext-classes ext-classes)))
+              (handle-data-subforms rn (list-enode-children 'root-enode usds-data) ext-classes)
               rn))))))
