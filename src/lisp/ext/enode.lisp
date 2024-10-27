@@ -38,6 +38,8 @@
    #:iota-enode-name-param
    #:iota-enode-key-param
    #:iota-enode-end-param
+   #:iota-enode-start-param
+   #:iota-enode-step-param
 
    ;; CALL-ENODE
    #:call-enode
@@ -166,7 +168,17 @@
    (end-param
     :type integer
     :initarg :end-param
-    :accessor iota-enode-end-param)))
+    :accessor iota-enode-end-param)
+   (start-param
+    :type (or null integer)
+    :initarg :start-param
+    :initform nil
+    :accessor iota-enode-start-param)
+   (step-param
+    :type (or null integer)
+    :initarg :step-param
+    :initform nil
+    :accessor iota-enode-step-param)))
 
 (defclass call-enode (enode)
   ((aux-form-param

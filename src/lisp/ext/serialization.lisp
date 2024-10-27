@@ -63,12 +63,16 @@
     ,(iota-enode-name-param n)
     ,(iota-enode-key-param n)
     ,(iota-enode-end-param n)
+    ,@(if (iota-enode-start-param n) (list (iota-enode-start-param n)))
+    ,@(if (iota-enode-step-param n) (list (iota-enode-step-param n)))
     ,@(call-next-method)))
 
-(defun iota-form-params (form)
-  (list :name-param (car form)
-        :key-param (cadr form)
-        :end-param (caddr form)))
+(defun iota-form-params (form &aux (len (length form)))
+  (list :name-param (nth 0 form)
+        :key-param (nth 1 form)
+        :end-param (nth 2 form)
+        :start-param (if (> len 3) (nth 3 form))
+        :step-param (if (> len 4) (nth 4 form))))
 
 (defmethod enode-serialize ((n call-enode))
   `(:call

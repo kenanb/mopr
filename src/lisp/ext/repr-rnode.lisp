@@ -282,9 +282,38 @@
          (nai2 (make-instance 'mopr-ext/repr-rdata:attr-input-rdata
                               :id 11
                               :yparent (mopr-ext/repr-rdata:rdata-ynode nac2)
-                              :text (format nil "~S" (iota-enode-end-param node)))))
+                              :text (format nil "~S" (iota-enode-end-param node))))
+         (nac3 (make-instance 'mopr-ext/repr-rdata:attr-container-rdata
+                              :id 12
+                              :yparent (mopr-ext/repr-rdata:rdata-ynode ncc)))
+         (nal3 (make-instance 'mopr-ext/repr-rdata:attr-label-rdata
+                              :id 13
+                              :yparent (mopr-ext/repr-rdata:rdata-ynode nac3)
+                              :text "START"
+                              :bg color))
+         (nai3 (make-instance 'mopr-ext/repr-rdata:attr-input-rdata
+                              :id 14
+                              :yparent (mopr-ext/repr-rdata:rdata-ynode nac3)
+                              :text (format nil "~S" (iota-enode-start-param node))))
+         (nac4 (make-instance 'mopr-ext/repr-rdata:attr-container-rdata
+                              :id 15
+                              :yparent (mopr-ext/repr-rdata:rdata-ynode ncc)))
+         (nal4 (make-instance 'mopr-ext/repr-rdata:attr-label-rdata
+                              :id 16
+                              :yparent (mopr-ext/repr-rdata:rdata-ynode nac4)
+                              :text "STEP"
+                              :bg color))
+         (nai4 (make-instance 'mopr-ext/repr-rdata:attr-input-rdata
+                              :id 17
+                              :yparent (mopr-ext/repr-rdata:rdata-ynode nac4)
+                              :text (format nil "~S" (iota-enode-step-param node)))))
     (setf (rnode-rdatas ext)
-          (list nec nel ncc nac0 nal0 nai0 nac1 nal1 nai1 nac2 nal2 nai2))))
+          (list nec nel ncc
+                nac0 nal0 nai0
+                nac1 nal1 nai1
+                nac2 nal2 nai2
+                nac3 nal3 nai3
+                nac4 nal4 nai4))))
 
 ;; TODO
 (defmethod enode-get-rdata-options ((node iota-enode) id-sub)
@@ -295,7 +324,11 @@
     (7 (list "iota attr-label-rdata KEY"))
     (8 (list "iota attr-input-rdata KEY"))
     (10 (list "iota attr-label-rdata END"))
-    (11 (list "iota attr-input-rdata END"))))
+    (11 (list "iota attr-input-rdata END"))
+    (13 (list "iota attr-label-rdata START"))
+    (14 (list "iota attr-input-rdata START"))
+    (16 (list "iota attr-label-rdata STEP"))
+    (17 (list "iota attr-input-rdata STEP"))))
 
 ;;
 ;;; CALL-ENODE API
