@@ -12,6 +12,6 @@
   (:call (prop (:isa :Mesh :faceVertexIndices))
    10 10 :cw :grid-fv-indices nil prop :make-prop)
   (:call sine-args
-   grid-p len time :grid-sine-y
+   grid-p :copy-array len time :grid-sine-y
    :dup time (:isa :Mesh :points) :make-prop
    :swap :compute-extent time (:isa :Mesh :extent) :make-prop)))

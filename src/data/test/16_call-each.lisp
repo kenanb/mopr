@@ -15,6 +15,6 @@
   (:call (prop (:isa :Mesh :faceVertexIndices))
    3 3 :cw :grid-fv-indices nil prop :make-prop)
   (:call oscillation-args
-   base-grid-points dim len val :grid-oscillate-y
+   base-grid-points :copy-array dim len val :grid-oscillate-y
    :dup time prop-pts :make-prop
    :swap :compute-extent time prop-ext :make-prop)))

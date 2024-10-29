@@ -5,9 +5,10 @@
 
 (defpackage :mopr-ext/util
   (:import-from :mopr)
+  (:import-from :mopr-ext/enode-execute)
   (:use #:cl
-        #:mopr-ext/repr
-        #:mopr-ext/usds)
+        ;; TODO: UI crashes when this is just an "import-from", instead of "use".
+        #:mopr-ext/repr)
   (:export))
 
 (in-package :mopr-ext/util)
@@ -34,10 +35,9 @@ registered to call tables can be dangerous, if enabled."
             ;; Assignments based on uiop/stream:with-safe-io-syntax .
             (*print-readably* nil)
             (*read-eval* nil))
-        (funcall (if call-enabled
-                     #'write-to-layer-call-enabled
-                     #'write-to-layer)
-                 layer-h (read in nil))))))
+        (let* ((expr (read in nil))
+               (rn (mopr-ext/enode-serialize:deserialize expr nil)))
+          (mopr-ext/enode-execute:populate-layer layer-h rn call-enabled))))))
 
 (defun populate-from-lisp-file-with-repr (layer-h cmd-queue filepath call-enabled
                                           &aux
@@ -53,19 +53,20 @@ registered to call tables can be dangerous, if enabled."
             ;; Assignments based on uiop/stream:with-safe-io-syntax .
             (*print-readably* nil)
             (*read-eval* nil))
-        (let ((expr (read in nil)))
 
-          ;; Representation.
-          ;;
+        ;; Representation.
+        ;;
 
-          (create-enode-tree expr)
-          (populate-command-queue (autowrap:wrap-pointer cmd-queue 'mopr-def:command-queue))
-          (delete-enode-tree) ; TODO : Defer.
+        (let* ((expr (read in nil)))
+          (mopr-ext/repr:create-enode-tree-with-repr expr))
 
-          ;; Evaluation.
-          ;;
+        (mopr-ext/repr:populate-command-queue (autowrap:wrap-pointer cmd-queue
+                                                                     'mopr-def:command-queue))
+        (mopr-ext/repr:deinitialize-rnodes)       ; TODO : Defer.
 
-          (funcall (if call-enabled
-                       #'write-to-layer-call-enabled
-                       #'write-to-layer)
-                   layer-h expr))))))
+        ;; Execution.
+        ;;
+
+        (mopr-ext/enode-execute:populate-layer layer-h
+                                               mopr-ext/repr::*root-enode*
+                                               call-enabled)))))

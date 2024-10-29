@@ -3,15 +3,15 @@
 
 (in-package :cl-user)
 
-(defpackage :mopr-ext/serialization
+(defpackage :mopr-ext/enode-serialize
   (:import-from :mopr)
   (:use :mopr-ext/enode)
   (:use :cl)
   (:export
-   #:deserialize-call-enabled
+   #:deserialize
    #:enode-serialize))
 
-(in-package :mopr-ext/serialization)
+(in-package :mopr-ext/enode-serialize)
 
 ;;
 ;;; Mapping between ENODE and USDS Forms
@@ -210,8 +210,6 @@
 
 (defvar *debug-mode* t)
 
-(defvar *enable-call* nil)
-
 (defun unknown-form-error (form action)
   (format t "
 [ERROR] Cannot handle form.
@@ -379,17 +377,9 @@
 ;;; Top-Level API and Macros
 ;;
 
-(defmacro with-serialization-variables ((&key
-                                           (enable-call nil))
-                                        &body body)
-  `(let* ((*enable-call* ,enable-call))
-     ,@body))
-
-(defun deserialize-call-enabled (usds-data ext-classes)
-  (mopr-info:with-registry (:supported-cases '(:upcase))
-    (mopr-plug:with-configuration ()
-      (with-serialization-variables (:enable-call t)
-        (let* ((rn (make-enode-instance 'root-enode usds-data
-                                        :ext-classes ext-classes)))
-          (handle-data-subforms rn (list-enode-children 'root-enode usds-data) ext-classes)
-          rn)))))
+(defun deserialize (usds-data ext-classes
+                    &aux
+                      (rn (make-enode-instance 'root-enode usds-data
+                                               :ext-classes ext-classes)))
+  (handle-data-subforms rn (list-enode-children 'root-enode usds-data) ext-classes)
+  rn)

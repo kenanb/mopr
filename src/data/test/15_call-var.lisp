@@ -13,12 +13,12 @@
   (:call (prop (:isa :Mesh :faceVertexIndices))
    3 3 :cw :grid-fv-indices nil prop :make-prop)
   (:call (val 0 time 00)
-   base-grid-points dim len val :grid-oscillate-y
+   base-grid-points :copy-array dim len val :grid-oscillate-y
    time prop-pts :make-prop)
   (:call (val 7 time 10)
-   base-grid-points dim len val :grid-oscillate-y
+   base-grid-points :copy-array dim len val :grid-oscillate-y
    time prop-pts :make-prop)
   (:call (val 0 time 20)
-   base-grid-points dim len val :grid-oscillate-y :dup
+   base-grid-points :copy-array dim len val :grid-oscillate-y :dup
    time prop-pts :make-prop
    :swap :compute-extent nil prop-ext :make-prop)))

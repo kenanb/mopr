@@ -10,13 +10,13 @@
                 #:multiple-set-c-ref
                 #:with-layout-settings)
   (:import-from :mopr-ext/enode)
-  (:import-from :mopr-ext/serialization)
+  (:import-from :mopr-ext/enode-serialize)
   (:import-from :mopr-ext/repr-rdata)
   (:import-from :mopr-ext/repr-rnode)
   (:use :cl)
   (:export
-   #:create-enode-tree
-   #:delete-enode-tree
+   #:create-enode-tree-with-repr
+   #:deinitialize-rnodes
    #:populate-command-queue
    #:destruct-command-queue
    #:populate-command-options
@@ -39,12 +39,12 @@
 ;;; ENODE Tree
 ;;
 
-(defun create-enode-tree (usds-data &aux (ext-classes '(mopr-ext/repr-rnode:rnode)))
+(defun create-enode-tree-with-repr (usds-data &aux (ext-classes '(mopr-ext/repr-rnode:rnode)))
   (setf *root-enode*
         (with-layout-settings
-            (mopr-ext/serialization:deserialize-call-enabled usds-data ext-classes))))
+            (mopr-ext/enode-serialize:deserialize usds-data ext-classes))))
 
-(defun delete-enode-tree ()
+(defun deinitialize-rnodes ()
   (yoga-fun:node-free-recursive (mopr-ext/repr-rdata:rdata-ynode
                                  (car (enode-rdatas *root-enode*)))))
 

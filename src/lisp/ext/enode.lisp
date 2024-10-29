@@ -17,6 +17,7 @@
    ;; Generic APIs
    #:enode-find-extension
    #:enode-initialize-extension
+   #:debug-print
 
    ;; ROOT-ENODE
    #:root-enode
@@ -29,7 +30,7 @@
 
    ;; EACH-ENODE
    #:each-enode
-   #:each-enode-name-params
+   #:each-enode-name-param
    #:each-enode-keys-form-param
    #:each-enode-vals-form-param
 
@@ -120,6 +121,15 @@
 (defun enode-find-extension (node typ)
   (loop for ext in (enode-extensions node) when (typep ext typ)
         return ext))
+
+(defun debug-print-recursive (node &optional (nesting 0))
+  (format t "~S - ~S~%" nesting node)
+  (loop for c across (enode-children node) do (debug-print-recursive c (1+ nesting))))
+
+(defun debug-print (node)
+  (format t "DEBUG PRINTING NODE: ~S~%" node)
+  (debug-print-recursive node)
+  (format t "~%" node))
 
 (defclass root-enode (enode)
   ())

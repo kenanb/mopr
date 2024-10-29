@@ -7,10 +7,7 @@
   (:use
    #:cl
    #:mopr)
-  (:export)
-
-  (:use
-   #:mopr-ext/usds))
+  (:export))
 
 (in-package #:mopr-user)
 
