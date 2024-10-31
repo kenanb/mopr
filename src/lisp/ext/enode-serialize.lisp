@@ -227,148 +227,148 @@
   (when (and (eq action :debug) *debug-mode*)
     (error "Cannot handle form: ~S~%" form)))
 
-(defun handle-var-form (parent form ext-classes)
-  ;; (format t "~%Called handle-var-form!~%: ~S~%" form)
+(defun deserialize-var-form (parent form ext-classes)
+  ;; (format t "~%Called deserialize-var-form!~%: ~S~%" form)
   (vector-push-extend (make-enode-instance 'var-enode form
                                            :parent parent
                                            :ext-classes ext-classes)
                       (enode-children parent)))
 
-(defun handle-each-form (parent form ext-classes)
-  ;; (format t "~%Called handle-each-form!~%: ~S~%" form)
+(defun deserialize-each-form (parent form ext-classes)
+  ;; (format t "~%Called deserialize-each-form!~%: ~S~%" form)
   (vector-push-extend (make-enode-instance 'each-enode form
                                            :parent parent
                                            :ext-classes ext-classes)
                       (enode-children parent)))
 
-(defun handle-iota-form (parent form ext-classes)
-  ;; (format t "~%Called handle-iota-form!~%: ~S~%" form)
+(defun deserialize-iota-form (parent form ext-classes)
+  ;; (format t "~%Called deserialize-iota-form!~%: ~S~%" form)
   (vector-push-extend (make-enode-instance 'iota-enode form
                                            :parent parent
                                            :ext-classes ext-classes)
                       (enode-children parent)))
 
-(defun handle-call-form (parent form ext-classes)
-  ;; (format t "~%Called handle-call-form!~%: ~S~%" form)
+(defun deserialize-call-form (parent form ext-classes)
+  ;; (format t "~%Called deserialize-call-form!~%: ~S~%" form)
   (vector-push-extend (make-enode-instance 'call-enode form
                                            :parent parent
                                            :ext-classes ext-classes)
                       (enode-children parent)))
 
-(defun handle-prim-call-form (parent form ext-classes)
-  ;; (format t "~%Called handle-call-form!~%: ~S~%" form)
+(defun deserialize-prim-call-form (parent form ext-classes)
+  ;; (format t "~%Called deserialize-call-form!~%: ~S~%" form)
   (vector-push-extend (make-enode-instance 'prim-call-enode form
                                            :parent parent
                                            :ext-classes ext-classes)
                       (enode-children parent)))
 
-(defun handle-prim-type-form (parent form ext-classes)
-  ;; (format t "~%Called handle-type-form!~%: ~S~%" form)
+(defun deserialize-prim-type-form (parent form ext-classes)
+  ;; (format t "~%Called deserialize-type-form!~%: ~S~%" form)
   (vector-push-extend (make-enode-instance 'prim-type-enode form
                                            :parent parent
                                            :ext-classes ext-classes)
                       (enode-children parent)))
 
-(defun handle-prim-meta-form (parent form ext-classes)
-  ;; (format t "~%Called handle-prim-meta-form!~%: ~S~%" form)
+(defun deserialize-prim-meta-form (parent form ext-classes)
+  ;; (format t "~%Called deserialize-prim-meta-form!~%: ~S~%" form)
   (vector-push-extend (make-enode-instance 'prim-meta-enode form
                                            :parent parent
                                            :ext-classes ext-classes)
                       (enode-children parent)))
 
-(defun handle-prim-attr-form (parent form ext-classes)
-  ;; (format t "~%Called handle-prim-attr-form!~%: ~S~%" form)
+(defun deserialize-prim-attr-form (parent form ext-classes)
+  ;; (format t "~%Called deserialize-prim-attr-form!~%: ~S~%" form)
   (vector-push-extend (make-enode-instance 'prim-attr-enode form
                                            :parent parent
                                            :ext-classes ext-classes)
                       (enode-children parent)))
 
-(defun handle-prim-rel-form (parent form ext-classes)
-  ;; (format t "~%Called handle-prim-rel-form!~%: ~S~%" form)
+(defun deserialize-prim-rel-form (parent form ext-classes)
+  ;; (format t "~%Called deserialize-prim-rel-form!~%: ~S~%" form)
   (vector-push-extend (make-enode-instance 'prim-rel-enode form
                                            :parent parent
                                            :ext-classes ext-classes)
                       (enode-children parent)))
 
-(defun handle-prim-ns-form (parent form ext-classes)
-  ;; (format t "~%Called handle-prim-ns-form!~%: ~S~%" form)
+(defun deserialize-prim-ns-form (parent form ext-classes)
+  ;; (format t "~%Called deserialize-prim-ns-form!~%: ~S~%" form)
   (let* ((nn (make-enode-instance 'prim-ns-enode form
                                   :parent parent
                                   :ext-classes ext-classes)))
     (vector-push-extend nn (enode-children parent))
     (loop for l in (list-enode-children 'prim-ns-enode form)
           for fn = (case (car l)
-                     (:attr   #'handle-prim-attr-form)
-                     (:|attr| #'handle-prim-attr-form)
-                     (:rel    #'handle-prim-rel-form)
-                     (:|rel|  #'handle-prim-rel-form)
-                     (:ns     #'handle-prim-ns-form)
-                     (:|ns|   #'handle-prim-ns-form))
+                     (:attr   #'deserialize-prim-attr-form)
+                     (:|attr| #'deserialize-prim-attr-form)
+                     (:rel    #'deserialize-prim-rel-form)
+                     (:|rel|  #'deserialize-prim-rel-form)
+                     (:ns     #'deserialize-prim-ns-form)
+                     (:|ns|   #'deserialize-prim-ns-form))
           do (if fn
                  (funcall fn nn (cdr l) ext-classes)
                  (unknown-form-error (car l) :debug)))))
 
-(defun handle-prim-subforms (pn subforms ext-classes)
-  ;; (format t "~%Called handle-prim-subforms!~%: ~S~%" subforms)
+(defun deserialize-prim-subforms (pn subforms ext-classes)
+  ;; (format t "~%Called deserialize-prim-subforms!~%: ~S~%" subforms)
   (loop for l in subforms
         for fn = (case (car l)
                    ;; TODO : Handle other forms.
-                   (:call   #'handle-prim-call-form)
-                   (:|call| #'handle-prim-call-form)
-                   (:type   #'handle-prim-type-form)
-                   (:|type| #'handle-prim-type-form)
-                   (:meta   #'handle-prim-meta-form)
-                   (:|meta| #'handle-prim-meta-form)
-                   (:attr   #'handle-prim-attr-form)
-                   (:|attr| #'handle-prim-attr-form)
-                   (:rel    #'handle-prim-rel-form)
-                   (:|rel|  #'handle-prim-rel-form)
-                   (:ns     #'handle-prim-ns-form)
-                   (:|ns|   #'handle-prim-ns-form))
+                   (:call   #'deserialize-prim-call-form)
+                   (:|call| #'deserialize-prim-call-form)
+                   (:type   #'deserialize-prim-type-form)
+                   (:|type| #'deserialize-prim-type-form)
+                   (:meta   #'deserialize-prim-meta-form)
+                   (:|meta| #'deserialize-prim-meta-form)
+                   (:attr   #'deserialize-prim-attr-form)
+                   (:|attr| #'deserialize-prim-attr-form)
+                   (:rel    #'deserialize-prim-rel-form)
+                   (:|rel|  #'deserialize-prim-rel-form)
+                   (:ns     #'deserialize-prim-ns-form)
+                   (:|ns|   #'deserialize-prim-ns-form))
         do (if fn
                (funcall fn pn (cdr l) ext-classes)
                (unknown-form-error (car l) :debug))))
 
-(defun handle-prim-form (parent form ext-classes)
-  ;; (format t "~%Called handle-prim-form!~%: ~S~%" form)
+(defun deserialize-prim-form (parent form ext-classes)
+  ;; (format t "~%Called deserialize-prim-form!~%: ~S~%" form)
   (let* ((pn (make-enode-instance 'prim-enode form
                                   :parent parent
                                   :ext-classes ext-classes)))
     (vector-push-extend pn (enode-children parent))
-    (handle-prim-subforms pn (list-enode-children 'prim-enode form) ext-classes)))
+    (deserialize-prim-subforms pn (list-enode-children 'prim-enode form) ext-classes)))
 
-(defun handle-tree-form (parent form ext-classes)
-  ;; (format t "~%Called handle-tree-form!~%: ~S~%" form)
+(defun deserialize-tree-form (parent form ext-classes)
+  ;; (format t "~%Called deserialize-tree-form!~%: ~S~%" form)
   (vector-push-extend (make-enode-instance 'tree-enode form
                                            :parent parent
                                            :ext-classes ext-classes)
                       (enode-children parent)))
 
-(defun handle-meta-form (parent form ext-classes)
-  ;; (format t "~%Called handle-meta-form!~%: ~S~%" form)
+(defun deserialize-meta-form (parent form ext-classes)
+  ;; (format t "~%Called deserialize-meta-form!~%: ~S~%" form)
   (vector-push-extend (make-enode-instance 'meta-enode form
                                            :parent parent
                                            :ext-classes ext-classes)
                       (enode-children parent)))
 
-(defun handle-data-subforms (parent subforms ext-classes)
-  ;; (format t "~%Called handle-data-subforms!~%: ~S~%" subforms)
+(defun deserialize-data-subforms (parent subforms ext-classes)
+  ;; (format t "~%Called deserialize-data-subforms!~%: ~S~%" subforms)
   (loop for l in subforms
         for fn = (case (car l)
-                   (:var    #'handle-var-form)
-                   (:|var|  #'handle-var-form)
-                   (:each   #'handle-each-form)
-                   (:|each| #'handle-each-form)
-                   (:iota   #'handle-iota-form)
-                   (:|iota| #'handle-iota-form)
-                   (:call   #'handle-call-form)
-                   (:|call| #'handle-call-form)
-                   (:meta   #'handle-meta-form)
-                   (:|meta| #'handle-meta-form)
-                   (:tree   #'handle-tree-form)
-                   (:|tree| #'handle-tree-form)
-                   (:prim   #'handle-prim-form)
-                   (:|prim| #'handle-prim-form))
+                   (:var    #'deserialize-var-form)
+                   (:|var|  #'deserialize-var-form)
+                   (:each   #'deserialize-each-form)
+                   (:|each| #'deserialize-each-form)
+                   (:iota   #'deserialize-iota-form)
+                   (:|iota| #'deserialize-iota-form)
+                   (:call   #'deserialize-call-form)
+                   (:|call| #'deserialize-call-form)
+                   (:meta   #'deserialize-meta-form)
+                   (:|meta| #'deserialize-meta-form)
+                   (:tree   #'deserialize-tree-form)
+                   (:|tree| #'deserialize-tree-form)
+                   (:prim   #'deserialize-prim-form)
+                   (:|prim| #'deserialize-prim-form))
         do (if fn
                (funcall fn parent (cdr l) ext-classes)
                (unknown-form-error (car l) :debug))))
@@ -381,5 +381,5 @@
                     &aux
                       (rn (make-enode-instance 'root-enode usds-data
                                                :ext-classes ext-classes)))
-  (handle-data-subforms rn (list-enode-children 'root-enode usds-data) ext-classes)
+  (deserialize-data-subforms rn (list-enode-children 'root-enode usds-data) ext-classes)
   rn)

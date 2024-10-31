@@ -187,7 +187,7 @@
       (list (enode-children parent)))))
 
 (defmethod expand ((node prim-call-enode) parent)
-  (expand-call-generic node parent #'mopr-ext/enode-serialize::handle-prim-subforms))
+  (expand-call-generic node parent #'mopr-ext/enode-serialize::deserialize-prim-subforms))
 
 (defmethod expand ((node call-enode) parent)
-  (expand-call-generic node parent #'mopr-ext/enode-serialize::handle-data-subforms))
+  (expand-call-generic node parent #'mopr-ext/enode-serialize::deserialize-data-subforms))
