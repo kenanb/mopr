@@ -5,7 +5,7 @@
 
 (defpackage :mopr-ext/enode-execute
   (:import-from :mopr)
-  (:import-from :mopr-ext/enode-expand)
+  (:import-from :mopr-ext/enode-preprocess)
   (:use :mopr-ext/enode)
   (:use :cl)
   (:export
@@ -38,13 +38,13 @@
       (mopr:stage-open-layer stage-h layer-h)
       (mopr-info:with-registry (:supported-cases '(:upcase))
         ;; (debug-print rn)
-        (let* ((expand-all-fn (if call-enabled
-                                  #'mopr-ext/enode-expand:expand-all-call-enabled
-                                  #'mopr-ext/enode-expand:expand-all))
-               (rn-expanded (funcall expand-all-fn rn)))
-          ;; (debug-print rn-expanded)
+        (let* ((preprocess-all-fn (if call-enabled
+                                      #'mopr-ext/enode-preprocess:preprocess-all-call-enabled
+                                      #'mopr-ext/enode-preprocess:preprocess-all))
+               (rn-preprocessed (funcall preprocess-all-fn rn)))
+          ;; (debug-print rn-preprocessed)
           (with-execution-variables ()
-            (execute rn-expanded stage-h)))))))
+            (execute rn-preprocessed stage-h)))))))
 
 ;;
 ;;; EXECUTE IMPLEMENTATIONS
@@ -76,6 +76,17 @@
 
 (defmethod execute ((node enode) target-h)
   (loop for c across (enode-children node) do (execute c target-h)))
+
+(defmethod execute ((node container-enode) target-h)
+  (call-next-method))
+
+;; TODO : In the final implementation, no "directive-enodes" should be left in
+;;        the tree by the time we execute it.  However, we currently don't
+;;        reapply recursive expansion to expansion results.  So the test named
+;;        "09_call", which tests this case, is currently disabled.
+(defmethod execute ((node directive-enode) target-h)
+  (declare (ignore node target-h))
+  (error "Encountered directive-enode that should have been preprocessed."))
 
 (defmethod execute ((node prim-type-enode) prim-h
                     &aux (schema-name (prim-type-enode-name-param node)))
@@ -244,25 +255,3 @@
 (defmethod execute ((node meta-enode) stage-h)
   ;; TODO: We don't handle metadata yet.
   (call-next-method))
-
-;; TODO : We currently don't reapply recursive expansion to expansion results.
-;;        The test "09_call", which tests this case, is currently disabled.
-(defmethod execute ((node var-enode) target-h)
-  (declare (ignore node target-h))
-  (error "Encountered node that should have been expanded."))
-
-(defmethod execute ((node each-enode) target-h)
-  (declare (ignore node target-h))
-  (error "Encountered node that should have been expanded."))
-
-(defmethod execute ((node iota-enode) target-h)
-  (declare (ignore node target-h))
-  (error "Encountered node that should have been expanded."))
-
-(defmethod execute ((node prim-call-enode) target-h)
-  (declare (ignore node target-h))
-  (error "Encountered node that should have been expanded."))
-
-(defmethod execute ((node call-enode) target-h)
-  (declare (ignore node target-h))
-  (error "Encountered node that should have been expanded."))

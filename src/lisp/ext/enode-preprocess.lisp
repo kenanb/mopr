@@ -3,7 +3,7 @@
 
 (in-package :cl-user)
 
-(defpackage :mopr-ext/enode-expand
+(defpackage :mopr-ext/enode-preprocess
   (:import-from :mopr)
   (:import-from :mopr-ext/enode-copy)
   (:import-from :mopr-ext/enode-serialize)
@@ -11,12 +11,12 @@
   (:use :cl)
   (:export
 
-   #:expand-all
-   #:expand-all-call-enabled
+   #:preprocess-all
+   #:preprocess-all-call-enabled
 
    ))
 
-(in-package :mopr-ext/enode-expand)
+(in-package :mopr-ext/enode-preprocess)
 
 ;;
 ;;; MAIN API
@@ -34,30 +34,30 @@
           (*each-table* (make-hash-table)))
      ,@body))
 
-(defgeneric expand (node parent)
-  (:documentation "Expand enode."))
+(defgeneric preprocess (node parent)
+  (:documentation "Preprocess enode."))
 
-(defun expand-recursive (node &optional parent
-                         &aux (expanded (expand node parent)))
-  "Create a macro-expanded enode hierarchy."
-  (loop for e in expanded
+(defun preprocess-recursive (node &optional parent
+                             &aux (preprocessed (preprocess node parent)))
+  "Create a preprocessed enode hierarchy."
+  (loop for e in preprocessed
         do (loop for c across (enode-children node)
-                 do (expand-recursive c e)))
-  expanded)
+                 do (preprocess-recursive c e)))
+  preprocessed)
 
 ;; Assumes being called within a with-registry scope.
-(defun expand-all (rn)
+(defun preprocess-all (rn)
   (mopr-plug:with-configuration ()
     (with-expansion-variables (:enable-call nil)
-      (car (expand-recursive rn)))))
+      (car (preprocess-recursive rn)))))
 
-(defun expand-all-call-enabled (rn)
+(defun preprocess-all-call-enabled (rn)
   (mopr-plug:with-configuration ()
     (with-expansion-variables (:enable-call t)
-      (car (expand-recursive rn)))))
+      (car (preprocess-recursive rn)))))
 
 ;;
-;;; EXPAND IMPLEMENTATIONS
+;;; PREPROCESS IMPLEMENTATIONS
 ;;
 
 (defvar *debug-mode* t)
@@ -80,12 +80,12 @@
     (when (and (eq action :debug) *debug-mode*)
       (error "Cannot handle node: ~S~%" node))))
 
-(defmethod expand ((node enode) parent
-                   &aux (e (mopr-ext/enode-copy:copy-enode-instance node parent)))
+(defmethod preprocess ((node enode) parent
+                       &aux (e (mopr-ext/enode-copy:copy-enode-instance node parent)))
   (when parent (vector-push-extend e (enode-children parent)))
   (list e))
 
-(defmethod expand ((node var-enode) parent)
+(defmethod preprocess ((node var-enode) parent)
   (validate-call-support node :debug)
   (with-accessors ((name var-enode-name-param)
                    (aux var-enode-aux-form-param)
@@ -94,7 +94,7 @@
           (car (mopr-plug:process-call-stack aux val *var-table*))))
   nil)
 
-(defmethod expand ((node each-enode) parent)
+(defmethod preprocess ((node each-enode) parent)
   (validate-call-support node :debug)
   (with-accessors ((name each-enode-name-param)
                    (keys each-enode-keys-form-param)
@@ -106,7 +106,7 @@
                   vals)))
   nil)
 
-(defmethod expand ((node iota-enode) parent)
+(defmethod preprocess ((node iota-enode) parent)
   (validate-call-support node :debug)
   (with-accessors ((name iota-enode-name-param)
                    (key iota-enode-key-param)
@@ -169,8 +169,8 @@
           appending (serialize p))))
 
 ;; TODO: Reapply expansion to results.
-(defun expand-call-generic (node parent fn
-                            &aux expanded-forms)
+(defun preprocess-call-generic (node parent fn
+                                &aux preprocessed-forms)
   (validate-call-support node :debug)
   (with-accessors ((aux-form call-enode-aux-form-param)
                    (body-form call-enode-body-form-param)) node
@@ -178,16 +178,16 @@
                          (list aux-form)
                          (gethash aux-form *each-table*))))
       ;; TODO: Remove the need for serialization before expansion,
-      (setf expanded-forms
+      (setf preprocessed-forms
             (loop for args in args-list
                   nconc (loop for s in (mopr-plug:process-call-stack
                                         args body-form *var-table*)
                               nconc (serialize s))))
-      (funcall fn parent expanded-forms nil)
+      (funcall fn parent preprocessed-forms nil)
       (list (enode-children parent)))))
 
-(defmethod expand ((node prim-call-enode) parent)
-  (expand-call-generic node parent #'mopr-ext/enode-serialize::deserialize-prim-subforms))
+(defmethod preprocess ((node prim-call-enode) parent)
+  (preprocess-call-generic node parent #'mopr-ext/enode-serialize::deserialize-prim-subforms))
 
-(defmethod expand ((node call-enode) parent)
-  (expand-call-generic node parent #'mopr-ext/enode-serialize::deserialize-data-subforms))
+(defmethod preprocess ((node call-enode) parent)
+  (preprocess-call-generic node parent #'mopr-ext/enode-serialize::deserialize-data-subforms))

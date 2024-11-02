@@ -19,6 +19,11 @@
    #:enode-initialize-extension
    #:debug-print
 
+   ;; Main ENODE Categories
+   #:execution-enode
+   #:container-enode
+   #:directive-enode
+
    ;; ROOT-ENODE
    #:root-enode
 
@@ -131,10 +136,27 @@
   (debug-print-recursive node)
   (format t "~%" node))
 
-(defclass root-enode (enode)
+;;
+;;; ENODE Categories
+;;
+
+(defclass execution-enode (enode)
   ())
 
-(defclass var-enode (enode)
+(defclass container-enode (enode)
+  ())
+
+(defclass directive-enode (enode)
+  ())
+
+;;
+;;; Concrete ENODE Classes
+;;
+
+(defclass root-enode (container-enode)
+  ())
+
+(defclass var-enode (directive-enode)
   ((name-param
     :type base-string
     :initarg :name-param
@@ -150,7 +172,7 @@
     :initarg :val-form-param
     :accessor var-enode-val-form-param)))
 
-(defclass each-enode (enode)
+(defclass each-enode (directive-enode)
   ((name-param
     :type base-string
     :initarg :name-param
@@ -166,7 +188,7 @@
     :initarg :vals-form-param
     :accessor each-enode-vals-form-param)))
 
-(defclass iota-enode (enode)
+(defclass iota-enode (directive-enode)
   ((name-param
     :type base-string
     :initarg :name-param
@@ -190,7 +212,7 @@
     :initform nil
     :accessor iota-enode-step-param)))
 
-(defclass call-enode (enode)
+(defclass call-enode (directive-enode)
   ((aux-form-param
     :type list
     :initarg :aux-form-param
@@ -203,13 +225,13 @@
 (defclass prim-call-enode (call-enode)
   ())
 
-(defclass prim-type-enode (enode)
+(defclass prim-type-enode (execution-enode)
   ((name-param
     :type base-string
     :initarg :name-param
     :accessor prim-type-enode-name-param)))
 
-(defclass prim-attr-enode (enode)
+(defclass prim-attr-enode (execution-enode)
   ((name-param
     :type (or symbol base-string)
     :initarg :name-param
@@ -232,7 +254,7 @@
     :initarg :body-form-param
     :accessor prim-attr-enode-body-form-param)))
 
-(defclass prim-rel-enode (enode)
+(defclass prim-rel-enode (execution-enode)
   ((name-param
     :type (or symbol base-string)
     :initarg :name-param
@@ -247,25 +269,25 @@
     :initarg :body-form-param
     :accessor prim-rel-enode-body-form-param)))
 
-(defclass prim-ns-enode (enode)
+(defclass prim-ns-enode (container-enode)
   ((name-param
     :type base-string
     :initarg :name-param
     :accessor prim-ns-enode-name-param)))
 
-(defclass prim-enode (enode)
+(defclass prim-enode (execution-enode)
   ((path-form-param
     :type list
     :initarg :path-form-param
     :accessor prim-enode-path-form-param)))
 
-(defclass tree-enode (enode)
+(defclass tree-enode (execution-enode)
   ((body-form-param
     :type list
     :initarg :body-form-param
     :accessor tree-enode-body-form-param)))
 
-(defclass meta-enode (enode)
+(defclass meta-enode (execution-enode)
   ((body-form-param
     :type list
     :initarg :body-form-param
