@@ -23,6 +23,11 @@
 (defvar *bind-table* nil)
 (defvar *alias-table* nil)
 
+(defun enode-record-parent-recursive (node)
+  (loop for c across (enode-children node)
+        do (setf (enode-parent c) node)
+        do (enode-record-parent-recursive c)))
+
 (defgeneric execute (node target-h)
   (:documentation "Execute enode."))
 
@@ -43,6 +48,7 @@
                                       #'mopr-ext/enode-preprocess:preprocess-all))
                (rn-preprocessed (funcall preprocess-all-fn rn)))
           ;; (debug-print rn-preprocessed)
+          (enode-record-parent-recursive rn-preprocessed)
           (with-execution-variables ()
             (execute rn-preprocessed stage-h)))))))
 

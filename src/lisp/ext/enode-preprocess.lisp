@@ -6,7 +6,6 @@
 (defpackage :mopr-ext/enode-preprocess
   (:import-from :mopr)
   (:import-from :mopr-ext/enode-copy)
-  (:import-from :mopr-ext/enode-serialize)
   (:use :mopr-ext/enode)
   (:use :cl)
   (:export
@@ -34,15 +33,16 @@
           (*each-table* (make-hash-table)))
      ,@body))
 
-(defgeneric preprocess (node parent)
+(defgeneric preprocess (node)
   (:documentation "Preprocess enode."))
 
 (defun preprocess-recursive (node &optional parent
-                             &aux (preprocessed (preprocess node parent)))
+                             &aux (preprocessed (preprocess node)))
   "Create a preprocessed enode hierarchy."
   (loop for e in preprocessed
-        do (loop for c across (enode-children node)
-                 do (preprocess-recursive c e)))
+        do (progn
+             (when parent (vector-push-extend e (enode-children parent)))
+             (loop for c across (enode-children node) do (preprocess-recursive c e))))
   preprocessed)
 
 ;; Assumes being called within a with-registry scope.
@@ -80,12 +80,10 @@
     (when (and (eq action :debug) *debug-mode*)
       (error "Cannot handle node: ~S~%" node))))
 
-(defmethod preprocess ((node enode) parent
-                       &aux (e (mopr-ext/enode-copy:copy-enode-instance node parent)))
-  (when parent (vector-push-extend e (enode-children parent)))
-  (list e))
+(defmethod preprocess ((node enode))
+  (list (mopr-ext/enode-copy:copy-enode-instance node)))
 
-(defmethod preprocess ((node var-enode) parent)
+(defmethod preprocess ((node var-enode))
   (validate-call-support node :debug)
   (with-accessors ((name var-enode-name-param)
                    (aux var-enode-aux-form-param)
@@ -94,7 +92,7 @@
           (car (mopr-plug:process-call-stack aux val *var-table*))))
   nil)
 
-(defmethod preprocess ((node each-enode) parent)
+(defmethod preprocess ((node each-enode))
   (validate-call-support node :debug)
   (with-accessors ((name each-enode-name-param)
                    (keys each-enode-keys-form-param)
@@ -106,7 +104,7 @@
                   vals)))
   nil)
 
-(defmethod preprocess ((node iota-enode) parent)
+(defmethod preprocess ((node iota-enode))
   (validate-call-support node :debug)
   (with-accessors ((name iota-enode-name-param)
                    (key iota-enode-key-param)
@@ -120,26 +118,31 @@
                                    :step (or step 1)))))
   nil)
 
-(defgeneric serialize-prop-info (ob)
+(defgeneric convert-prop-info (ob body-form)
 
   (:documentation "...")
 
-  (:method ((ob mopr-info:attr-info))
+  (:method ((ob mopr-info:attr-info) body-form)
     (with-accessors ((name mopr-info:prop-info-base-name)
                      (meta mopr-info:prop-info-meta)
                      (array-p mopr-info:attr-info-array-p)
                      (t-key mopr-info:attr-info-type-key)) ob
-      (list :attr
-            (if meta (cons name meta) name)
-            (if array-p :array :datum)
-            t-key)))
+      (make-instance 'prim-attr-enode
+                     :name-param name
+                     :meta-form-param meta
+                     :category-param (if array-p :array :datum)
+                     :type-param t-key
+                     :body-form-param body-form)))
 
-  (:method ((ob mopr-info:rel-info))
+  (:method ((ob mopr-info:rel-info) body-form)
     (with-accessors ((name mopr-info:prop-info-base-name)
                      (meta mopr-info:prop-info-meta)) ob
-      (list :rel (if meta (cons name meta) name)))))
+      (make-instance 'prim-rel-enode
+                     :name-param name
+                     :meta-form-param meta
+                     :body-form-param body-form))))
 
-(defgeneric serialize (ob)
+(defgeneric convert-sgt (ob)
 
   (:documentation "...")
 
@@ -147,47 +150,33 @@
     nil)
 
   (:method ((ob mopr-sgt:tree-entry))
-    ;; (format t "~%~S~%" ob)
-    (list (cons :tree (mopr-sgt:tree-entry-data ob))))
+    (list (make-instance 'tree-enode :body-form-param (mopr-sgt:tree-entry-data ob))))
 
-  (:method ((ob mopr-sgt:prim-entry))
-    ;; (format t "~%~S~%" ob)
-    (list (cons :prim (mopr-sgt:prim-entry-data ob))))
-
-  (:method ((ob mopr-sgt:prop-entry)
-            &aux
-              (info (mopr-sgt:prop-entry-info ob)))
-    ;; (format t "~%~S~%" ob)
-    (list (loop with x = (append (serialize-prop-info info)
-                                 (mopr-sgt:prop-entry-data ob))
-                for n in (mopr-info:prop-info-namespace info)
-                do (setf x (list :ns n x))
+  (:method ((ob mopr-sgt:prop-entry) &aux (info (mopr-sgt:prop-entry-info ob)))
+    (list (loop with x = (convert-prop-info info (mopr-sgt:prop-entry-data ob))
+                for ns in (mopr-info:prop-info-namespace info)
+                do (let ((ns-node (make-instance 'prim-ns-enode :name-param ns)))
+                     (vector-push-extend x (enode-children ns-node))
+                     (setf x ns-node))
                 finally (return x))))
 
   (:method ((ob mopr-sgt:data-group))
-    (loop for p in (mopr-sgt:data-group-data ob)
-          appending (serialize p))))
+    (loop for p in (mopr-sgt:data-group-data ob) appending (convert-sgt p))))
 
 ;; TODO: Reapply expansion to results.
-(defun preprocess-call-generic (node parent fn
-                                &aux preprocessed-forms)
+(defun preprocess-call-generic (node)
   (validate-call-support node :debug)
   (with-accessors ((aux-form call-enode-aux-form-param)
                    (body-form call-enode-body-form-param)) node
     (let ((args-list (if (listp aux-form)
                          (list aux-form)
                          (gethash aux-form *each-table*))))
-      ;; TODO: Remove the need for serialization before expansion,
-      (setf preprocessed-forms
-            (loop for args in args-list
-                  nconc (loop for s in (mopr-plug:process-call-stack
-                                        args body-form *var-table*)
-                              nconc (serialize s))))
-      (funcall fn parent preprocessed-forms nil)
-      (list (enode-children parent)))))
+      (loop for args in args-list
+            nconc (loop for s in (mopr-plug:process-call-stack args body-form *var-table*)
+                        nconc (convert-sgt s))))))
 
-(defmethod preprocess ((node prim-call-enode) parent)
-  (preprocess-call-generic node parent #'mopr-ext/enode-serialize::deserialize-prim-subforms))
+(defmethod preprocess ((node prim-call-enode))
+  (preprocess-call-generic node))
 
-(defmethod preprocess ((node call-enode) parent)
-  (preprocess-call-generic node parent #'mopr-ext/enode-serialize::deserialize-data-subforms))
+(defmethod preprocess ((node call-enode))
+  (preprocess-call-generic node))
