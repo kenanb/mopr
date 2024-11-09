@@ -6,6 +6,7 @@
 (defpackage :mopr-ext/util
   (:import-from :mopr)
   (:import-from :mopr-ext/enode-execute)
+  (:import-from :mopr-ext/enode-serialize)
   (:use #:cl
         ;; TODO: UI crashes when this is just an "import-from", instead of "use".
         #:mopr-ext/repr)
@@ -54,19 +55,17 @@ registered to call tables can be dangerous, if enabled."
             (*print-readably* nil)
             (*read-eval* nil))
 
-        ;; Representation.
-        ;;
+        (let* ((expr (read in nil))
+               (rn (mopr-ext/enode-serialize:deserialize expr '(mopr-ext/repr-rnode:rnode))))
+          (mopr-ext/enode-execute:populate-layer layer-h rn call-enabled)
 
-        (let* ((expr (read in nil)))
-          (mopr-ext/repr:create-enode-tree-with-repr expr))
+          ;; Representation.
+          ;;
 
-        (mopr-ext/repr:populate-command-queue (autowrap:wrap-pointer cmd-queue
-                                                                     'mopr-def:command-queue))
-        (mopr-ext/repr:deinitialize-rnodes)       ; TODO : Defer.
+          (mopr-ext/repr:initialize-and-bind-repr-tree rn)
 
-        ;; Execution.
-        ;;
+          (mopr-ext/repr:populate-command-queue
+           (autowrap:wrap-pointer cmd-queue 'mopr-def:command-queue))
 
-        (mopr-ext/enode-execute:populate-layer layer-h
-                                               mopr-ext/repr::*root-enode*
-                                               call-enabled)))))
+          ;; TODO : Defer.
+          (mopr-ext/repr:deinitialize-rnodes))))))

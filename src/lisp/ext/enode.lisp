@@ -17,6 +17,7 @@
    ;; Generic APIs
    #:enode-find-extension
    #:enode-initialize-extension
+   #:enode-initialize-extensions-recursive
    #:debug-print
 
    ;; Main ENODE Categories
@@ -119,9 +120,9 @@
 (defgeneric enode-initialize-extension (node ext)
   (:documentation "Populate the extension bound to enode."))
 
-(defmethod initialize-instance :after ((node enode) &key)
-  (loop for ext in (enode-extensions node)
-        do (enode-initialize-extension node ext)))
+(defun enode-initialize-extensions-recursive (node)
+  (loop for ext in (enode-extensions node) do (enode-initialize-extension node ext))
+  (loop for c across (enode-children node) do (enode-initialize-extensions-recursive c)))
 
 (defun enode-find-extension (node typ)
   (loop for ext in (enode-extensions node) when (typep ext typ)
