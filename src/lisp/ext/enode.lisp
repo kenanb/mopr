@@ -28,6 +28,9 @@
    ;; ROOT-ENODE
    #:root-enode
 
+   ;; GROUP-ENODE
+   #:group-enode
+
    ;; VAR-ENODE
    #:var-enode
    #:var-enode-name-param
@@ -155,6 +158,9 @@
 ;;
 
 (defclass root-enode (container-enode)
+  ())
+
+(defclass group-enode (container-enode)
   ())
 
 (defclass var-enode (directive-enode)

@@ -34,6 +34,17 @@
 (defun root-form-children (form)
   form)
 
+(defmethod enode-serialize ((n group-enode))
+  `(:group
+    ,@(call-next-method)))
+
+(defun group-form-params (form)
+  (declare (ignore form))
+  nil)
+
+(defun group-form-children (form)
+  form)
+
 (defmethod enode-serialize ((n var-enode))
   `(:var
     ,(var-enode-name-param n)
@@ -181,6 +192,7 @@
          (funcall
           (case class
             ('root-enode #'root-form-params)
+            ('group-enode #'group-form-params)
             ('var-enode #'var-form-params)
             ('each-enode #'each-form-params)
             ('iota-enode #'iota-form-params)
@@ -200,6 +212,7 @@
   (funcall
    (case class
      ('root-enode #'root-form-children)
+     ('group-enode #'group-form-children)
      ('prim-enode #'prim-form-children)
      ('prim-ns-enode #'prim-ns-form-children))
    form))
@@ -313,18 +326,20 @@
   (loop for l in subforms
         for fn = (case (car l)
                    ;; TODO : Handle other forms.
-                   (:call   #'deserialize-prim-call-form)
-                   (:|call| #'deserialize-prim-call-form)
-                   (:type   #'deserialize-prim-type-form)
-                   (:|type| #'deserialize-prim-type-form)
-                   (:meta   #'deserialize-prim-meta-form)
-                   (:|meta| #'deserialize-prim-meta-form)
-                   (:attr   #'deserialize-prim-attr-form)
-                   (:|attr| #'deserialize-prim-attr-form)
-                   (:rel    #'deserialize-prim-rel-form)
-                   (:|rel|  #'deserialize-prim-rel-form)
-                   (:ns     #'deserialize-prim-ns-form)
-                   (:|ns|   #'deserialize-prim-ns-form))
+                   (:group   #'deserialize-prim-group-form)
+                   (:|group| #'deserialize-prim-group-form)
+                   (:call    #'deserialize-prim-call-form)
+                   (:|call|  #'deserialize-prim-call-form)
+                   (:type    #'deserialize-prim-type-form)
+                   (:|type|  #'deserialize-prim-type-form)
+                   (:meta    #'deserialize-prim-meta-form)
+                   (:|meta|  #'deserialize-prim-meta-form)
+                   (:attr    #'deserialize-prim-attr-form)
+                   (:|attr|  #'deserialize-prim-attr-form)
+                   (:rel     #'deserialize-prim-rel-form)
+                   (:|rel|   #'deserialize-prim-rel-form)
+                   (:ns      #'deserialize-prim-ns-form)
+                   (:|ns|    #'deserialize-prim-ns-form))
         do (if fn
                (funcall fn pn (cdr l) ext-classes)
                (unknown-form-error (car l) :debug))))
@@ -336,6 +351,17 @@
                                   :ext-classes ext-classes)))
     (vector-push-extend pn (enode-children parent))
     (deserialize-prim-subforms pn (list-enode-children 'prim-enode form) ext-classes)))
+
+(defun deserialize-group-form-generic (parent form ext-classes fn)
+  (let* ((gn (make-enode-instance 'group-enode form
+                                  :parent parent
+                                  :ext-classes ext-classes)))
+    (vector-push-extend gn (enode-children parent))
+    (funcall fn gn (list-enode-children 'group-enode form) ext-classes)))
+
+(defun deserialize-prim-group-form (parent form ext-classes)
+  ;; (format t "~%Called deserialize-prim-group-form!~%: ~S~%" form)
+  (deserialize-group-form-generic parent form ext-classes #'deserialize-prim-subforms))
 
 (defun deserialize-tree-form (parent form ext-classes)
   ;; (format t "~%Called deserialize-tree-form!~%: ~S~%" form)
@@ -351,24 +377,30 @@
                                            :ext-classes ext-classes)
                       (enode-children parent)))
 
+(defun deserialize-group-form (parent form ext-classes)
+  ;; (format t "~%Called deserialize-group-form!~%: ~S~%" form)
+  (deserialize-group-form-generic parent form ext-classes #'deserialize-data-subforms))
+
 (defun deserialize-data-subforms (parent subforms ext-classes)
   ;; (format t "~%Called deserialize-data-subforms!~%: ~S~%" subforms)
   (loop for l in subforms
         for fn = (case (car l)
-                   (:var    #'deserialize-var-form)
-                   (:|var|  #'deserialize-var-form)
-                   (:each   #'deserialize-each-form)
-                   (:|each| #'deserialize-each-form)
-                   (:iota   #'deserialize-iota-form)
-                   (:|iota| #'deserialize-iota-form)
-                   (:call   #'deserialize-call-form)
-                   (:|call| #'deserialize-call-form)
-                   (:meta   #'deserialize-meta-form)
-                   (:|meta| #'deserialize-meta-form)
-                   (:tree   #'deserialize-tree-form)
-                   (:|tree| #'deserialize-tree-form)
-                   (:prim   #'deserialize-prim-form)
-                   (:|prim| #'deserialize-prim-form))
+                   (:group   #'deserialize-group-form)
+                   (:|group| #'deserialize-group-form)
+                   (:var     #'deserialize-var-form)
+                   (:|var|   #'deserialize-var-form)
+                   (:each    #'deserialize-each-form)
+                   (:|each|  #'deserialize-each-form)
+                   (:iota    #'deserialize-iota-form)
+                   (:|iota|  #'deserialize-iota-form)
+                   (:call    #'deserialize-call-form)
+                   (:|call|  #'deserialize-call-form)
+                   (:meta    #'deserialize-meta-form)
+                   (:|meta|  #'deserialize-meta-form)
+                   (:tree    #'deserialize-tree-form)
+                   (:|tree|  #'deserialize-tree-form)
+                   (:prim    #'deserialize-prim-form)
+                   (:|prim|  #'deserialize-prim-form))
         do (if fn
                (funcall fn parent (cdr l) ext-classes)
                (unknown-form-error (car l) :debug))))

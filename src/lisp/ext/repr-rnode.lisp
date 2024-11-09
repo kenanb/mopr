@@ -98,6 +98,33 @@
 (defmethod enode-get-ynode-anchor-index ((n root-enode)) 0)
 
 ;;
+;;; GROUP-ENODE API
+;;
+
+(defmethod enode-initialize-extension ((node group-enode) (ext rnode))
+  (let* ((color mopr-def:+command-theme-expr-bg-9+)
+         (nec (make-instance 'mopr-ext/repr-rdata:expr-container-rdata
+                             :id 0
+                             :yparent (enode-get-ynode-anchor (enode-parent node))))
+         (nel (make-instance 'mopr-ext/repr-rdata:expr-label-rdata
+                             :id 1
+                             :yparent (mopr-ext/repr-rdata:rdata-ynode nec)
+                             :text "GROUP"
+                             :bg color))
+         (ncc (make-instance 'mopr-ext/repr-rdata:content-container-rdata
+                             :id 2
+                             :yparent (mopr-ext/repr-rdata:rdata-ynode nec))))
+    (setf (rnode-rdatas ext)
+          (list nec nel ncc))))
+
+(defmethod enode-get-ynode-anchor-index ((n group-enode)) 2)
+
+;; TODO
+(defmethod enode-get-rdata-options ((node group-enode) id-sub)
+  (case id-sub
+    (1 (list "group expr-label-rdata"))))
+
+;;
 ;;; VAR-ENODE API
 ;;
 

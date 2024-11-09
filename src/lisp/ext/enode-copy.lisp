@@ -33,6 +33,10 @@ of a new instance that is a shallow copy."))
   (declare (ignore n))
   nil)
 
+(defmethod enode-copy-params ((n group-enode))
+  (declare (ignore n))
+  nil)
+
 (defmethod enode-copy-params ((n var-enode))
   (list :name-param (var-enode-name-param n)
         :aux-form-param (var-enode-aux-form-param n)

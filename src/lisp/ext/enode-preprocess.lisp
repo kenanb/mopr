@@ -118,50 +118,42 @@
                                    :step (or step 1)))))
   nil)
 
-(defgeneric convert-prop-info (ob body-form)
-
-  (:documentation "...")
-
-  (:method ((ob mopr-info:attr-info) body-form)
-    (with-accessors ((name mopr-info:prop-info-base-name)
-                     (meta mopr-info:prop-info-meta)
-                     (array-p mopr-info:attr-info-array-p)
-                     (t-key mopr-info:attr-info-type-key)) ob
-      (make-instance 'prim-attr-enode
-                     :name-param name
-                     :meta-form-param meta
-                     :category-param (if array-p :array :datum)
-                     :type-param t-key
-                     :body-form-param body-form)))
-
-  (:method ((ob mopr-info:rel-info) body-form)
-    (with-accessors ((name mopr-info:prop-info-base-name)
-                     (meta mopr-info:prop-info-meta)) ob
-      (make-instance 'prim-rel-enode
-                     :name-param name
-                     :meta-form-param meta
-                     :body-form-param body-form))))
-
 (defgeneric convert-sgt (ob)
-
-  (:documentation "...")
 
   (:method ((ob t))
     nil)
 
   (:method ((ob mopr-sgt:tree-entry))
-    (list (make-instance 'tree-enode :body-form-param (mopr-sgt:tree-entry-data ob))))
+    (make-instance 'tree-enode :body-form-param (mopr-sgt:tree-entry-data ob)))
 
-  (:method ((ob mopr-sgt:prop-entry) &aux (info (mopr-sgt:prop-entry-info ob)))
-    (list (loop with x = (convert-prop-info info (mopr-sgt:prop-entry-data ob))
-                for ns in (mopr-info:prop-info-namespace info)
-                do (let ((ns-node (make-instance 'prim-ns-enode :name-param ns)))
-                     (vector-push-extend x (enode-children ns-node))
-                     (setf x ns-node))
-                finally (return x))))
+  (:method ((ob mopr-sgt:prop-entry)
+            &aux
+              (info (mopr-sgt:prop-entry-info ob))
+              (args (list :name-param (mopr-info:prop-info-base-name info)
+                          :meta-form-param (mopr-info:prop-info-meta info)
+                          :body-form-param (mopr-sgt:prop-entry-data ob)))
+              (prop (etypecase info
+                      (mopr-info:attr-info
+                       (apply #'make-instance 'prim-attr-enode
+                              :category-param (if (mopr-info:attr-info-array-p info)
+                                                  :array
+                                                  :datum)
+                              :type-param (mopr-info:attr-info-type-key info)
+                              args))
+                      (mopr-info:rel-info
+                       (apply #'make-instance 'prim-rel-enode args)))))
+    (loop with x = prop
+          for ns in (mopr-info:prop-info-namespace info)
+          do (let ((ns-node (make-instance 'prim-ns-enode :name-param ns)))
+               (vector-push-extend x (enode-children ns-node))
+               (setf x ns-node))
+          finally (return x)))
 
-  (:method ((ob mopr-sgt:data-group))
-    (loop for p in (mopr-sgt:data-group-data ob) appending (convert-sgt p))))
+  (:method ((ob mopr-sgt:data-group)
+            &aux (group-node (make-instance 'group-enode)))
+    (loop for p in (mopr-sgt:data-group-data ob)
+          do (vector-push-extend (convert-sgt p) (enode-children group-node)))
+    group-node))
 
 ;; TODO: Reapply expansion to results.
 (defun preprocess-call-generic (node)
@@ -173,7 +165,8 @@
                          (gethash aux-form *each-table*))))
       (loop for args in args-list
             nconc (loop for s in (mopr-plug:process-call-stack args body-form *var-table*)
-                        nconc (convert-sgt s))))))
+                        for x = (convert-sgt s)
+                        when x collect x)))))
 
 (defmethod preprocess ((node prim-call-enode))
   (preprocess-call-generic node))
