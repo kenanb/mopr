@@ -9,7 +9,6 @@
   (:import-from :mopr-ext/repr-shared
                 #:multiple-set-c-ref
                 #:with-layout-settings)
-  (:import-from :mopr-ext/enode)
   (:import-from :mopr-ext/repr-rdata)
   (:import-from :mopr-ext/repr-rnode)
   (:use :cl)
@@ -31,7 +30,7 @@
 ;;
 
 (defun enode-rdatas (node)
-  (let ((rn (mopr-ext/enode:enode-find-extension node 'mopr-ext/repr-rnode:rnode)))
+  (let ((rn (mopr-sgt:enode-find-extension node 'mopr-ext/repr-rnode:rnode)))
     (mopr-ext/repr-rnode:rnode-rdatas rn)))
 
 ;;
@@ -39,7 +38,7 @@
 ;;
 
 (defun initialize-and-bind-repr-tree (rn)
-  (with-layout-settings (mopr-ext/enode:enode-initialize-extensions-recursive rn))
+  (with-layout-settings (mopr-sgt:enode-initialize-extensions-recursive rn))
   (setf *root-enode* rn))
 
 (defun deinitialize-rnodes ()
@@ -85,7 +84,7 @@
 
 (defun %populate-commands-recursive (n wcmds
                                      &aux
-                                       (rn (mopr-ext/enode:enode-find-extension
+                                       (rn (mopr-sgt:enode-find-extension
                                             n
                                             'mopr-ext/repr-rnode:rnode)))
   (loop for rd in (mopr-ext/repr-rnode:rnode-rdatas rn)
@@ -93,13 +92,13 @@
           do (let ((cmd (cvec-get-incrementing-counter wcmds)))
                (mopr-ext/repr-rnode:populate-command-from-rnode rn cmd)
                (mopr-ext/repr-rdata:populate-command-from-rdata rd cmd)))
-  (loop for c across (mopr-ext/enode:enode-children n)
+  (loop for c across (mopr-sgt:enode-children n)
         do (%populate-commands-recursive c wcmds)))
 
 (defun %count-visible-rdata-recursive (n)
   (+ (count-if-not (lambda (x) (typep x 'mopr-ext/repr-rdata:hidden-rdata))
                    (enode-rdatas n))
-     (loop for c across (mopr-ext/enode:enode-children n)
+     (loop for c across (mopr-sgt:enode-children n)
            summing (%count-visible-rdata-recursive c))))
 
 (defun populate-command-queue (cmd-queue)

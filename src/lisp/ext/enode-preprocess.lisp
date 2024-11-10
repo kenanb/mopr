@@ -6,7 +6,7 @@
 (defpackage :mopr-ext/enode-preprocess
   (:import-from :mopr)
   (:import-from :mopr-ext/enode-copy)
-  (:use :mopr-ext/enode)
+  (:use :mopr-sgt)
   (:use :cl)
   (:export
 
@@ -122,6 +122,9 @@
 
   (:method ((ob t))
     nil)
+
+  (:method ((ob enode))
+    ob)
 
   (:method ((ob mopr-sgt:tree-entry))
     (make-instance 'tree-enode :body-form-param (mopr-sgt:tree-entry-data ob)))

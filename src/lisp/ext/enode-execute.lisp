@@ -6,7 +6,7 @@
 (defpackage :mopr-ext/enode-execute
   (:import-from :mopr)
   (:import-from :mopr-ext/enode-preprocess)
-  (:use :mopr-ext/enode)
+  (:use :mopr-sgt)
   (:use :cl)
   (:export
 

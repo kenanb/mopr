@@ -100,8 +100,10 @@ mainly in Lisp. UNTESTED. DO NOT USE!"
     :depends-on ("mopr" "info" "plug")
     :components
     ((:file "package")
+     (:file "enode"
+      :depends-on ("package"))
      (:file "sgt"
-      :depends-on ("package"))))))
+      :depends-on ("package" "enode"))))))
 
 (register-system-packages "mopr"
                           '(:mopr-ffi

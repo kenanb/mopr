@@ -8,7 +8,7 @@
   (:import-from :mopr-ext/repr-shared
                 #:multiple-set-c-ref)
   (:import-from :mopr-ext/repr-rdata)
-  (:use :mopr-ext/enode)
+  (:use :mopr-sgt)
   (:use :cl)
   (:export
 

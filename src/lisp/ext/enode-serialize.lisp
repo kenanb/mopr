@@ -5,7 +5,7 @@
 
 (defpackage :mopr-ext/enode-serialize
   (:import-from :mopr)
-  (:use :mopr-ext/enode)
+  (:use :mopr-sgt)
   (:use :cl)
   (:export
    #:deserialize
