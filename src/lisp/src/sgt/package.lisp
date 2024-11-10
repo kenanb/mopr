@@ -97,16 +97,6 @@
    #:meta-enode
    #:meta-enode-body-form-param
 
-   ;; Proxy Structures and Call Functions
-   #:data-group
-   #:tree-entry
-   #:prop-entry
-   #:make-data-group
-   #:make-group
-   #:make-tree-entry
-   #:make-prop-entry
+   ;; Call Functions
    #:make-prop
-   #:data-group-data
-   #:tree-entry-data
-   #:prop-entry-data
-   #:prop-entry-info))
+   #:make-group))

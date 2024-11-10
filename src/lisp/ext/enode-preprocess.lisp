@@ -118,27 +118,10 @@
                                    :step (or step 1)))))
   nil)
 
-(defgeneric convert-sgt (ob)
-
-  (:method ((ob t))
-    nil)
-
-  (:method ((ob enode))
-    ob)
-
-  (:method ((ob mopr-sgt:tree-entry))
-    (make-instance 'tree-enode :body-form-param (mopr-sgt:tree-entry-data ob)))
-
-  (:method ((ob mopr-sgt:prop-entry))
-    (make-instance 'prim-schema-prop-enode
-                   :info-param (mopr-sgt:prop-entry-info ob)
-                   :body-form-param (mopr-sgt:prop-entry-data ob)))
-
-  (:method ((ob mopr-sgt:data-group)
-            &aux (group-node (make-instance 'group-enode)))
-    (loop for p in (mopr-sgt:data-group-data ob)
-          do (vector-push-extend (convert-sgt p) (enode-children group-node)))
-    group-node))
+(defun process-and-filter-call-stack (args body-form)
+  (remove-if-not
+   (lambda (x) (typep x 'enode))
+   (mopr-plug:process-call-stack args body-form *var-table*)))
 
 ;; TODO: Reapply expansion to results.
 (defun preprocess-call-generic (node)
@@ -149,9 +132,7 @@
                          (list aux-form)
                          (gethash aux-form *each-table*))))
       (loop for args in args-list
-            nconc (loop for s in (mopr-plug:process-call-stack args body-form *var-table*)
-                        for x = (convert-sgt s)
-                        when x collect x)))))
+            nconc (process-and-filter-call-stack args body-form)))))
 
 (defmethod preprocess ((node prim-call-enode))
   (preprocess-call-generic node))

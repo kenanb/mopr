@@ -16,17 +16,17 @@
   '(:test-gen-xform-info
     #S(mopr-plug:callable :fn prim-fn-test-gen-xform-info
                           :i (:tr-array array :rt-array array)
-                          :o (:data-group mopr-sgt:data-group))
+                          :o (:group-enode mopr-sgt:group-enode))
 
     ;; :test-gen-cubes
     ;; #S(mopr-plug:callable :fn data-fn-test-gen-cubes
     ;;                       :i (:r fixnum)
-    ;;                       :o (:data-group mopr-sgt:data-group))
+    ;;                       :o (:group-enode mopr-sgt:group-enode))
 
     :test-tree-gen
     #S(mopr-plug:callable :fn data-fn-test-tree-gen
                           :i ()
-                          :o (:tree-entry mopr-sgt:tree-entry))))
+                          :o (:tree-enode mopr-sgt:tree-enode))))
 
 (defvar *attr-info-xform-op-order*
   (make-instance 'mopr-info:attr-info
@@ -50,20 +50,18 @@
 ;; Test functions.
 
 (defun prim-fn-test-gen-xform-info (tr-array rt-array)
-  (let ((data-group (mopr-sgt:make-data-group)))
-    (setf (mopr-sgt:data-group-data data-group)
-          (list
-           (mopr-sgt:make-prop-entry
-            :info *attr-info-xform-op-order*
-            :data (list #1A (("xformOp" "translate")
-                             ("xformOp" "rotateXYZ"))))
-           (mopr-sgt:make-prop-entry
-            :info *attr-info-translate*
-            :data (list tr-array))
-           (mopr-sgt:make-prop-entry
-            :info *attr-info-rotate-x-y-z*
-            :data (list rt-array))))
-    data-group))
+  (mopr-sgt:make-group
+   (list
+    (make-instance 'mopr-sgt:prim-schema-prop-enode
+                   :info-param *attr-info-xform-op-order*
+                   :body-form-param (list #1A (("xformOp" "translate")
+                                               ("xformOp" "rotateXYZ"))))
+    (make-instance 'mopr-sgt:prim-schema-prop-enode
+                   :info-param *attr-info-translate*
+                   :body-form-param (list tr-array))
+    (make-instance 'mopr-sgt:prim-schema-prop-enode
+                   :info-param *attr-info-rotate-x-y-z*
+                   :body-form-param (list rt-array)))))
 
 ;; TODO : Reimplement support for generating prim entries
 ;;        and recursive expansion.
@@ -91,10 +89,12 @@
 ;;                                   prims))))))
 
 (defun data-fn-test-tree-gen ()
-  (mopr-sgt:make-tree-entry
-   :data '(("a" :spec :class)
-           ("b"
-            ("d"
-             ("e" :spec :over :alias :x)
-             ("f" :alias :y)))
-           ("c"))))
+  (make-instance
+   'mopr-sgt:tree-enode
+   :body-form-param
+   '(("a" :spec :class)
+     ("b"
+      ("d"
+       ("e" :spec :over :alias :x)
+       ("f" :alias :y)))
+     ("c"))))

@@ -7,34 +7,26 @@
   "Type definition for timecode, including the Default time."
   '(or null float integer))
 
-(defstruct (data-group
-            (:constructor make-data-group)
-            (:constructor make-group (data)))
-  (data nil))
+(defun make-prop (datum time info-args)
+  (make-instance 'prim-schema-prop-enode
+                 :info-param (apply #'mopr-info:get-prop-info-for-schema info-args)
+                 :body-form-param (list (if time (cons time datum) datum))))
 
-(defstruct tree-entry
-  (data nil))
-
-(defstruct (prop-entry
-            (:constructor make-prop-entry)
-            (:constructor make-prop (datum time info-args
-                                     &aux
-                                       (info (apply #'mopr-info:get-prop-info-for-schema
-                                                    info-args))
-                                       (data (list (if time (cons time datum) datum))))))
-  (info (error "...") :type mopr-info:prop-info :read-only t)
-  (data nil))
+(defun make-group (data
+                   &aux (group-node (make-instance 'group-enode)))
+  (loop for p in data do (vector-push-extend p (enode-children group-node)))
+  group-node)
 
 (defconstant +sgt-op-callables+
   '(:make-prop
     #S(mopr-plug:callable :fn make-prop
                           :i (:datum t :time any-timecode :info-args list)
-                          :o (:prop prop-entry))
+                          :o (:prop prim-schema-prop-enode))
 
     :make-group
     #S(mopr-plug:callable :fn make-group
                           :i (:prop-list list)
-                          :o (:group data-group))))
+                          :o (:group group-enode))))
 
 (defconstant +configuration+
   `((:callables ,+sgt-op-callables+)))
