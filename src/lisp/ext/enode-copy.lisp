@@ -58,6 +58,10 @@ of a new instance that is a shallow copy."))
   (list :aux-form-param (call-enode-aux-form-param n)
         :body-form-param (call-enode-body-form-param n)))
 
+(defmethod enode-copy-params ((n prim-schema-prop-enode))
+  (list :info-param (prim-schema-prop-enode-info-param n)
+        :body-form-param (prim-schema-prop-enode-body-form-param n)))
+
 (defmethod enode-copy-params ((n prim-type-enode))
   (list :name-param (prim-type-enode-name-param n)))
 

@@ -116,54 +116,66 @@
                (funcall fn val value-h)
                (mopr:attribute-set-value attribute-h value-h timecode-h)))))
 
+(defun execute-attr (info body-form prim-h
+                     &aux
+                       (attr-type (mopr-info:get-value-type-for-attr-info info)))
+
+  ;; TODO: We don't handle metadata yet.
+  ;; (mopr-info:print-prop-info info)
+
+  (if attr-type
+      (mopr:with-handles* ((attribute-h :attribute)
+                           (prop-name-h :token)
+                           (value-h :value))
+        (mopr:token-ctor-cstr prop-name-h (mopr-info:prop-info-full-name info))
+        (mopr:prim-create-attribute attribute-h
+                                    prim-h
+                                    prop-name-h
+                                    (mopr-info:value-type-name
+                                     attr-type
+                                     (mopr-info:attr-info-array-p info))
+                                    0 ; bool custom
+                                    mopr:+mopr-property-variability-varying+)
+        (alexandria:if-let
+            ((transfer-for-type-fn
+              (mopr-val:get-transfer-for-type-function
+               (mopr-info:value-type-real-type attr-type)
+               (mopr-info:attr-info-array-p info))))
+          (set-attr-for-all-timecodes transfer-for-type-fn attribute-h value-h body-form)
+          (format t "SKIPPED UNSUPPORTED ATTRIBUTE: ~A~%"
+                  (mopr-info:prop-info-full-name info))))
+      (format t "SKIPPED UNRECOGNIZED ATTRIBUTE: ~A~%"
+              (mopr-info:prop-info-full-name info))))
+
+;; TODO: This node ignores the prim-ns-enode ancestors as it gets namespace information
+;;       from schema. Its construction within a prim-ns-enode should probably be disallowed.
+(defmethod execute ((node prim-schema-prop-enode) prim-h
+                    &aux (info (prim-schema-prop-enode-info-param node)))
+  (etypecase info
+    (mopr-info:attr-info
+     (execute-attr info (prim-schema-prop-enode-body-form-param node) prim-h))
+    (mopr-info:rel-info
+     ;; TODO: We don't handle relationships yet.
+     (call-next-method))))
+
 (defun collect-namespace (node &optional ns-list
                           &aux (pn (enode-parent node)))
   (etypecase pn
     (prim-ns-enode (collect-namespace pn (cons (prim-ns-enode-name-param pn) ns-list)))
     (t ns-list)))
 
-(defmethod execute ((node prim-attr-enode) prim-h
-                    &aux (ns-list (collect-namespace node)))
-  (with-accessors ((name prim-attr-enode-name-param)
-                   (meta-form prim-attr-enode-meta-form-param)
-                   (category prim-attr-enode-category-param)
-                   (attr-type-key prim-attr-enode-type-param)
-                   (body-form prim-attr-enode-body-form-param)) node
-    (let* ((info (make-instance 'mopr-info:attr-info
-                                :array-p (not (null (member category '(:array :|array|))))
-                                :type-key attr-type-key
-                                :namespace (reverse ns-list) ; TODO: Revise ATTR-INFO.
-                                :base-name name
-                                :meta meta-form))
-           (attr-type (mopr-info:get-value-type-for-attr-info info)))
-
-      ;; TODO: We don't handle metadata yet.
-      ;; (mopr-info:print-prop-info info)
-
-
-      (if attr-type
-          (mopr:with-handles* ((attribute-h :attribute)
-                               (prop-name-h :token)
-                               (value-h :value))
-            (mopr:token-ctor-cstr prop-name-h (mopr-info:prop-info-full-name info))
-            (mopr:prim-create-attribute attribute-h
-                                        prim-h
-                                        prop-name-h
-                                        (mopr-info:value-type-name
-                                         attr-type
-                                         (mopr-info:attr-info-array-p info))
-                                        0 ; bool custom
-                                        mopr:+mopr-property-variability-varying+)
-            (alexandria:if-let
-                ((transfer-for-type-fn
-                  (mopr-val:get-transfer-for-type-function
-                   (mopr-info:value-type-real-type attr-type)
-                   (mopr-info:attr-info-array-p info))))
-              (set-attr-for-all-timecodes transfer-for-type-fn attribute-h value-h body-form)
-              (format t "SKIPPED UNSUPPORTED ATTRIBUTE: ~A~%"
-                      (mopr-info:prop-info-full-name info))))
-          (format t "SKIPPED UNRECOGNIZED ATTRIBUTE: ~A~%"
-                  (mopr-info:prop-info-full-name info))))))
+(defmethod execute ((node prim-attr-enode) prim-h)
+  (let* ((ns-list (collect-namespace node))
+         (array-attr-p (not (null (member (prim-attr-enode-category-param node)
+                                          '(:array :|array|)))))
+         (info (make-instance
+                'mopr-info:attr-info
+                :array-p array-attr-p
+                :type-key (prim-attr-enode-type-param node)
+                :namespace (reverse ns-list) ; TODO: Revise ATTR-INFO.
+                :base-name (prim-attr-enode-name-param node)
+                :meta (prim-attr-enode-meta-form-param node))))
+    (execute-attr info (prim-attr-enode-body-form-param node) prim-h)))
 
 (defmethod execute ((node prim-rel-enode) prim-h)
   ;; TODO: We don't handle relationships yet.

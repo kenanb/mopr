@@ -59,6 +59,11 @@
    ;; PRIM-CALL-ENODE
    #:prim-call-enode
 
+   ;; PRIM-SCHEMA-PROP-ENODE
+   #:prim-schema-prop-enode
+   #:prim-schema-prop-enode-info-param
+   #:prim-schema-prop-enode-body-form-param
+
    ;; PRIM-TYPE-ENODE
    #:prim-type-enode
    #:prim-type-enode-name-param
@@ -231,6 +236,18 @@
 
 (defclass prim-call-enode (call-enode)
   ())
+
+;; TODO : Unserializable and unrepresentable until the implementation is revised
+;;        to only contain the information needed to generate the prop-info instance.
+(defclass prim-schema-prop-enode (execution-enode)
+  ((info-param
+    :type mopr-info:prop-info
+    :initarg :info-param
+    :accessor prim-schema-prop-enode-info-param)
+   (body-form-param
+    :type list
+    :initarg :body-form-param
+    :accessor prim-schema-prop-enode-body-form-param)))
 
 (defclass prim-type-enode (execution-enode)
   ((name-param

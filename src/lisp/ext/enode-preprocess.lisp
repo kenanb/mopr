@@ -126,28 +126,10 @@
   (:method ((ob mopr-sgt:tree-entry))
     (make-instance 'tree-enode :body-form-param (mopr-sgt:tree-entry-data ob)))
 
-  (:method ((ob mopr-sgt:prop-entry)
-            &aux
-              (info (mopr-sgt:prop-entry-info ob))
-              (args (list :name-param (mopr-info:prop-info-base-name info)
-                          :meta-form-param (mopr-info:prop-info-meta info)
-                          :body-form-param (mopr-sgt:prop-entry-data ob)))
-              (prop (etypecase info
-                      (mopr-info:attr-info
-                       (apply #'make-instance 'prim-attr-enode
-                              :category-param (if (mopr-info:attr-info-array-p info)
-                                                  :array
-                                                  :datum)
-                              :type-param (mopr-info:attr-info-type-key info)
-                              args))
-                      (mopr-info:rel-info
-                       (apply #'make-instance 'prim-rel-enode args)))))
-    (loop with x = prop
-          for ns in (mopr-info:prop-info-namespace info)
-          do (let ((ns-node (make-instance 'prim-ns-enode :name-param ns)))
-               (vector-push-extend x (enode-children ns-node))
-               (setf x ns-node))
-          finally (return x)))
+  (:method ((ob mopr-sgt:prop-entry))
+    (make-instance 'prim-schema-prop-enode
+                   :info-param (mopr-sgt:prop-entry-info ob)
+                   :body-form-param (mopr-sgt:prop-entry-data ob)))
 
   (:method ((ob mopr-sgt:data-group)
             &aux (group-node (make-instance 'group-enode)))
