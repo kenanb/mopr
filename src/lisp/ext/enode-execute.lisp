@@ -86,10 +86,8 @@
 (defmethod execute ((node container-enode) target-h)
   (call-next-method))
 
-;; TODO : In the final implementation, no "directive-enodes" should be left in
-;;        the tree by the time we execute it.  However, we currently don't
-;;        reapply recursive expansion to expansion results.  So the test named
-;;        "09_call", which tests this case, is currently disabled.
+;; NOTE : If recursive re-expansion works correctly, no "directive-enodes"
+;;        should be left in the tree by the time we execute it.
 (defmethod execute ((node directive-enode) target-h)
   (declare (ignore node target-h))
   (error "Encountered directive-enode that should have been preprocessed."))

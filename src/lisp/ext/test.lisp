@@ -18,10 +18,10 @@
                           :i (:tr-array array :rt-array array)
                           :o (:group-enode mopr-sgt:group-enode))
 
-    ;; :test-gen-cubes
-    ;; #S(mopr-plug:callable :fn data-fn-test-gen-cubes
-    ;;                       :i (:r fixnum)
-    ;;                       :o (:group-enode mopr-sgt:group-enode))
+    :test-gen-cubes
+    #S(mopr-plug:callable :fn data-fn-test-gen-cubes
+                          :i (:r fixnum)
+                          :o (:group-enode mopr-sgt:group-enode))
 
     :test-tree-gen
     #S(mopr-plug:callable :fn data-fn-test-tree-gen
@@ -63,30 +63,39 @@
                    :info-param *attr-info-rotate-x-y-z*
                    :body-form-param (list rt-array)))))
 
-;; TODO : Reimplement support for generating prim entries
-;;        and recursive expansion.
+(defun data-fn-test-gen-cubes (r)
+  (flet ((define-cube (x r prim-name)
+           (let* ((tr (list (mod x r) (floor (/ x r)) 0))
+                  (rt (list 0 x x))
+                  (tr-a (make-array 3 :initial-contents tr))
+                  (rt-a (make-array 3 :initial-contents rt))
+                  (prim-node
+                    (make-instance 'mopr-sgt:prim-enode :path-form-param (list prim-name)))
+                  (prim-type-node
+                    (make-instance 'mopr-sgt:prim-type-enode :name-param :Cube))
+                  (size-attr-node
+                    (make-instance 'mopr-sgt:prim-attr-enode
+                                   :name-param "size"
+                                   :category-param :datum
+                                   :type-param :double
+                                   :body-form-param (list #0A .5)))
+                  (call-node
+                    (make-instance 'mopr-sgt:prim-call-enode
+                                   :aux-form-param nil
+                                   :body-form-param (list tr-a rt-a :test-gen-xform-info)))
+                  (prim-node-children (list prim-type-node size-attr-node call-node)))
+             (loop for p in prim-node-children
+                   do (vector-push-extend p (mopr-sgt:enode-children prim-node)))
+             prim-node)))
 
-;; (defun data-fn-test-gen-cubes (r)
-;;   (flet ((define-cube (x r prim-name)
-;;            (let* ((tr (list (mod x r) (floor (/ x r)) 0))
-;;                   (rt (list 0 x x))
-;;                   (tr-a (make-array 3 :initial-contents tr))
-;;                   (rt-a (make-array 3 :initial-contents rt)))
-;;              (mopr-sgt:make-prim-entry
-;;               :data `((,prim-name)
-;;                       (:type :Cube)
-;;                       (:attr "size" :datum :double #0A .5)
-;;                       (:call () ,tr-a ,rt-a :test-gen-xform-info))))))
-
-;;     (loop for x below (* r r)
-;;           for prim-name = (format nil "Prim_~4,'0d" x)
-;;           collecting (list prim-name :spec :def) into tree
-;;           collecting (define-cube x r prim-name) into prims
-;;           finally (return (mopr-sgt:make-data-group
-;;                            :data (cons
-;;                                   (mopr-sgt:make-tree-entry
-;;                                    :data tree)
-;;                                   prims))))))
+    (loop for x below (* r r)
+          for prim-name = (format nil "Prim_~4,'0d" x)
+          collecting (list prim-name :spec :def) into tree
+          collecting (define-cube x r prim-name) into prims
+          finally (return (mopr-sgt:make-group
+                           (cons (make-instance 'mopr-sgt:tree-enode
+                                                :body-form-param tree)
+                                 prims))))))
 
 (defun data-fn-test-tree-gen ()
   (make-instance

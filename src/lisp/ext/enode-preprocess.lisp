@@ -118,12 +118,20 @@
                                    :step (or step 1)))))
   nil)
 
-(defun process-and-filter-call-stack (args body-form)
-  (remove-if-not
-   (lambda (x) (typep x 'enode))
-   (mopr-plug:process-call-stack args body-form *var-table*)))
+(defun has-directives-recursive (node)
+  (if (typep node 'directive-enode)
+      t
+      (some #'has-directives-recursive (enode-children node))))
 
-;; TODO: Reapply expansion to results.
+(defun process-and-filter-call-stack (args body-form)
+  (let ((initial-result
+          (remove-if-not
+           (lambda (x) (typep x 'enode))
+           (mopr-plug:process-call-stack args body-form *var-table*))))
+    (if (some #'has-directives-recursive initial-result)
+        (loop for n in initial-result nconc (preprocess-recursive n))
+        initial-result)))
+
 (defun preprocess-call-generic (node)
   (validate-call-support node :debug)
   (with-accessors ((aux-form call-enode-aux-form-param)
