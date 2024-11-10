@@ -102,7 +102,15 @@ mainly in Lisp. UNTESTED. DO NOT USE!"
     ((:file "package")
      (:file "enode"
       :depends-on ("package"))
-     (:file "sgt"
+     (:file "enode-copy"
+      :depends-on ("package" "enode"))
+     (:file "enode-preprocess"
+      :depends-on ("package" "enode" "enode-copy"))
+     (:file "enode-execute"
+      :depends-on ("package" "enode" "enode-preprocess"))
+     (:file "enode-serialize"
+      :depends-on ("package" "enode"))
+     (:file "callables"
       :depends-on ("package" "enode"))))))
 
 (register-system-packages "mopr"

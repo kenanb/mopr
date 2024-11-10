@@ -5,8 +5,7 @@
 
 (defpackage :mopr-ext/util
   (:import-from :mopr)
-  (:import-from :mopr-ext/enode-execute)
-  (:import-from :mopr-ext/enode-serialize)
+  (:import-from :mopr-sgt)
   (:use #:cl
         ;; TODO: UI crashes when this is just an "import-from", instead of "use".
         #:mopr-ext/repr)
@@ -37,8 +36,8 @@ registered to call tables can be dangerous, if enabled."
             (*print-readably* nil)
             (*read-eval* nil))
         (let* ((expr (read in nil))
-               (rn (mopr-ext/enode-serialize:deserialize expr nil)))
-          (mopr-ext/enode-execute:populate-layer layer-h rn call-enabled))))))
+               (rn (mopr-sgt:deserialize expr nil)))
+          (mopr-sgt:populate-layer layer-h rn call-enabled))))))
 
 (defun populate-from-lisp-file-with-repr (layer-h cmd-queue filepath call-enabled
                                           &aux
@@ -56,8 +55,8 @@ registered to call tables can be dangerous, if enabled."
             (*read-eval* nil))
 
         (let* ((expr (read in nil))
-               (rn (mopr-ext/enode-serialize:deserialize expr '(mopr-ext/repr-rnode:rnode))))
-          (mopr-ext/enode-execute:populate-layer layer-h rn call-enabled)
+               (rn (mopr-sgt:deserialize expr '(mopr-ext/repr-rnode:rnode))))
+          (mopr-sgt:populate-layer layer-h rn call-enabled)
 
           ;; Representation.
           ;;

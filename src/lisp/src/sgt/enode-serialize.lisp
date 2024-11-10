@@ -1,17 +1,7 @@
 ;;;; -*- Mode: LISP; Syntax: COMMON-LISP; Package: CL-USER -*-
 ;;
 
-(in-package :cl-user)
-
-(defpackage :mopr-ext/enode-serialize
-  (:import-from :mopr)
-  (:use :mopr-sgt)
-  (:use :cl)
-  (:export
-   #:deserialize
-   #:enode-serialize))
-
-(in-package :mopr-ext/enode-serialize)
+(in-package #:mopr-sgt)
 
 ;;
 ;;; Mapping between ENODE and USDS Forms

@@ -1,20 +1,7 @@
 ;;;; -*- Mode: LISP; Syntax: COMMON-LISP; Package: CL-USER -*-
 ;;
 
-(in-package :cl-user)
-
-(defpackage :mopr-ext/enode-execute
-  (:import-from :mopr)
-  (:import-from :mopr-ext/enode-preprocess)
-  (:use :mopr-sgt)
-  (:use :cl)
-  (:export
-
-   #:populate-layer
-
-   ))
-
-(in-package :mopr-ext/enode-execute)
+(in-package #:mopr-sgt)
 
 ;;
 ;;; MAIN API
@@ -44,8 +31,8 @@
       (mopr-info:with-registry (:supported-cases '(:upcase))
         ;; (debug-print rn)
         (let* ((preprocess-all-fn (if call-enabled
-                                      #'mopr-ext/enode-preprocess:preprocess-all-call-enabled
-                                      #'mopr-ext/enode-preprocess:preprocess-all))
+                                      #'preprocess-all-call-enabled
+                                      #'preprocess-all))
                (rn-preprocessed (funcall preprocess-all-fn rn)))
           ;; (debug-print rn-preprocessed)
           (enode-record-parent-recursive rn-preprocessed)

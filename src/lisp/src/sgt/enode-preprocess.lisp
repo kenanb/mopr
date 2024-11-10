@@ -1,21 +1,7 @@
 ;;;; -*- Mode: LISP; Syntax: COMMON-LISP; Package: CL-USER -*-
 ;;
 
-(in-package :cl-user)
-
-(defpackage :mopr-ext/enode-preprocess
-  (:import-from :mopr)
-  (:import-from :mopr-ext/enode-copy)
-  (:use :mopr-sgt)
-  (:use :cl)
-  (:export
-
-   #:preprocess-all
-   #:preprocess-all-call-enabled
-
-   ))
-
-(in-package :mopr-ext/enode-preprocess)
+(in-package #:mopr-sgt)
 
 ;;
 ;;; MAIN API
@@ -81,7 +67,7 @@
       (error "Cannot handle node: ~S~%" node))))
 
 (defmethod preprocess ((node enode))
-  (list (mopr-ext/enode-copy:copy-enode-instance node)))
+  (list (copy-enode-instance node)))
 
 (defmethod preprocess ((node var-enode))
   (validate-call-support node :debug)

@@ -1,16 +1,7 @@
 ;;;; -*- Mode: LISP; Syntax: COMMON-LISP; Package: CL-USER -*-
 ;;
 
-(in-package :cl-user)
-
-(defpackage :mopr-ext/enode-copy
-  (:import-from :mopr)
-  (:use :mopr-sgt)
-  (:use :cl)
-  (:export
-   #:copy-enode-instance))
-
-(in-package :mopr-ext/enode-copy)
+(in-package #:mopr-sgt)
 
 ;;
 ;;; MAIN API

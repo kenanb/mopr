@@ -97,6 +97,22 @@
    #:meta-enode
    #:meta-enode-body-form-param
 
-   ;; Call Functions
+   ;; CALLABLES
    #:make-prop
-   #:make-group))
+   #:make-group
+
+   ;; ;; ENODE-COPY
+   ;; #:copy-enode-instance
+
+   ;; ;; ENODE-PREPROCESS
+   ;; #:preprocess-all
+   ;; #:preprocess-all-call-enabled
+
+   ;; ENODE-EXECUTE
+   #:populate-layer
+
+   ;; ENODE-SERIALIZE
+   #:deserialize
+   #:enode-serialize
+
+   ))
