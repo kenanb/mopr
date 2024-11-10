@@ -3,7 +3,7 @@
 
 #include "appState.h"
 
-#include "core/command.h"
+#include "repr/command.h"
 
 #include "pxr/base/gf/vec3d.h"
 

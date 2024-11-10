@@ -1,7 +1,7 @@
 #ifndef MOPR_MAIN_EDITOR_H
 #define MOPR_MAIN_EDITOR_H
 
-#include "core/command.h"
+#include "repr/command.h"
 
 #include "imgui.h"
 

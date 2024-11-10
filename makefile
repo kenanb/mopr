@@ -92,7 +92,7 @@ MOPR_LIB_DIR ::= $(MOPR_OUT_DIR)/lib
 
 MOPR_CORE_CF ::= $(COMMON_CFLAGS) $(USD_CFLAGS) -fPIC
 
-MOPR_CORE_C_OBJ ::= src/core/._test.c.o src/core/.command.c.o
+MOPR_CORE_C_OBJ ::= src/core/._test.c.o
 
 MOPR_CORE_C_DEP ::= $(MOPR_CORE_C_OBJ:.o=.d)
 
@@ -114,6 +114,35 @@ $(mopr_core): $(MOPR_CORE_C_OBJ)
 # It is not tied to the wider task dependency graph.
 .PHONY: core
 core: $(mopr_core)
+
+#
+## Target: mopr_repr
+#
+
+MOPR_REPR_CF ::= $(COMMON_CFLAGS) $(USD_CFLAGS) -fPIC
+
+MOPR_REPR_C_OBJ ::= src/repr/.command.c.o
+
+MOPR_REPR_C_DEP ::= $(MOPR_REPR_C_OBJ:.o=.d)
+
+$(MOPR_REPR_C_DEP): CFLAGS = $(MOPR_REPR_CF) $(CSTD)
+include $(MOPR_REPR_C_DEP)
+
+mopr_repr ::= $(MOPR_LIB_DIR)/libmopr_repr.so
+
+$(mopr_repr): CFLAGS   ::= $(MOPR_REPR_CF) $(CSTD)
+$(mopr_repr): LDFLAGS  ::= $(COMMON_LFLAGS)
+$(mopr_repr): LDLIBS   ::=
+
+$(mopr_repr): $(MOPR_REPR_C_OBJ)
+	$(call ECHO_RULE)
+	@mkdir -p $(@D)
+	$(CC) -shared -o $@ $(MOPR_REPR_C_OBJ) $(LDFLAGS) $(LDLIBS)
+
+# This is currently only for native testing of lisp module.
+# It is not tied to the wider task dependency graph.
+.PHONY: repr
+repr: $(mopr_repr)
 
 #
 ## Target: wrap_std
@@ -214,7 +243,7 @@ $(MOPR_LISP_DEP): CFLAGS = $(MOPR_LISP_CF) $(CSTD) -I$(MOPR_YOGA_INC_DIR)
 include $(MOPR_LISP_DEP)
 
 # $(wrap_usd) is dynamically loaded via CFFI. So no linker declaration.
-$(mopr_lisp): $(mopr_core) $(wrap_usd) $(MOPR_LISP_DEP)
+$(mopr_lisp): $(mopr_core) $(mopr_repr) $(wrap_usd) $(MOPR_LISP_DEP)
 	$(call ECHO_RULE)
 	@mkdir -p $(@D)
 	ecl -norc --shell ./src/make/make.lisp
@@ -335,7 +364,7 @@ $(mopr_edit): CXXFLAGS += \
 	-Isrc/edit/ext/imgui/misc/cpp
 $(mopr_edit): LDFLAGS  ::= $(COMMON_LFLAGS) $(USD_LFLAGS) -L$(MOPR_LIB_DIR)
 $(mopr_edit): LDLIBS   ::= `pkg-config --libs $(MOPR_EDIT_LIBS)` \
-	-lmopr_core -lyoga_core
+	-lmopr_core -lmopr_repr -lyoga_core
 
 # boost-python is required by usdGeom dependency.
 $(mopr_edit): LDLIBS += -lboost_regex -l$(BOOST_PYTHON_LIB)
@@ -352,7 +381,7 @@ endif
 
 $(mopr_edit): LDECLOPT ::= $(BOOT_LISP_LDECLOPT)
 
-$(mopr_edit): $(MOPR_EDIT_CPP_OBJ) $(mopr_core) $(yoga_core) $(boot_lisp) $(wrap_usd)
+$(mopr_edit): $(MOPR_EDIT_CPP_OBJ) $(mopr_core) $(mopr_repr) $(yoga_core) $(boot_lisp) $(wrap_usd)
 	$(call ECHO_RULE)
 	@mkdir -p $(@D)
 	@cp -r src/edit/res $(MOPR_OUT_DIR)

@@ -12,7 +12,7 @@
 #include "overlayProgram.h"
 #include "scene.h"
 
-#include "core/command.h"
+#include "repr/command.h"
 
 #include "imgui.h"
 #include "imgui_impl_opengl3.h"

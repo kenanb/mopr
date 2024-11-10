@@ -1,5 +1,5 @@
-#ifndef MOPR_CORE_COMMAND_H
-#define MOPR_CORE_COMMAND_H
+#ifndef MOPR_REPR_COMMAND_H
+#define MOPR_REPR_COMMAND_H
 
 // Generic includes.
 #include "base/api.h"
@@ -120,4 +120,4 @@ extern "C"
 }
 #endif
 
-#endif   // MOPR_CORE_COMMAND_H
+#endif   // MOPR_REPR_COMMAND_H

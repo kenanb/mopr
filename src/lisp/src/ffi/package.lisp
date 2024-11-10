@@ -5,7 +5,8 @@
 (defpackage #:mopr-ffi
   (:use)
   (:export #:init-core
-           #:init-wrap))
+           #:init-wrap
+           #:init-repr))
 
 (defpackage #:mopr-def
   (:use))
