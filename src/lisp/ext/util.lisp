@@ -64,7 +64,7 @@ registered to call tables can be dangerous, if enabled."
           (mopr-ext/repr:initialize-and-bind-repr-tree rn)
 
           (mopr-ext/repr:populate-command-queue
-           (autowrap:wrap-pointer cmd-queue 'mopr-def:command-queue))
+           (autowrap:wrap-pointer cmd-queue 'mopr-gui/repr-def:command-queue))
 
           ;; TODO : Defer.
           (mopr-ext/repr:deinitialize-rnodes))))))

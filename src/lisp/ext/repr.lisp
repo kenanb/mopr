@@ -5,12 +5,13 @@
 
 (defpackage :mopr-ext/repr
   (:import-from :mopr)
-  (:import-from :plus-c) ; Depend on system.
+  (:import-from :mopr-gui)
   (:import-from :mopr-ext/repr-shared
                 #:multiple-set-c-ref
                 #:with-layout-settings)
   (:import-from :mopr-ext/repr-rdata)
   (:import-from :mopr-ext/repr-rnode)
+  (:import-from :plus-c) ; Depend on system.
   (:use :cl)
   (:export
    #:initialize-and-bind-repr-tree
@@ -42,8 +43,8 @@
   (setf *root-enode* rn))
 
 (defun deinitialize-rnodes ()
-  (yoga-fun:node-free-recursive (mopr-ext/repr-rdata:rdata-ynode
-                                 (car (enode-rdatas *root-enode*)))))
+  (mopr-gui/yoga-fun:node-free-recursive (mopr-ext/repr-rdata:rdata-ynode
+                                          (car (enode-rdatas *root-enode*)))))
 
 ;;
 ;;; Trivial Vector Type Backed by a C Array
@@ -103,23 +104,23 @@
 
 (defun populate-command-queue (cmd-queue)
   (with-layout-settings
-      (let* ((pixels-w (plus-c:c-ref cmd-queue mopr-def:command-queue :pixels-w))
-             ;; (pixels-h (plus-c:c-ref cmd-queue mopr-def:command-queue :pixels-h))
+      (let* ((pixels-w (plus-c:c-ref cmd-queue mopr-gui/repr-def:command-queue :pixels-w))
+             ;; (pixels-h (plus-c:c-ref cmd-queue mopr-gui/repr-def:command-queue :pixels-h))
              (root-yn (mopr-ext/repr-rdata:rdata-ynode
                        (car (enode-rdatas *root-enode*))))
              (wcmds
                (make-instance 'cvec
-                              :ctype 'mopr-def:combined-command
+                              :ctype 'mopr-gui/repr-def:combined-command
                               :size (%count-visible-rdata-recursive *root-enode*))))
 
-        (yoga-fun:node-calculate-layout root-yn
-                                        pixels-w
-                                        yoga-def:+undefined+ ;; pixels-h
-                                        yoga-def:+direction-ltr+)
+        (mopr-gui/yoga-fun:node-calculate-layout root-yn
+                                                 pixels-w
+                                                 mopr-gui/yoga-def:+undefined+ ;; pixels-h
+                                                 mopr-gui/yoga-def:+direction-ltr+)
 
         (%populate-commands-recursive *root-enode* wcmds)
 
-        (multiple-set-c-ref cmd-queue (mopr-def:command-queue)
+        (multiple-set-c-ref cmd-queue (mopr-gui/repr-def:command-queue)
                             :nof-commands (cvec-size wcmds)
                             :commands (autowrap:ptr (cvec-wrapper wcmds))
                             ;; Adjust height to the actual "used" height.
@@ -130,13 +131,13 @@
 (defun destruct-command-queue (cmd-queue-ptr
                                &aux
                                  (cmd-queue (autowrap:wrap-pointer
-                                             cmd-queue-ptr 'mopr-def:command-queue)))
-  (let* ((cmd-count (plus-c:c-ref cmd-queue mopr-def:command-queue :nof-commands))
-         (commands (plus-c:c-ref cmd-queue mopr-def:command-queue :commands)))
+                                             cmd-queue-ptr 'mopr-gui/repr-def:command-queue)))
+  (let* ((cmd-count (plus-c:c-ref cmd-queue mopr-gui/repr-def:command-queue :nof-commands))
+         (commands (plus-c:c-ref cmd-queue mopr-gui/repr-def:command-queue :commands)))
 
     (loop for i below cmd-count
-          for c = (autowrap:c-aref commands i 'mopr-def:combined-command)
-          for c-type = (plus-c:c-ref c mopr-def:combined-command :base :c-type)
+          for c = (autowrap:c-aref commands i 'mopr-gui/repr-def:combined-command)
+          for c-type = (plus-c:c-ref c mopr-gui/repr-def:combined-command :base :c-type)
 
           ;; TODO: Formalize cleanup.
           ;;
@@ -145,43 +146,43 @@
           ;; pointer.  So we dereference and reference in the end, to inhibit
           ;; foreign-string last-field convenience.
           do (case c-type
-               (mopr-def:+command-type-draw-expr-label+
-                (autowrap:free (plus-c:c-ref c mopr-def:combined-command
+               (mopr-gui/repr-def:+command-type-draw-expr-label+
+                (autowrap:free (plus-c:c-ref c mopr-gui/repr-def:combined-command
                                              :draw-expr-label
                                              :text plus-c:* plus-c:&)))
-               (mopr-def:+command-type-draw-attr-label+
-                (autowrap:free (plus-c:c-ref c mopr-def:combined-command
+               (mopr-gui/repr-def:+command-type-draw-attr-label+
+                (autowrap:free (plus-c:c-ref c mopr-gui/repr-def:combined-command
                                              :draw-attr-label
                                              :text plus-c:* plus-c:&)))
-               (mopr-def:+command-type-draw-attr-input+
-                (autowrap:free (plus-c:c-ref c mopr-def:combined-command
+               (mopr-gui/repr-def:+command-type-draw-attr-input+
+                (autowrap:free (plus-c:c-ref c mopr-gui/repr-def:combined-command
                                              :draw-attr-input
                                              :text plus-c:* plus-c:&)))))
 
     (autowrap:free commands)
 
-    (multiple-set-c-ref cmd-queue (mopr-def:command-queue) :nof-commands 0
-                                                           :commands (autowrap:ptr nil))))
+    (multiple-set-c-ref cmd-queue (mopr-gui/repr-def:command-queue) :nof-commands 0
+                                                                    :commands (autowrap:ptr nil))))
 
 (defun destruct-command-options (cmd-options-ptr
                                  &aux
                                    (cmd-options (autowrap:wrap-pointer
-                                                 cmd-options-ptr 'mopr-def:command-options)))
-  (let* ((opt-count (plus-c:c-ref cmd-options mopr-def:command-options :nof-options))
-         (options (plus-c:c-ref cmd-options mopr-def:command-options :options)))
+                                                 cmd-options-ptr 'mopr-gui/repr-def:command-options)))
+  (let* ((opt-count (plus-c:c-ref cmd-options mopr-gui/repr-def:command-options :nof-options))
+         (options (plus-c:c-ref cmd-options mopr-gui/repr-def:command-options :options)))
 
     (loop for i below opt-count
           do (autowrap:free (autowrap:c-aref options i :pointer)))
 
     (autowrap:free options)
 
-    (multiple-set-c-ref cmd-options (mopr-def:command-options) :nof-options 0
-                                                               :options (autowrap:ptr nil))))
+    (multiple-set-c-ref cmd-options (mopr-gui/repr-def:command-options) :nof-options 0
+                                                                        :options (autowrap:ptr nil))))
 
 (defun populate-command-options (cmd-options-ptr id id-sub
                                  &aux
                                    (cmd-options (autowrap:wrap-pointer
-                                                 cmd-options-ptr 'mopr-def:command-options)))
+                                                 cmd-options-ptr 'mopr-gui/repr-def:command-options)))
   (let* ((n (mopr-ext/repr-rnode:find-enode-by-rnode-id *root-enode* id))
          (opts (mopr-ext/repr-rnode:enode-get-rdata-options n id-sub))
          (nof-opts (length opts))
@@ -190,7 +191,7 @@
     (loop for o in opts for i from 0
           do (setf (autowrap:c-aref vopts i :pointer) (autowrap:alloc-string o)))
 
-    (multiple-set-c-ref cmd-options (mopr-def:command-options)
+    (multiple-set-c-ref cmd-options (mopr-gui/repr-def:command-options)
                         :nof-options nof-opts
                         :options (autowrap:ptr vopts))))
 

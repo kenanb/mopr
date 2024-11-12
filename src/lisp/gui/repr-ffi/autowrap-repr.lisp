@@ -1,8 +1,8 @@
-(cl:in-package :mopr-def)
+(cl:in-package :mopr-gui/repr-def)
 
 (autowrap:c-include
- '(#:mopr #:ffi "moprReprIncludes.h")
- :spec-path '(#:mopr #:ffi #:spec)
+ '(#:mopr-gui #:repr-ffi "moprReprIncludes.h")
+ :spec-path '(#:mopr-gui #:repr-ffi #:spec)
 
  ;; According to current directory structure,
  ;; the header lookup should happen relative
@@ -10,7 +10,7 @@
  :sysincludes
  (cl:list (cl:namestring
            (uiop/pathname:pathname-parent-directory-pathname
-            (asdf:component-pathname (asdf:find-system :mopr cl:t)))))
+            (asdf:component-pathname (asdf:find-system :mopr-gui cl:t)))))
 
  ;; For now, we limit spec generation to avoid committing too many changes.
  :exclude-arch
@@ -37,7 +37,7 @@
                        "^ARCH_.*")
 
  ;; Cleanup prefixes of functions, isolate into a separate package.
- :function-package #:MOPR-FUN
+ :function-package #:MOPR-GUI/REPR-FUN
  :symbol-regex
  (("^mopr_(.*)" () (cl:lambda (s m r)
                      (cl:declare (cl:ignorable s r))

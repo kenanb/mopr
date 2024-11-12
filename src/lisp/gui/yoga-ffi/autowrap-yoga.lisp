@@ -1,8 +1,8 @@
-(cl:in-package :yoga-def)
+(cl:in-package :mopr-gui/yoga-def)
 
 (autowrap:c-include
- '(#:mopr #:ffi "moprYogaIncludes.h")
- :spec-path '(#:mopr #:ffi #:spec)
+ '(#:mopr-gui #:yoga-ffi "moprYogaIncludes.h")
+ :spec-path '(#:mopr-gui #:yoga-ffi #:spec)
 
  ;; Only needed during spec generation. So once we generate the spec file,
  ;; we shouldn't need the envvar being defined for later REPL use.
@@ -36,7 +36,7 @@
                        "^ARCH_.*")
 
  ;; Cleanup prefixes of functions, isolate into a separate package.
- :function-package #:YOGA-FUN
+ :function-package #:MOPR-GUI/YOGA-FUN
 
  :symbol-regex
  (("^YG(.*)" () (cl:lambda (s m r)
@@ -50,4 +50,4 @@
  ;; Don't mute logs.
  :release-p cl:nil)
 
-(cl:setf yoga-def:+undefined+ float-features:single-float-nan)
+(cl:setf mopr-gui/yoga-def:+undefined+ float-features:single-float-nan)

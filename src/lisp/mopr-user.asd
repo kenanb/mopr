@@ -16,6 +16,7 @@
   ((:file "mopr-user"))
   :depends-on
   (#:mopr
+   #:mopr-gui
    ;; ENABLED PLUGIN LIST:
    ;;
    ;; Begin

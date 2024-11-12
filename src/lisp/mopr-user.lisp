@@ -17,5 +17,5 @@
 
 (mopr-ffi:init-core)
 (mopr-ffi:init-wrap)
-(mopr-ffi:init-repr)
-(yoga-ffi:init-yoga)
+(mopr-gui/yoga-ffi:init-yoga)
+(mopr-gui/repr-ffi:init-repr)

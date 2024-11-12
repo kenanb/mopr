@@ -5,6 +5,7 @@
 
 (defpackage :mopr-ext/repr-rnode
   (:import-from :mopr)
+  (:import-from :mopr-gui)
   (:import-from :mopr-ext/repr-shared
                 #:multiple-set-c-ref)
   (:import-from :mopr-ext/repr-rdata)
@@ -82,7 +83,7 @@
       (loop for c across (enode-children n) for x = (find-enode-by-rnode-id c id) if x return x)))
 
 (defun populate-command-from-rnode (rn c)
-  (multiple-set-c-ref c (mopr-def:combined-command :base)
+  (multiple-set-c-ref c (mopr-gui/repr-def:combined-command :base)
                       :id (rnode-id rn)))
 
 ;;
@@ -102,7 +103,7 @@
 ;;
 
 (defmethod enode-initialize-extension ((node group-enode) (ext rnode))
-  (let* ((color mopr-def:+command-theme-expr-bg-9+)
+  (let* ((color mopr-gui/repr-def:+command-theme-expr-bg-9+)
          (nec (make-instance 'mopr-ext/repr-rdata:expr-container-rdata
                              :id 0
                              :yparent (enode-get-ynode-anchor (enode-parent node))))
@@ -132,7 +133,7 @@
   (multiple-value-bind (val-form-param-text
                         val-form-param-line-count)
       (format-form (var-enode-val-form-param node) *fill-column*)
-    (let* ((color mopr-def:+command-theme-expr-bg-0+)
+    (let* ((color mopr-gui/repr-def:+command-theme-expr-bg-0+)
            (nec (make-instance 'mopr-ext/repr-rdata:expr-container-rdata
                                :id 0
                                :yparent (enode-get-ynode-anchor (enode-parent node))))
@@ -194,7 +195,7 @@
   (multiple-value-bind (vals-form-param-text
                         vals-form-param-line-count)
       (format-form (each-enode-vals-form-param node) *fill-column*)
-    (let* ((color mopr-def:+command-theme-expr-bg-1+)
+    (let* ((color mopr-gui/repr-def:+command-theme-expr-bg-1+)
            (nec (make-instance 'mopr-ext/repr-rdata:expr-container-rdata
                                :id 0
                                :yparent (enode-get-ynode-anchor (enode-parent node))))
@@ -262,7 +263,7 @@
 ;;
 
 (defmethod enode-initialize-extension ((node iota-enode) (ext rnode))
-  (let* ((color mopr-def:+command-theme-expr-bg-2+)
+  (let* ((color mopr-gui/repr-def:+command-theme-expr-bg-2+)
          (nec (make-instance 'mopr-ext/repr-rdata:expr-container-rdata
                              :id 0
                              :yparent (enode-get-ynode-anchor (enode-parent node))))
@@ -365,7 +366,7 @@
   (multiple-value-bind (body-form-param-text
                         body-form-param-line-count)
       (format-form (call-enode-body-form-param node) *fill-column*)
-    (let* ((color mopr-def:+command-theme-expr-bg-3+)
+    (let* ((color mopr-gui/repr-def:+command-theme-expr-bg-3+)
            (nec (make-instance 'mopr-ext/repr-rdata:expr-container-rdata
                                :id 0
                                :yparent (enode-get-ynode-anchor (enode-parent node))))
@@ -410,7 +411,7 @@
 ;;
 
 (defmethod enode-initialize-extension ((node prim-type-enode) (ext rnode))
-  (let* ((color mopr-def:+command-theme-expr-bg-4+)
+  (let* ((color mopr-gui/repr-def:+command-theme-expr-bg-4+)
          (nec (make-instance 'mopr-ext/repr-rdata:expr-container-rdata
                              :id 0
                              :yparent (enode-get-ynode-anchor (enode-parent node))))
@@ -452,7 +453,7 @@
   (multiple-value-bind (body-form-param-text
                         body-form-param-line-count)
       (format-form (prim-attr-enode-body-form-param node) *fill-column*)
-    (let* ((color mopr-def:+command-theme-expr-bg-8+)
+    (let* ((color mopr-gui/repr-def:+command-theme-expr-bg-8+)
            (nec (make-instance 'mopr-ext/repr-rdata:expr-container-rdata
                                :id 0
                                :yparent (enode-get-ynode-anchor (enode-parent node))))
@@ -547,7 +548,7 @@
   (multiple-value-bind (body-form-param-text
                         body-form-param-line-count)
       (format-form (prim-rel-enode-body-form-param node) *fill-column*)
-    (let* ((color mopr-def:+command-theme-expr-bg-8+)
+    (let* ((color mopr-gui/repr-def:+command-theme-expr-bg-8+)
            (nec (make-instance 'mopr-ext/repr-rdata:expr-container-rdata
                                :id 0
                                :yparent (enode-get-ynode-anchor (enode-parent node))))
@@ -609,7 +610,7 @@
 ;;
 
 (defmethod enode-initialize-extension ((node prim-ns-enode) (ext rnode))
-  (let* ((color mopr-def:+command-theme-expr-bg-9+)
+  (let* ((color mopr-gui/repr-def:+command-theme-expr-bg-9+)
          (nec (make-instance 'mopr-ext/repr-rdata:expr-container-rdata
                              :id 0
                              :yparent (enode-get-ynode-anchor (enode-parent node))))
@@ -650,7 +651,7 @@
 ;;
 
 (defmethod enode-initialize-extension ((node prim-enode) (ext rnode))
-  (let* ((color mopr-def:+command-theme-expr-bg-5+)
+  (let* ((color mopr-gui/repr-def:+command-theme-expr-bg-5+)
          (nec (make-instance 'mopr-ext/repr-rdata:expr-container-rdata
                              :id 0
                              :yparent (enode-get-ynode-anchor (enode-parent node))))
@@ -694,7 +695,7 @@
   (multiple-value-bind (body-form-param-text
                         body-form-param-line-count)
       (format-form (tree-enode-body-form-param node) *fill-column*)
-    (let* ((color mopr-def:+command-theme-expr-bg-6+)
+    (let* ((color mopr-gui/repr-def:+command-theme-expr-bg-6+)
            (nec (make-instance 'mopr-ext/repr-rdata:expr-container-rdata
                                :id 0
                                :yparent (enode-get-ynode-anchor (enode-parent node))))
@@ -729,7 +730,7 @@
   (multiple-value-bind (body-form-param-text
                         body-form-param-line-count)
       (format-form (meta-enode-body-form-param node) *fill-column*)
-    (let* ((color mopr-def:+command-theme-expr-bg-7+)
+    (let* ((color mopr-gui/repr-def:+command-theme-expr-bg-7+)
            (nec (make-instance 'mopr-ext/repr-rdata:expr-container-rdata
                                :id 0
                                :yparent (enode-get-ynode-anchor (enode-parent node))))

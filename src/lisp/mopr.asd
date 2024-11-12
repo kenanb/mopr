@@ -25,25 +25,13 @@ mainly in Lisp. UNTESTED. DO NOT USE!"
       :depends-on ("package"))
      (:file "autowrap-wrap"
       :depends-on ("package"))
-     (:file "autowrap-yoga"
-      :depends-on ("package"))
-     (:file "autowrap-repr"
-      :depends-on ("package"))
      (:module #:spec
       :depends-on ("autowrap-core"
-                   "autowrap-wrap"
-                   "autowrap-yoga"
-                   "autowrap-repr"))
+                   "autowrap-wrap"))
      (:file "bindings-core"
       :depends-on ("package"))
      (:file "bindings-wrap"
       :depends-on ("package"))
-     (:file "bindings-yoga"
-      :depends-on ("package"))
-     (:file "bindings-repr"
-      :depends-on ("package"))
-     (:static-file "moprReprIncludes.h")
-     (:static-file "moprYogaIncludes.h")
      (:static-file "moprWrapIncludes.h")
      (:static-file "moprCoreIncludes.h")))
 
