@@ -55,7 +55,7 @@ static bool
  destructCommandQueue( CommandQueue * queue )
 {
     cl_object hQueue_l = ecl_make_pointer( queue );
-    cl_object pkgMoprExtRepr_l = ecl_find_package( "MOPR-EXT/REPR" );
+    cl_object pkgMoprExtRepr_l = ecl_find_package( "MOPR-GUI/REPR" );
     cl_object symFn_l = getSymbol( "DESTRUCT-COMMAND-QUEUE", pkgMoprExtRepr_l );
     cl_funcall( 2, symFn_l, hQueue_l );
     return true;
@@ -65,7 +65,7 @@ static bool
  destructCommandOptions( CommandOptions * options )
 {
     cl_object hOptions_l = ecl_make_pointer( options );
-    cl_object pkgMoprExtRepr_l = ecl_find_package( "MOPR-EXT/REPR" );
+    cl_object pkgMoprExtRepr_l = ecl_find_package( "MOPR-GUI/REPR" );
     cl_object symFn_l = getSymbol( "DESTRUCT-COMMAND-OPTIONS", pkgMoprExtRepr_l );
     cl_funcall( 2, symFn_l, hOptions_l );
     return true;

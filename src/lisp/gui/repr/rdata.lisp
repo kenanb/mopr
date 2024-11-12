@@ -3,10 +3,8 @@
 
 (in-package :cl-user)
 
-(defpackage :mopr-ext/repr-rdata
-  (:import-from :mopr)
-  (:import-from :mopr-gui)
-  (:import-from :mopr-ext/repr-shared
+(defpackage :mopr-gui/repr-rdata
+  (:import-from :mopr-gui/repr-shared
                 #:layout-dimension
                 #:multiple-set-c-ref)
   (:use :cl)
@@ -26,7 +24,7 @@
    #:attr-label-rdata
    #:attr-input-rdata))
 
-(in-package :mopr-ext/repr-rdata)
+(in-package :mopr-gui/repr-rdata)
 
 ;;
 ;;; Utilities

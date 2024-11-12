@@ -24,8 +24,6 @@
 
    "mopr-ext/grid"
    "mopr-ext/test"
-   "mopr-ext/repr-testing"
-   "mopr-ext/repr"
    "mopr-ext/util"
 
    ;;

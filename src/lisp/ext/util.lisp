@@ -6,9 +6,12 @@
 (defpackage :mopr-ext/util
   (:import-from :mopr)
   (:import-from :mopr-sgt)
+  (:import-from :mopr-gui/repr-def)
+  (:import-from :mopr-gui/repr-rnode)
+  (:import-from :mopr-gui/repr)
   (:use #:cl
         ;; TODO: UI crashes when this is just an "import-from", instead of "use".
-        #:mopr-ext/repr)
+        #:mopr-gui/repr)
   (:export))
 
 (in-package :mopr-ext/util)
@@ -55,16 +58,16 @@ registered to call tables can be dangerous, if enabled."
             (*read-eval* nil))
 
         (let* ((expr (read in nil))
-               (rn (mopr-sgt:deserialize expr '(mopr-ext/repr-rnode:rnode))))
+               (rn (mopr-sgt:deserialize expr '(mopr-gui/repr-rnode:rnode))))
           (mopr-sgt:populate-layer layer-h rn call-enabled)
 
           ;; Representation.
           ;;
 
-          (mopr-ext/repr:initialize-and-bind-repr-tree rn)
+          (mopr-gui/repr:initialize-and-bind-repr-tree rn)
 
-          (mopr-ext/repr:populate-command-queue
+          (mopr-gui/repr:populate-command-queue
            (autowrap:wrap-pointer cmd-queue 'mopr-gui/repr-def:command-queue))
 
           ;; TODO : Defer.
-          (mopr-ext/repr:deinitialize-rnodes))))))
+          (mopr-gui/repr:deinitialize-rnodes))))))

@@ -3,15 +3,10 @@
 
 (in-package :cl-user)
 
-(defpackage :mopr-ext/repr
-  (:import-from :mopr)
-  (:import-from :mopr-gui)
-  (:import-from :mopr-ext/repr-shared
+(defpackage :mopr-gui/repr
+  (:import-from :mopr-gui/repr-shared
                 #:multiple-set-c-ref
                 #:with-layout-settings)
-  (:import-from :mopr-ext/repr-rdata)
-  (:import-from :mopr-ext/repr-rnode)
-  (:import-from :plus-c) ; Depend on system.
   (:use :cl)
   (:export
    #:initialize-and-bind-repr-tree
@@ -22,7 +17,7 @@
    #:destruct-command-options
    #:apply-command-option))
 
-(in-package :mopr-ext/repr)
+(in-package :mopr-gui/repr)
 
 (defvar *root-enode* nil)
 
@@ -31,8 +26,8 @@
 ;;
 
 (defun enode-rdatas (node)
-  (let ((rn (mopr-sgt:enode-find-extension node 'mopr-ext/repr-rnode:rnode)))
-    (mopr-ext/repr-rnode:rnode-rdatas rn)))
+  (let ((rn (mopr-sgt:enode-find-extension node 'mopr-gui/repr-rnode:rnode)))
+    (mopr-gui/repr-rnode:rnode-rdatas rn)))
 
 ;;
 ;;; ENODE Tree
@@ -43,7 +38,7 @@
   (setf *root-enode* rn))
 
 (defun deinitialize-rnodes ()
-  (mopr-gui/yoga-fun:node-free-recursive (mopr-ext/repr-rdata:rdata-ynode
+  (mopr-gui/yoga-fun:node-free-recursive (mopr-gui/repr-rdata:rdata-ynode
                                           (car (enode-rdatas *root-enode*)))))
 
 ;;
@@ -87,17 +82,17 @@
                                      &aux
                                        (rn (mopr-sgt:enode-find-extension
                                             n
-                                            'mopr-ext/repr-rnode:rnode)))
-  (loop for rd in (mopr-ext/repr-rnode:rnode-rdatas rn)
-        unless (typep rd 'mopr-ext/repr-rdata:hidden-rdata)
+                                            'mopr-gui/repr-rnode:rnode)))
+  (loop for rd in (mopr-gui/repr-rnode:rnode-rdatas rn)
+        unless (typep rd 'mopr-gui/repr-rdata:hidden-rdata)
           do (let ((cmd (cvec-get-incrementing-counter wcmds)))
-               (mopr-ext/repr-rnode:populate-command-from-rnode rn cmd)
-               (mopr-ext/repr-rdata:populate-command-from-rdata rd cmd)))
+               (mopr-gui/repr-rnode:populate-command-from-rnode rn cmd)
+               (mopr-gui/repr-rdata:populate-command-from-rdata rd cmd)))
   (loop for c across (mopr-sgt:enode-children n)
         do (%populate-commands-recursive c wcmds)))
 
 (defun %count-visible-rdata-recursive (n)
-  (+ (count-if-not (lambda (x) (typep x 'mopr-ext/repr-rdata:hidden-rdata))
+  (+ (count-if-not (lambda (x) (typep x 'mopr-gui/repr-rdata:hidden-rdata))
                    (enode-rdatas n))
      (loop for c across (mopr-sgt:enode-children n)
            summing (%count-visible-rdata-recursive c))))
@@ -106,7 +101,7 @@
   (with-layout-settings
       (let* ((pixels-w (plus-c:c-ref cmd-queue mopr-gui/repr-def:command-queue :pixels-w))
              ;; (pixels-h (plus-c:c-ref cmd-queue mopr-gui/repr-def:command-queue :pixels-h))
-             (root-yn (mopr-ext/repr-rdata:rdata-ynode
+             (root-yn (mopr-gui/repr-rdata:rdata-ynode
                        (car (enode-rdatas *root-enode*))))
              (wcmds
                (make-instance 'cvec
@@ -124,7 +119,7 @@
                             :nof-commands (cvec-size wcmds)
                             :commands (autowrap:ptr (cvec-wrapper wcmds))
                             ;; Adjust height to the actual "used" height.
-                            :pixels-h (mopr-ext/repr-shared:layout-dimension root-yn :height)))))
+                            :pixels-h (mopr-gui/repr-shared:layout-dimension root-yn :height)))))
 
 ;; NOTE: Free calls are made from the same module the allocations were made from,
 ;;       to avoid possible issues with multiple malloc implementations in runtime.
@@ -183,8 +178,8 @@
                                  &aux
                                    (cmd-options (autowrap:wrap-pointer
                                                  cmd-options-ptr 'mopr-gui/repr-def:command-options)))
-  (let* ((n (mopr-ext/repr-rnode:find-enode-by-rnode-id *root-enode* id))
-         (opts (mopr-ext/repr-rnode:enode-get-rdata-options n id-sub))
+  (let* ((n (mopr-gui/repr-rnode:find-enode-by-rnode-id *root-enode* id))
+         (opts (mopr-gui/repr-rnode:enode-get-rdata-options n id-sub))
          (nof-opts (length opts))
          (vopts (autowrap:alloc :pointer nof-opts)))
 
@@ -196,7 +191,7 @@
                         :options (autowrap:ptr vopts))))
 
 (defun apply-command-option (id id-sub id-opt)
-  (let* ((n (mopr-ext/repr-rnode:find-enode-by-rnode-id *root-enode* id))
-         (opts (mopr-ext/repr-rnode:enode-get-rdata-options n id-sub))
+  (let* ((n (mopr-gui/repr-rnode:find-enode-by-rnode-id *root-enode* id))
+         (opts (mopr-gui/repr-rnode:enode-get-rdata-options n id-sub))
          (idx (1- id-opt)))
     (format t "APPLIED OPTION: ~A~%" (nth idx opts))))

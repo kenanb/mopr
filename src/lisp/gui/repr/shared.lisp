@@ -3,17 +3,14 @@
 
 (in-package :cl-user)
 
-(defpackage :mopr-ext/repr-shared
-  (:import-from :mopr)
-  (:import-from :plus-c) ; Depend on system.
-  (:import-from :float-features) ; Depend on system.
+(defpackage :mopr-gui/repr-shared
   (:use :cl)
   (:export
    #:layout-dimension
    #:multiple-set-c-ref
    #:with-layout-settings))
 
-(in-package :mopr-ext/repr-shared)
+(in-package :mopr-gui/repr-shared)
 
 (defmacro layout-dimension (ynode accessor)
   (case accessor

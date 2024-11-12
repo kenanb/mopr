@@ -3,12 +3,10 @@
 
 (in-package :cl-user)
 
-(defpackage :mopr-ext/repr-rnode
-  (:import-from :mopr)
-  (:import-from :mopr-gui)
-  (:import-from :mopr-ext/repr-shared
+(defpackage :mopr-gui/repr-rnode
+  (:import-from :mopr-gui/repr-shared
                 #:multiple-set-c-ref)
-  (:import-from :mopr-ext/repr-rdata)
+  (:import-from :mopr-gui/repr-rdata)
   (:use :mopr-sgt)
   (:use :cl)
   (:export
@@ -25,7 +23,7 @@
 
    ))
 
-(in-package :mopr-ext/repr-rnode)
+(in-package :mopr-gui/repr-rnode)
 
 (defvar *fill-column* 70)
 
@@ -65,7 +63,7 @@
   (:documentation "Get the index of ynode that should contain child ynodes."))
 
 (defun enode-get-ynode-anchor (n &aux (rn (enode-find-extension n 'rnode)))
-  (mopr-ext/repr-rdata:rdata-ynode
+  (mopr-gui/repr-rdata:rdata-ynode
    (elt (rnode-rdatas rn)
         (enode-get-ynode-anchor-index n))))
 
@@ -91,7 +89,7 @@
 ;;
 
 (defmethod enode-initialize-extension ((node root-enode) (ext rnode))
-  (let* ((nrc (make-instance 'mopr-ext/repr-rdata:root-container-rdata
+  (let* ((nrc (make-instance 'mopr-gui/repr-rdata:root-container-rdata
                              :id 0)))
     (setf (rnode-rdatas ext)
           (list nrc))))
@@ -104,17 +102,17 @@
 
 (defmethod enode-initialize-extension ((node group-enode) (ext rnode))
   (let* ((color mopr-gui/repr-def:+command-theme-expr-bg-9+)
-         (nec (make-instance 'mopr-ext/repr-rdata:expr-container-rdata
+         (nec (make-instance 'mopr-gui/repr-rdata:expr-container-rdata
                              :id 0
                              :yparent (enode-get-ynode-anchor (enode-parent node))))
-         (nel (make-instance 'mopr-ext/repr-rdata:expr-label-rdata
+         (nel (make-instance 'mopr-gui/repr-rdata:expr-label-rdata
                              :id 1
-                             :yparent (mopr-ext/repr-rdata:rdata-ynode nec)
+                             :yparent (mopr-gui/repr-rdata:rdata-ynode nec)
                              :text "GROUP"
                              :bg color))
-         (ncc (make-instance 'mopr-ext/repr-rdata:content-container-rdata
+         (ncc (make-instance 'mopr-gui/repr-rdata:content-container-rdata
                              :id 2
-                             :yparent (mopr-ext/repr-rdata:rdata-ynode nec))))
+                             :yparent (mopr-gui/repr-rdata:rdata-ynode nec))))
     (setf (rnode-rdatas ext)
           (list nec nel ncc))))
 
@@ -134,44 +132,44 @@
                         val-form-param-line-count)
       (format-form (var-enode-val-form-param node) *fill-column*)
     (let* ((color mopr-gui/repr-def:+command-theme-expr-bg-0+)
-           (nec (make-instance 'mopr-ext/repr-rdata:expr-container-rdata
+           (nec (make-instance 'mopr-gui/repr-rdata:expr-container-rdata
                                :id 0
                                :yparent (enode-get-ynode-anchor (enode-parent node))))
-           (nel (make-instance 'mopr-ext/repr-rdata:expr-label-rdata
+           (nel (make-instance 'mopr-gui/repr-rdata:expr-label-rdata
                                :id 1
-                               :yparent (mopr-ext/repr-rdata:rdata-ynode nec)
+                               :yparent (mopr-gui/repr-rdata:rdata-ynode nec)
                                :text "VAR"
                                :bg color))
-           (ncc (make-instance 'mopr-ext/repr-rdata:content-container-rdata
+           (ncc (make-instance 'mopr-gui/repr-rdata:content-container-rdata
                                :id 2
-                               :yparent (mopr-ext/repr-rdata:rdata-ynode nec)))
-           (nac0 (make-instance 'mopr-ext/repr-rdata:attr-container-rdata
+                               :yparent (mopr-gui/repr-rdata:rdata-ynode nec)))
+           (nac0 (make-instance 'mopr-gui/repr-rdata:attr-container-rdata
                                 :id 3
-                                :yparent (mopr-ext/repr-rdata:rdata-ynode ncc)))
-           (nal0 (make-instance 'mopr-ext/repr-rdata:attr-label-rdata
+                                :yparent (mopr-gui/repr-rdata:rdata-ynode ncc)))
+           (nal0 (make-instance 'mopr-gui/repr-rdata:attr-label-rdata
                                 :id 4
-                                :yparent (mopr-ext/repr-rdata:rdata-ynode nac0)
+                                :yparent (mopr-gui/repr-rdata:rdata-ynode nac0)
                                 :text "NAME"
                                 :bg color))
-           (nai0 (make-instance 'mopr-ext/repr-rdata:attr-input-rdata
+           (nai0 (make-instance 'mopr-gui/repr-rdata:attr-input-rdata
                                 :id 5
-                                :yparent (mopr-ext/repr-rdata:rdata-ynode nac0)
+                                :yparent (mopr-gui/repr-rdata:rdata-ynode nac0)
                                 :text (format nil "~S" (var-enode-name-param node))))
-           (nac1 (make-instance 'mopr-ext/repr-rdata:attr-container-rdata
+           (nac1 (make-instance 'mopr-gui/repr-rdata:attr-container-rdata
                                 :id 6
-                                :yparent (mopr-ext/repr-rdata:rdata-ynode ncc)))
-           (nal1 (make-instance 'mopr-ext/repr-rdata:attr-label-rdata
+                                :yparent (mopr-gui/repr-rdata:rdata-ynode ncc)))
+           (nal1 (make-instance 'mopr-gui/repr-rdata:attr-label-rdata
                                 :id 7
-                                :yparent (mopr-ext/repr-rdata:rdata-ynode nac1)
+                                :yparent (mopr-gui/repr-rdata:rdata-ynode nac1)
                                 :text "AUX"
                                 :bg color))
-           (nai1 (make-instance 'mopr-ext/repr-rdata:attr-input-rdata
+           (nai1 (make-instance 'mopr-gui/repr-rdata:attr-input-rdata
                                 :id 8
-                                :yparent (mopr-ext/repr-rdata:rdata-ynode nac1)
+                                :yparent (mopr-gui/repr-rdata:rdata-ynode nac1)
                                 :text (format nil "~S" (var-enode-aux-form-param node))))
-           (nar (make-instance 'mopr-ext/repr-rdata:attr-input-rdata
+           (nar (make-instance 'mopr-gui/repr-rdata:attr-input-rdata
                                :id 9
-                               :yparent (mopr-ext/repr-rdata:rdata-ynode ncc)
+                               :yparent (mopr-gui/repr-rdata:rdata-ynode ncc)
                                :text val-form-param-text
                                :h-co val-form-param-line-count)))
       (setf (rnode-rdatas ext)
@@ -196,52 +194,52 @@
                         vals-form-param-line-count)
       (format-form (each-enode-vals-form-param node) *fill-column*)
     (let* ((color mopr-gui/repr-def:+command-theme-expr-bg-1+)
-           (nec (make-instance 'mopr-ext/repr-rdata:expr-container-rdata
+           (nec (make-instance 'mopr-gui/repr-rdata:expr-container-rdata
                                :id 0
                                :yparent (enode-get-ynode-anchor (enode-parent node))))
-           (nel (make-instance 'mopr-ext/repr-rdata:expr-label-rdata
+           (nel (make-instance 'mopr-gui/repr-rdata:expr-label-rdata
                                :id 1
-                               :yparent (mopr-ext/repr-rdata:rdata-ynode nec)
+                               :yparent (mopr-gui/repr-rdata:rdata-ynode nec)
                                :text "EACH"
                                :bg color))
-           (ncc (make-instance 'mopr-ext/repr-rdata:content-container-rdata
+           (ncc (make-instance 'mopr-gui/repr-rdata:content-container-rdata
                                :id 2
-                               :yparent (mopr-ext/repr-rdata:rdata-ynode nec)))
-           (nac0 (make-instance 'mopr-ext/repr-rdata:attr-container-rdata
+                               :yparent (mopr-gui/repr-rdata:rdata-ynode nec)))
+           (nac0 (make-instance 'mopr-gui/repr-rdata:attr-container-rdata
                                 :id 3
-                                :yparent (mopr-ext/repr-rdata:rdata-ynode ncc)))
-           (nal0 (make-instance 'mopr-ext/repr-rdata:attr-label-rdata
+                                :yparent (mopr-gui/repr-rdata:rdata-ynode ncc)))
+           (nal0 (make-instance 'mopr-gui/repr-rdata:attr-label-rdata
                                 :id 4
-                                :yparent (mopr-ext/repr-rdata:rdata-ynode nac0)
+                                :yparent (mopr-gui/repr-rdata:rdata-ynode nac0)
                                 :text "NAME"
                                 :bg color))
-           (nai0 (make-instance 'mopr-ext/repr-rdata:attr-input-rdata
+           (nai0 (make-instance 'mopr-gui/repr-rdata:attr-input-rdata
                                 :id 5
-                                :yparent (mopr-ext/repr-rdata:rdata-ynode nac0)
+                                :yparent (mopr-gui/repr-rdata:rdata-ynode nac0)
                                 :text (format nil "~S" (each-enode-name-param node))))
-           (nac1 (make-instance 'mopr-ext/repr-rdata:attr-container-rdata
+           (nac1 (make-instance 'mopr-gui/repr-rdata:attr-container-rdata
                                 :id 6
-                                :yparent (mopr-ext/repr-rdata:rdata-ynode ncc)))
-           (nal1 (make-instance 'mopr-ext/repr-rdata:attr-label-rdata
+                                :yparent (mopr-gui/repr-rdata:rdata-ynode ncc)))
+           (nal1 (make-instance 'mopr-gui/repr-rdata:attr-label-rdata
                                 :id 7
-                                :yparent (mopr-ext/repr-rdata:rdata-ynode nac1)
+                                :yparent (mopr-gui/repr-rdata:rdata-ynode nac1)
                                 :text "KEY(S)"
                                 :bg color))
-           (nai1 (make-instance 'mopr-ext/repr-rdata:attr-input-rdata
+           (nai1 (make-instance 'mopr-gui/repr-rdata:attr-input-rdata
                                 :id 8
-                                :yparent (mopr-ext/repr-rdata:rdata-ynode nac1)
+                                :yparent (mopr-gui/repr-rdata:rdata-ynode nac1)
                                 :text (format nil "~S" (each-enode-keys-form-param node))))
-           (nac2 (make-instance 'mopr-ext/repr-rdata:attr-container-rdata
+           (nac2 (make-instance 'mopr-gui/repr-rdata:attr-container-rdata
                                 :id 9
-                                :yparent (mopr-ext/repr-rdata:rdata-ynode ncc)))
-           (nal2 (make-instance 'mopr-ext/repr-rdata:attr-label-rdata
+                                :yparent (mopr-gui/repr-rdata:rdata-ynode ncc)))
+           (nal2 (make-instance 'mopr-gui/repr-rdata:attr-label-rdata
                                 :id 10
-                                :yparent (mopr-ext/repr-rdata:rdata-ynode nac2)
+                                :yparent (mopr-gui/repr-rdata:rdata-ynode nac2)
                                 :text "VALUE(S)"
                                 :bg color))
-           (nai2 (make-instance 'mopr-ext/repr-rdata:attr-input-rdata
+           (nai2 (make-instance 'mopr-gui/repr-rdata:attr-input-rdata
                                 :id 11
-                                :yparent (mopr-ext/repr-rdata:rdata-ynode nac2)
+                                :yparent (mopr-gui/repr-rdata:rdata-ynode nac2)
                                 :text vals-form-param-text
                                 :h-co vals-form-param-line-count)))
       (setf (rnode-rdatas ext)
@@ -264,76 +262,76 @@
 
 (defmethod enode-initialize-extension ((node iota-enode) (ext rnode))
   (let* ((color mopr-gui/repr-def:+command-theme-expr-bg-2+)
-         (nec (make-instance 'mopr-ext/repr-rdata:expr-container-rdata
+         (nec (make-instance 'mopr-gui/repr-rdata:expr-container-rdata
                              :id 0
                              :yparent (enode-get-ynode-anchor (enode-parent node))))
-         (nel (make-instance 'mopr-ext/repr-rdata:expr-label-rdata
+         (nel (make-instance 'mopr-gui/repr-rdata:expr-label-rdata
                              :id 1
-                             :yparent (mopr-ext/repr-rdata:rdata-ynode nec)
+                             :yparent (mopr-gui/repr-rdata:rdata-ynode nec)
                              :text "IOTA"
                              :bg color))
-         (ncc (make-instance 'mopr-ext/repr-rdata:content-container-rdata
+         (ncc (make-instance 'mopr-gui/repr-rdata:content-container-rdata
                              :id 2
-                             :yparent (mopr-ext/repr-rdata:rdata-ynode nec)))
-         (nac0 (make-instance 'mopr-ext/repr-rdata:attr-container-rdata
+                             :yparent (mopr-gui/repr-rdata:rdata-ynode nec)))
+         (nac0 (make-instance 'mopr-gui/repr-rdata:attr-container-rdata
                               :id 3
-                              :yparent (mopr-ext/repr-rdata:rdata-ynode ncc)))
-         (nal0 (make-instance 'mopr-ext/repr-rdata:attr-label-rdata
+                              :yparent (mopr-gui/repr-rdata:rdata-ynode ncc)))
+         (nal0 (make-instance 'mopr-gui/repr-rdata:attr-label-rdata
                               :id 4
-                              :yparent (mopr-ext/repr-rdata:rdata-ynode nac0)
+                              :yparent (mopr-gui/repr-rdata:rdata-ynode nac0)
                               :text "NAME"
                               :bg color))
-         (nai0 (make-instance 'mopr-ext/repr-rdata:attr-input-rdata
+         (nai0 (make-instance 'mopr-gui/repr-rdata:attr-input-rdata
                               :id 5
-                              :yparent (mopr-ext/repr-rdata:rdata-ynode nac0)
+                              :yparent (mopr-gui/repr-rdata:rdata-ynode nac0)
                               :text (format nil "~S" (iota-enode-name-param node))))
-         (nac1 (make-instance 'mopr-ext/repr-rdata:attr-container-rdata
+         (nac1 (make-instance 'mopr-gui/repr-rdata:attr-container-rdata
                               :id 6
-                              :yparent (mopr-ext/repr-rdata:rdata-ynode ncc)))
-         (nal1 (make-instance 'mopr-ext/repr-rdata:attr-label-rdata
+                              :yparent (mopr-gui/repr-rdata:rdata-ynode ncc)))
+         (nal1 (make-instance 'mopr-gui/repr-rdata:attr-label-rdata
                               :id 7
-                              :yparent (mopr-ext/repr-rdata:rdata-ynode nac1)
+                              :yparent (mopr-gui/repr-rdata:rdata-ynode nac1)
                               :text "KEY"
                               :bg color))
-         (nai1 (make-instance 'mopr-ext/repr-rdata:attr-input-rdata
+         (nai1 (make-instance 'mopr-gui/repr-rdata:attr-input-rdata
                               :id 8
-                              :yparent (mopr-ext/repr-rdata:rdata-ynode nac1)
+                              :yparent (mopr-gui/repr-rdata:rdata-ynode nac1)
                               :text (format nil "~S" (iota-enode-key-param node))))
-         (nac2 (make-instance 'mopr-ext/repr-rdata:attr-container-rdata
+         (nac2 (make-instance 'mopr-gui/repr-rdata:attr-container-rdata
                               :id 9
-                              :yparent (mopr-ext/repr-rdata:rdata-ynode ncc)))
-         (nal2 (make-instance 'mopr-ext/repr-rdata:attr-label-rdata
+                              :yparent (mopr-gui/repr-rdata:rdata-ynode ncc)))
+         (nal2 (make-instance 'mopr-gui/repr-rdata:attr-label-rdata
                               :id 10
-                              :yparent (mopr-ext/repr-rdata:rdata-ynode nac2)
+                              :yparent (mopr-gui/repr-rdata:rdata-ynode nac2)
                               :text "END"
                               :bg color))
-         (nai2 (make-instance 'mopr-ext/repr-rdata:attr-input-rdata
+         (nai2 (make-instance 'mopr-gui/repr-rdata:attr-input-rdata
                               :id 11
-                              :yparent (mopr-ext/repr-rdata:rdata-ynode nac2)
+                              :yparent (mopr-gui/repr-rdata:rdata-ynode nac2)
                               :text (format nil "~S" (iota-enode-end-param node))))
-         (nac3 (make-instance 'mopr-ext/repr-rdata:attr-container-rdata
+         (nac3 (make-instance 'mopr-gui/repr-rdata:attr-container-rdata
                               :id 12
-                              :yparent (mopr-ext/repr-rdata:rdata-ynode ncc)))
-         (nal3 (make-instance 'mopr-ext/repr-rdata:attr-label-rdata
+                              :yparent (mopr-gui/repr-rdata:rdata-ynode ncc)))
+         (nal3 (make-instance 'mopr-gui/repr-rdata:attr-label-rdata
                               :id 13
-                              :yparent (mopr-ext/repr-rdata:rdata-ynode nac3)
+                              :yparent (mopr-gui/repr-rdata:rdata-ynode nac3)
                               :text "START"
                               :bg color))
-         (nai3 (make-instance 'mopr-ext/repr-rdata:attr-input-rdata
+         (nai3 (make-instance 'mopr-gui/repr-rdata:attr-input-rdata
                               :id 14
-                              :yparent (mopr-ext/repr-rdata:rdata-ynode nac3)
+                              :yparent (mopr-gui/repr-rdata:rdata-ynode nac3)
                               :text (format nil "~S" (iota-enode-start-param node))))
-         (nac4 (make-instance 'mopr-ext/repr-rdata:attr-container-rdata
+         (nac4 (make-instance 'mopr-gui/repr-rdata:attr-container-rdata
                               :id 15
-                              :yparent (mopr-ext/repr-rdata:rdata-ynode ncc)))
-         (nal4 (make-instance 'mopr-ext/repr-rdata:attr-label-rdata
+                              :yparent (mopr-gui/repr-rdata:rdata-ynode ncc)))
+         (nal4 (make-instance 'mopr-gui/repr-rdata:attr-label-rdata
                               :id 16
-                              :yparent (mopr-ext/repr-rdata:rdata-ynode nac4)
+                              :yparent (mopr-gui/repr-rdata:rdata-ynode nac4)
                               :text "STEP"
                               :bg color))
-         (nai4 (make-instance 'mopr-ext/repr-rdata:attr-input-rdata
+         (nai4 (make-instance 'mopr-gui/repr-rdata:attr-input-rdata
                               :id 17
-                              :yparent (mopr-ext/repr-rdata:rdata-ynode nac4)
+                              :yparent (mopr-gui/repr-rdata:rdata-ynode nac4)
                               :text (format nil "~S" (iota-enode-step-param node)))))
     (setf (rnode-rdatas ext)
           (list nec nel ncc
@@ -367,32 +365,32 @@
                         body-form-param-line-count)
       (format-form (call-enode-body-form-param node) *fill-column*)
     (let* ((color mopr-gui/repr-def:+command-theme-expr-bg-3+)
-           (nec (make-instance 'mopr-ext/repr-rdata:expr-container-rdata
+           (nec (make-instance 'mopr-gui/repr-rdata:expr-container-rdata
                                :id 0
                                :yparent (enode-get-ynode-anchor (enode-parent node))))
-           (nel (make-instance 'mopr-ext/repr-rdata:expr-label-rdata
+           (nel (make-instance 'mopr-gui/repr-rdata:expr-label-rdata
                                :id 1
-                               :yparent (mopr-ext/repr-rdata:rdata-ynode nec)
+                               :yparent (mopr-gui/repr-rdata:rdata-ynode nec)
                                :text "CALL"
                                :bg color))
-           (ncc (make-instance 'mopr-ext/repr-rdata:content-container-rdata
+           (ncc (make-instance 'mopr-gui/repr-rdata:content-container-rdata
                                :id 2
-                               :yparent (mopr-ext/repr-rdata:rdata-ynode nec)))
-           (nac0 (make-instance 'mopr-ext/repr-rdata:attr-container-rdata
+                               :yparent (mopr-gui/repr-rdata:rdata-ynode nec)))
+           (nac0 (make-instance 'mopr-gui/repr-rdata:attr-container-rdata
                                 :id 3
-                                :yparent (mopr-ext/repr-rdata:rdata-ynode ncc)))
-           (nal0 (make-instance 'mopr-ext/repr-rdata:attr-label-rdata
+                                :yparent (mopr-gui/repr-rdata:rdata-ynode ncc)))
+           (nal0 (make-instance 'mopr-gui/repr-rdata:attr-label-rdata
                                 :id 4
-                                :yparent (mopr-ext/repr-rdata:rdata-ynode nac0)
+                                :yparent (mopr-gui/repr-rdata:rdata-ynode nac0)
                                 :text "AUX"
                                 :bg color))
-           (nai0 (make-instance 'mopr-ext/repr-rdata:attr-input-rdata
+           (nai0 (make-instance 'mopr-gui/repr-rdata:attr-input-rdata
                                 :id 5
-                                :yparent (mopr-ext/repr-rdata:rdata-ynode nac0)
+                                :yparent (mopr-gui/repr-rdata:rdata-ynode nac0)
                                 :text (format nil "~S" (call-enode-aux-form-param node))))
-           (nar (make-instance 'mopr-ext/repr-rdata:attr-input-rdata
+           (nar (make-instance 'mopr-gui/repr-rdata:attr-input-rdata
                                :id 6
-                               :yparent (mopr-ext/repr-rdata:rdata-ynode ncc)
+                               :yparent (mopr-gui/repr-rdata:rdata-ynode ncc)
                                :text body-form-param-text
                                :h-co body-form-param-line-count)))
       (setf (rnode-rdatas ext)
@@ -412,28 +410,28 @@
 
 (defmethod enode-initialize-extension ((node prim-type-enode) (ext rnode))
   (let* ((color mopr-gui/repr-def:+command-theme-expr-bg-4+)
-         (nec (make-instance 'mopr-ext/repr-rdata:expr-container-rdata
+         (nec (make-instance 'mopr-gui/repr-rdata:expr-container-rdata
                              :id 0
                              :yparent (enode-get-ynode-anchor (enode-parent node))))
-         (nel (make-instance 'mopr-ext/repr-rdata:expr-label-rdata
+         (nel (make-instance 'mopr-gui/repr-rdata:expr-label-rdata
                              :id 1
-                             :yparent (mopr-ext/repr-rdata:rdata-ynode nec)
+                             :yparent (mopr-gui/repr-rdata:rdata-ynode nec)
                              :text "TYPE"
                              :bg color))
-         (ncc (make-instance 'mopr-ext/repr-rdata:content-container-rdata
+         (ncc (make-instance 'mopr-gui/repr-rdata:content-container-rdata
                              :id 2
-                             :yparent (mopr-ext/repr-rdata:rdata-ynode nec)))
-         (nac0 (make-instance 'mopr-ext/repr-rdata:attr-container-rdata
+                             :yparent (mopr-gui/repr-rdata:rdata-ynode nec)))
+         (nac0 (make-instance 'mopr-gui/repr-rdata:attr-container-rdata
                               :id 3
-                              :yparent (mopr-ext/repr-rdata:rdata-ynode ncc)))
-         (nal0 (make-instance 'mopr-ext/repr-rdata:attr-label-rdata
+                              :yparent (mopr-gui/repr-rdata:rdata-ynode ncc)))
+         (nal0 (make-instance 'mopr-gui/repr-rdata:attr-label-rdata
                               :id 4
-                              :yparent (mopr-ext/repr-rdata:rdata-ynode nac0)
+                              :yparent (mopr-gui/repr-rdata:rdata-ynode nac0)
                               :text "NAME"
                               :bg color))
-         (nai0 (make-instance 'mopr-ext/repr-rdata:attr-input-rdata
+         (nai0 (make-instance 'mopr-gui/repr-rdata:attr-input-rdata
                               :id 5
-                              :yparent (mopr-ext/repr-rdata:rdata-ynode nac0)
+                              :yparent (mopr-gui/repr-rdata:rdata-ynode nac0)
                               :text (format nil "~S" (prim-type-enode-name-param node)))))
     (setf (rnode-rdatas ext)
           (list nec nel ncc nac0 nal0 nai0))))
@@ -454,68 +452,68 @@
                         body-form-param-line-count)
       (format-form (prim-attr-enode-body-form-param node) *fill-column*)
     (let* ((color mopr-gui/repr-def:+command-theme-expr-bg-8+)
-           (nec (make-instance 'mopr-ext/repr-rdata:expr-container-rdata
+           (nec (make-instance 'mopr-gui/repr-rdata:expr-container-rdata
                                :id 0
                                :yparent (enode-get-ynode-anchor (enode-parent node))))
-           (nel (make-instance 'mopr-ext/repr-rdata:expr-label-rdata
+           (nel (make-instance 'mopr-gui/repr-rdata:expr-label-rdata
                                :id 1
-                               :yparent (mopr-ext/repr-rdata:rdata-ynode nec)
+                               :yparent (mopr-gui/repr-rdata:rdata-ynode nec)
                                :text "ATTR"
                                :bg color))
-           (ncc (make-instance 'mopr-ext/repr-rdata:content-container-rdata
+           (ncc (make-instance 'mopr-gui/repr-rdata:content-container-rdata
                                :id 2
-                               :yparent (mopr-ext/repr-rdata:rdata-ynode nec)))
-           (nac0 (make-instance 'mopr-ext/repr-rdata:attr-container-rdata
+                               :yparent (mopr-gui/repr-rdata:rdata-ynode nec)))
+           (nac0 (make-instance 'mopr-gui/repr-rdata:attr-container-rdata
                                 :id 3
-                                :yparent (mopr-ext/repr-rdata:rdata-ynode ncc)))
-           (nal0 (make-instance 'mopr-ext/repr-rdata:attr-label-rdata
+                                :yparent (mopr-gui/repr-rdata:rdata-ynode ncc)))
+           (nal0 (make-instance 'mopr-gui/repr-rdata:attr-label-rdata
                                 :id 4
-                                :yparent (mopr-ext/repr-rdata:rdata-ynode nac0)
+                                :yparent (mopr-gui/repr-rdata:rdata-ynode nac0)
                                 :text "NAME"
                                 :bg color))
-           (nai0 (make-instance 'mopr-ext/repr-rdata:attr-input-rdata
+           (nai0 (make-instance 'mopr-gui/repr-rdata:attr-input-rdata
                                 :id 5
-                                :yparent (mopr-ext/repr-rdata:rdata-ynode nac0)
+                                :yparent (mopr-gui/repr-rdata:rdata-ynode nac0)
                                 :text (format nil "~S" (prim-attr-enode-name-param node))))
-           (nac1 (make-instance 'mopr-ext/repr-rdata:attr-container-rdata
+           (nac1 (make-instance 'mopr-gui/repr-rdata:attr-container-rdata
                                 :id 6
-                                :yparent (mopr-ext/repr-rdata:rdata-ynode ncc)))
-           (nal1 (make-instance 'mopr-ext/repr-rdata:attr-label-rdata
+                                :yparent (mopr-gui/repr-rdata:rdata-ynode ncc)))
+           (nal1 (make-instance 'mopr-gui/repr-rdata:attr-label-rdata
                                 :id 7
-                                :yparent (mopr-ext/repr-rdata:rdata-ynode nac1)
+                                :yparent (mopr-gui/repr-rdata:rdata-ynode nac1)
                                 :text "META"
                                 :bg color))
-           (nai1 (make-instance 'mopr-ext/repr-rdata:attr-input-rdata
+           (nai1 (make-instance 'mopr-gui/repr-rdata:attr-input-rdata
                                 :id 8
-                                :yparent (mopr-ext/repr-rdata:rdata-ynode nac1)
+                                :yparent (mopr-gui/repr-rdata:rdata-ynode nac1)
                                 :text (format nil "~S" (prim-attr-enode-meta-form-param node))))
-           (nac2 (make-instance 'mopr-ext/repr-rdata:attr-container-rdata
+           (nac2 (make-instance 'mopr-gui/repr-rdata:attr-container-rdata
                                 :id 9
-                                :yparent (mopr-ext/repr-rdata:rdata-ynode ncc)))
-           (nal2 (make-instance 'mopr-ext/repr-rdata:attr-label-rdata
+                                :yparent (mopr-gui/repr-rdata:rdata-ynode ncc)))
+           (nal2 (make-instance 'mopr-gui/repr-rdata:attr-label-rdata
                                 :id 10
-                                :yparent (mopr-ext/repr-rdata:rdata-ynode nac2)
+                                :yparent (mopr-gui/repr-rdata:rdata-ynode nac2)
                                 :text "CATEGORY"
                                 :bg color))
-           (nai2 (make-instance 'mopr-ext/repr-rdata:attr-input-rdata
+           (nai2 (make-instance 'mopr-gui/repr-rdata:attr-input-rdata
                                 :id 11
-                                :yparent (mopr-ext/repr-rdata:rdata-ynode nac2)
+                                :yparent (mopr-gui/repr-rdata:rdata-ynode nac2)
                                 :text (format nil "~S" (prim-attr-enode-category-param node))))
-           (nac3 (make-instance 'mopr-ext/repr-rdata:attr-container-rdata
+           (nac3 (make-instance 'mopr-gui/repr-rdata:attr-container-rdata
                                 :id 12
-                                :yparent (mopr-ext/repr-rdata:rdata-ynode ncc)))
-           (nal3 (make-instance 'mopr-ext/repr-rdata:attr-label-rdata
+                                :yparent (mopr-gui/repr-rdata:rdata-ynode ncc)))
+           (nal3 (make-instance 'mopr-gui/repr-rdata:attr-label-rdata
                                 :id 13
-                                :yparent (mopr-ext/repr-rdata:rdata-ynode nac3)
+                                :yparent (mopr-gui/repr-rdata:rdata-ynode nac3)
                                 :text "TYPE"
                                 :bg color))
-           (nai3 (make-instance 'mopr-ext/repr-rdata:attr-input-rdata
+           (nai3 (make-instance 'mopr-gui/repr-rdata:attr-input-rdata
                                 :id 14
-                                :yparent (mopr-ext/repr-rdata:rdata-ynode nac3)
+                                :yparent (mopr-gui/repr-rdata:rdata-ynode nac3)
                                 :text (format nil "~S" (prim-attr-enode-type-param node))))
-           (nar (make-instance 'mopr-ext/repr-rdata:attr-input-rdata
+           (nar (make-instance 'mopr-gui/repr-rdata:attr-input-rdata
                                :id 15
-                               :yparent (mopr-ext/repr-rdata:rdata-ynode ncc)
+                               :yparent (mopr-gui/repr-rdata:rdata-ynode ncc)
                                :text body-form-param-text
                                :h-co body-form-param-line-count)))
       (setf (rnode-rdatas ext)
@@ -549,44 +547,44 @@
                         body-form-param-line-count)
       (format-form (prim-rel-enode-body-form-param node) *fill-column*)
     (let* ((color mopr-gui/repr-def:+command-theme-expr-bg-8+)
-           (nec (make-instance 'mopr-ext/repr-rdata:expr-container-rdata
+           (nec (make-instance 'mopr-gui/repr-rdata:expr-container-rdata
                                :id 0
                                :yparent (enode-get-ynode-anchor (enode-parent node))))
-           (nel (make-instance 'mopr-ext/repr-rdata:expr-label-rdata
+           (nel (make-instance 'mopr-gui/repr-rdata:expr-label-rdata
                                :id 1
-                               :yparent (mopr-ext/repr-rdata:rdata-ynode nec)
+                               :yparent (mopr-gui/repr-rdata:rdata-ynode nec)
                                :text "REL"
                                :bg color))
-           (ncc (make-instance 'mopr-ext/repr-rdata:content-container-rdata
+           (ncc (make-instance 'mopr-gui/repr-rdata:content-container-rdata
                                :id 2
-                               :yparent (mopr-ext/repr-rdata:rdata-ynode nec)))
-           (nac0 (make-instance 'mopr-ext/repr-rdata:attr-container-rdata
+                               :yparent (mopr-gui/repr-rdata:rdata-ynode nec)))
+           (nac0 (make-instance 'mopr-gui/repr-rdata:attr-container-rdata
                                 :id 3
-                                :yparent (mopr-ext/repr-rdata:rdata-ynode ncc)))
-           (nal0 (make-instance 'mopr-ext/repr-rdata:attr-label-rdata
+                                :yparent (mopr-gui/repr-rdata:rdata-ynode ncc)))
+           (nal0 (make-instance 'mopr-gui/repr-rdata:attr-label-rdata
                                 :id 4
-                                :yparent (mopr-ext/repr-rdata:rdata-ynode nac0)
+                                :yparent (mopr-gui/repr-rdata:rdata-ynode nac0)
                                 :text "NAME"
                                 :bg color))
-           (nai0 (make-instance 'mopr-ext/repr-rdata:attr-input-rdata
+           (nai0 (make-instance 'mopr-gui/repr-rdata:attr-input-rdata
                                 :id 5
-                                :yparent (mopr-ext/repr-rdata:rdata-ynode nac0)
+                                :yparent (mopr-gui/repr-rdata:rdata-ynode nac0)
                                 :text (format nil "~S" (prim-rel-enode-name-param node))))
-           (nac1 (make-instance 'mopr-ext/repr-rdata:attr-container-rdata
+           (nac1 (make-instance 'mopr-gui/repr-rdata:attr-container-rdata
                                 :id 6
-                                :yparent (mopr-ext/repr-rdata:rdata-ynode ncc)))
-           (nal1 (make-instance 'mopr-ext/repr-rdata:attr-label-rdata
+                                :yparent (mopr-gui/repr-rdata:rdata-ynode ncc)))
+           (nal1 (make-instance 'mopr-gui/repr-rdata:attr-label-rdata
                                 :id 7
-                                :yparent (mopr-ext/repr-rdata:rdata-ynode nac1)
+                                :yparent (mopr-gui/repr-rdata:rdata-ynode nac1)
                                 :text "META"
                                 :bg color))
-           (nai1 (make-instance 'mopr-ext/repr-rdata:attr-input-rdata
+           (nai1 (make-instance 'mopr-gui/repr-rdata:attr-input-rdata
                                 :id 8
-                                :yparent (mopr-ext/repr-rdata:rdata-ynode nac1)
+                                :yparent (mopr-gui/repr-rdata:rdata-ynode nac1)
                                 :text (format nil "~S" (prim-rel-enode-meta-form-param node))))
-           (nar (make-instance 'mopr-ext/repr-rdata:attr-input-rdata
+           (nar (make-instance 'mopr-gui/repr-rdata:attr-input-rdata
                                :id 9
-                               :yparent (mopr-ext/repr-rdata:rdata-ynode ncc)
+                               :yparent (mopr-gui/repr-rdata:rdata-ynode ncc)
                                :text body-form-param-text
                                :h-co body-form-param-line-count)))
       (setf (rnode-rdatas ext)
@@ -611,28 +609,28 @@
 
 (defmethod enode-initialize-extension ((node prim-ns-enode) (ext rnode))
   (let* ((color mopr-gui/repr-def:+command-theme-expr-bg-9+)
-         (nec (make-instance 'mopr-ext/repr-rdata:expr-container-rdata
+         (nec (make-instance 'mopr-gui/repr-rdata:expr-container-rdata
                              :id 0
                              :yparent (enode-get-ynode-anchor (enode-parent node))))
-         (nel (make-instance 'mopr-ext/repr-rdata:expr-label-rdata
+         (nel (make-instance 'mopr-gui/repr-rdata:expr-label-rdata
                              :id 1
-                             :yparent (mopr-ext/repr-rdata:rdata-ynode nec)
+                             :yparent (mopr-gui/repr-rdata:rdata-ynode nec)
                              :text "NS"
                              :bg color))
-         (ncc (make-instance 'mopr-ext/repr-rdata:content-container-rdata
+         (ncc (make-instance 'mopr-gui/repr-rdata:content-container-rdata
                              :id 2
-                             :yparent (mopr-ext/repr-rdata:rdata-ynode nec)))
-         (nac0 (make-instance 'mopr-ext/repr-rdata:attr-container-rdata
+                             :yparent (mopr-gui/repr-rdata:rdata-ynode nec)))
+         (nac0 (make-instance 'mopr-gui/repr-rdata:attr-container-rdata
                               :id 3
-                              :yparent (mopr-ext/repr-rdata:rdata-ynode ncc)))
-         (nal0 (make-instance 'mopr-ext/repr-rdata:attr-label-rdata
+                              :yparent (mopr-gui/repr-rdata:rdata-ynode ncc)))
+         (nal0 (make-instance 'mopr-gui/repr-rdata:attr-label-rdata
                               :id 4
-                              :yparent (mopr-ext/repr-rdata:rdata-ynode nac0)
+                              :yparent (mopr-gui/repr-rdata:rdata-ynode nac0)
                               :text "NAME"
                               :bg color))
-         (nai0 (make-instance 'mopr-ext/repr-rdata:attr-input-rdata
+         (nai0 (make-instance 'mopr-gui/repr-rdata:attr-input-rdata
                               :id 5
-                              :yparent (mopr-ext/repr-rdata:rdata-ynode nac0)
+                              :yparent (mopr-gui/repr-rdata:rdata-ynode nac0)
                               :text (format nil "~S" (prim-ns-enode-name-param node)))))
     (setf (rnode-rdatas ext)
           (list nec nel ncc nac0 nal0 nai0))))
@@ -652,28 +650,28 @@
 
 (defmethod enode-initialize-extension ((node prim-enode) (ext rnode))
   (let* ((color mopr-gui/repr-def:+command-theme-expr-bg-5+)
-         (nec (make-instance 'mopr-ext/repr-rdata:expr-container-rdata
+         (nec (make-instance 'mopr-gui/repr-rdata:expr-container-rdata
                              :id 0
                              :yparent (enode-get-ynode-anchor (enode-parent node))))
-         (nel (make-instance 'mopr-ext/repr-rdata:expr-label-rdata
+         (nel (make-instance 'mopr-gui/repr-rdata:expr-label-rdata
                              :id 1
-                             :yparent (mopr-ext/repr-rdata:rdata-ynode nec)
+                             :yparent (mopr-gui/repr-rdata:rdata-ynode nec)
                              :text "PRIM"
                              :bg color))
-         (ncc (make-instance 'mopr-ext/repr-rdata:content-container-rdata
+         (ncc (make-instance 'mopr-gui/repr-rdata:content-container-rdata
                              :id 2
-                             :yparent (mopr-ext/repr-rdata:rdata-ynode nec)))
-         (nac0 (make-instance 'mopr-ext/repr-rdata:attr-container-rdata
+                             :yparent (mopr-gui/repr-rdata:rdata-ynode nec)))
+         (nac0 (make-instance 'mopr-gui/repr-rdata:attr-container-rdata
                               :id 3
-                              :yparent (mopr-ext/repr-rdata:rdata-ynode ncc)))
-         (nal0 (make-instance 'mopr-ext/repr-rdata:attr-label-rdata
+                              :yparent (mopr-gui/repr-rdata:rdata-ynode ncc)))
+         (nal0 (make-instance 'mopr-gui/repr-rdata:attr-label-rdata
                               :id 4
-                              :yparent (mopr-ext/repr-rdata:rdata-ynode nac0)
+                              :yparent (mopr-gui/repr-rdata:rdata-ynode nac0)
                               :text "PATH"
                               :bg color))
-         (nai0 (make-instance 'mopr-ext/repr-rdata:attr-input-rdata
+         (nai0 (make-instance 'mopr-gui/repr-rdata:attr-input-rdata
                               :id 5
-                              :yparent (mopr-ext/repr-rdata:rdata-ynode nac0)
+                              :yparent (mopr-gui/repr-rdata:rdata-ynode nac0)
                               :text (format nil "~S" (prim-enode-path-form-param node)))))
     (setf (rnode-rdatas ext)
           (list nec nel ncc nac0 nal0 nai0))))
@@ -696,20 +694,20 @@
                         body-form-param-line-count)
       (format-form (tree-enode-body-form-param node) *fill-column*)
     (let* ((color mopr-gui/repr-def:+command-theme-expr-bg-6+)
-           (nec (make-instance 'mopr-ext/repr-rdata:expr-container-rdata
+           (nec (make-instance 'mopr-gui/repr-rdata:expr-container-rdata
                                :id 0
                                :yparent (enode-get-ynode-anchor (enode-parent node))))
-           (nel (make-instance 'mopr-ext/repr-rdata:expr-label-rdata
+           (nel (make-instance 'mopr-gui/repr-rdata:expr-label-rdata
                                :id 1
-                               :yparent (mopr-ext/repr-rdata:rdata-ynode nec)
+                               :yparent (mopr-gui/repr-rdata:rdata-ynode nec)
                                :text "TREE"
                                :bg color))
-           (ncc (make-instance 'mopr-ext/repr-rdata:content-container-rdata
+           (ncc (make-instance 'mopr-gui/repr-rdata:content-container-rdata
                                :id 2
-                               :yparent (mopr-ext/repr-rdata:rdata-ynode nec)))
-           (nar (make-instance 'mopr-ext/repr-rdata:attr-input-rdata
+                               :yparent (mopr-gui/repr-rdata:rdata-ynode nec)))
+           (nar (make-instance 'mopr-gui/repr-rdata:attr-input-rdata
                                :id 3
-                               :yparent (mopr-ext/repr-rdata:rdata-ynode ncc)
+                               :yparent (mopr-gui/repr-rdata:rdata-ynode ncc)
                                :text body-form-param-text
                                :h-co body-form-param-line-count)))
       (setf (rnode-rdatas ext)
@@ -731,20 +729,20 @@
                         body-form-param-line-count)
       (format-form (meta-enode-body-form-param node) *fill-column*)
     (let* ((color mopr-gui/repr-def:+command-theme-expr-bg-7+)
-           (nec (make-instance 'mopr-ext/repr-rdata:expr-container-rdata
+           (nec (make-instance 'mopr-gui/repr-rdata:expr-container-rdata
                                :id 0
                                :yparent (enode-get-ynode-anchor (enode-parent node))))
-           (nel (make-instance 'mopr-ext/repr-rdata:expr-label-rdata
+           (nel (make-instance 'mopr-gui/repr-rdata:expr-label-rdata
                                :id 1
-                               :yparent (mopr-ext/repr-rdata:rdata-ynode nec)
+                               :yparent (mopr-gui/repr-rdata:rdata-ynode nec)
                                :text "META"
                                :bg color))
-           (ncc (make-instance 'mopr-ext/repr-rdata:content-container-rdata
+           (ncc (make-instance 'mopr-gui/repr-rdata:content-container-rdata
                                :id 2
-                               :yparent (mopr-ext/repr-rdata:rdata-ynode nec)))
-           (nar (make-instance 'mopr-ext/repr-rdata:attr-input-rdata
+                               :yparent (mopr-gui/repr-rdata:rdata-ynode nec)))
+           (nar (make-instance 'mopr-gui/repr-rdata:attr-input-rdata
                                :id 3
-                               :yparent (mopr-ext/repr-rdata:rdata-ynode ncc)
+                               :yparent (mopr-gui/repr-rdata:rdata-ynode ncc)
                                :text body-form-param-text
                                :h-co body-form-param-line-count)))
       (setf (rnode-rdatas ext)
