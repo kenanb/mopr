@@ -114,5 +114,6 @@
    ;; ENODE-SERIALIZE
    #:deserialize
    #:enode-serialize
+   #:read-from-usds-file
 
    ))

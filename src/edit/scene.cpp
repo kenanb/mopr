@@ -55,8 +55,8 @@ static bool
  destructCommandQueue( CommandQueue * queue )
 {
     cl_object hQueue_l = ecl_make_pointer( queue );
-    cl_object pkgMoprExtRepr_l = ecl_find_package( "MOPR-GUI/REPR" );
-    cl_object symFn_l = getSymbol( "DESTRUCT-COMMAND-QUEUE", pkgMoprExtRepr_l );
+    cl_object pkgMoprGuiRepr_l = ecl_find_package( "MOPR-GUI/REPR" );
+    cl_object symFn_l = getSymbol( "DESTRUCT-COMMAND-QUEUE", pkgMoprGuiRepr_l );
     cl_funcall( 2, symFn_l, hQueue_l );
     return true;
 }
@@ -65,8 +65,8 @@ static bool
  destructCommandOptions( CommandOptions * options )
 {
     cl_object hOptions_l = ecl_make_pointer( options );
-    cl_object pkgMoprExtRepr_l = ecl_find_package( "MOPR-GUI/REPR" );
-    cl_object symFn_l = getSymbol( "DESTRUCT-COMMAND-OPTIONS", pkgMoprExtRepr_l );
+    cl_object pkgMoprGuiRepr_l = ecl_find_package( "MOPR-GUI/REPR" );
+    cl_object symFn_l = getSymbol( "DESTRUCT-COMMAND-OPTIONS", pkgMoprGuiRepr_l );
     cl_funcall( 2, symFn_l, hOptions_l );
     return true;
 }
@@ -166,8 +166,8 @@ static bool
     cl_object id_l = ecl_make_unsigned_integer( id );
     cl_object idSub_l = ecl_make_unsigned_integer( idSub );
     cl_object hOpts_l = ecl_make_pointer( opts );
-    cl_object pkgMoprExtUtil_l = ecl_find_package( "MOPR-EXT/UTIL" );
-    cl_object symFn_l = getSymbol( "POPULATE-COMMAND-OPTIONS", pkgMoprExtUtil_l );
+    cl_object pkgMoprGuiRepr_l = ecl_find_package( "MOPR-GUI/REPR" );
+    cl_object symFn_l = getSymbol( "POPULATE-COMMAND-OPTIONS", pkgMoprGuiRepr_l );
     cl_funcall( 4, symFn_l, hOpts_l, id_l, idSub_l );
     return true;
 }
@@ -191,8 +191,8 @@ static bool
     cl_object id_l = ecl_make_unsigned_integer( id );
     cl_object idSub_l = ecl_make_unsigned_integer( idSub );
     cl_object idOpt_l = ecl_make_unsigned_integer( idOpt );
-    cl_object pkgMoprExtUtil_l = ecl_find_package( "MOPR-EXT/UTIL" );
-    cl_object symFn_l = getSymbol( "APPLY-COMMAND-OPTION", pkgMoprExtUtil_l );
+    cl_object pkgMoprGuiRepr_l = ecl_find_package( "MOPR-GUI/REPR" );
+    cl_object symFn_l = getSymbol( "APPLY-COMMAND-OPTION", pkgMoprGuiRepr_l );
     cl_funcall( 4, symFn_l, id_l, idSub_l, idOpt_l );
     return true;
 }
