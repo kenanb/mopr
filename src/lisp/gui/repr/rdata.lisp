@@ -5,7 +5,6 @@
 
 (defpackage :mopr-gui/repr-rdata
   (:import-from :mopr-gui/repr-shared
-                #:layout-dimension
                 #:multiple-set-c-ref)
   (:use :cl)
   (:export
@@ -32,12 +31,12 @@
 
 (defun recursive-get-left (ynode)
   (if (autowrap:wrapper-null-p ynode) 0
-      (+ (layout-dimension ynode :left)
+      (+ (mopr-gui/layout-shared:layout-dimension ynode :left)
          (recursive-get-left (mopr-gui/yoga-fun:node-get-parent ynode)))))
 
 (defun recursive-get-top (ynode)
   (if (autowrap:wrapper-null-p ynode) 0
-      (+ (layout-dimension ynode :top)
+      (+ (mopr-gui/layout-shared:layout-dimension ynode :top)
          (recursive-get-top (mopr-gui/yoga-fun:node-get-parent ynode)))))
 
 ;;
@@ -75,8 +74,8 @@
                       :id-sub (rdata-id n)
                       :x (recursive-get-left y)
                       :y (recursive-get-top y)
-                      :w (layout-dimension y :width)
-                      :h (layout-dimension y :height)))
+                      :w (mopr-gui/layout-shared:layout-dimension y :width)
+                      :h (mopr-gui/layout-shared:layout-dimension y :height)))
 
 ;;
 ;;; HIDDEN-RDATA

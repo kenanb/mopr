@@ -15,7 +15,7 @@ static cl_object
 static cl_object
  example02( )
 {
-    const cl_object pkgMoprUtil_l = ecl_find_package( "MOPR-UTIL" );
+    const cl_object pkgMoprUtil_l = ecl_find_package( "MOPR-EXT/UTIL" );
     const cl_object strTestMopr_l = ecl_make_constant_base_string( "TEST-MOPR", -1 );
     int symTestMoprIf = 0;
     const cl_object symTestMopr_l =

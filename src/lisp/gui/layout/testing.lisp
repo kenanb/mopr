@@ -3,15 +3,15 @@
 
 (in-package :cl-user)
 
-(defpackage :mopr-gui/repr-testing
-  (:import-from :mopr-gui/repr-shared
+(defpackage :mopr-gui/layout-testing
+  (:import-from :mopr-gui/layout-shared
                 #:layout-dimension
                 #:with-layout-settings)
   (:use :cl)
   (:export
    #:testing))
 
-(in-package :mopr-gui/repr-testing)
+(in-package :mopr-gui/layout-testing)
 
 (defun dummy-yoga-layout (pixels-w pixels-h)
   ;; For disabling pixel rounding:

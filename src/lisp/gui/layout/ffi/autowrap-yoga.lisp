@@ -1,8 +1,8 @@
 (cl:in-package :mopr-gui/yoga-def)
 
 (autowrap:c-include
- '(#:mopr-gui #:yoga-ffi "moprYogaIncludes.h")
- :spec-path '(#:mopr-gui #:yoga-ffi #:spec)
+ '(#:mopr-gui #:layout-ffi "moprYogaIncludes.h")
+ :spec-path '(#:mopr-gui #:layout-ffi #:spec)
 
  ;; Only needed during spec generation. So once we generate the spec file,
  ;; we shouldn't need the envvar being defined for later REPL use.

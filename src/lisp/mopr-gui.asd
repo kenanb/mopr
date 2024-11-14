@@ -7,8 +7,8 @@
   :license "BSD-3-Clause"
 
   :components
-  ((:module #:yoga-ffi
-    :pathname "gui/yoga-ffi"
+  ((:module #:layout-ffi
+    :pathname "gui/layout/ffi"
     :components
     ((:file "package")
      (:file "autowrap-yoga"
@@ -19,9 +19,16 @@
       :depends-on ("package"))
      (:static-file "moprYogaIncludes.h")))
 
+   (:module #:layout
+    :pathname "gui/layout"
+    :depends-on ("layout-ffi")
+    :components
+    ((:file "shared")
+     (:file "testing"
+      :depends-on ("shared"))))
+
    (:module #:repr-ffi
-    :pathname "gui/repr-ffi"
-    :depends-on ("yoga-ffi")
+    :pathname "gui/repr/ffi"
     :components
     ((:file "package")
      (:file "autowrap-repr"
@@ -34,11 +41,9 @@
 
    (:module #:repr
     :pathname "gui/repr"
-    :depends-on ("yoga-ffi" "repr-ffi")
+    :depends-on ("repr-ffi" "layout-ffi" "layout")
     :components
     ((:file "shared")
-     (:file "testing"
-      :depends-on ("shared"))
      (:file "rdata"
       :depends-on ("shared"))
      (:file "rnode"

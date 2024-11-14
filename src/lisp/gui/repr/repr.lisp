@@ -5,8 +5,7 @@
 
 (defpackage :mopr-gui/repr
   (:import-from :mopr-gui/repr-shared
-                #:multiple-set-c-ref
-                #:with-layout-settings)
+                #:multiple-set-c-ref)
   (:use :cl)
   (:export
    #:initialize-and-bind-repr-tree
@@ -34,7 +33,8 @@
 ;;
 
 (defun initialize-and-bind-repr-tree (rn)
-  (with-layout-settings (mopr-sgt:enode-initialize-extensions-recursive rn))
+  (mopr-gui/layout-shared:with-layout-settings
+      (mopr-sgt:enode-initialize-extensions-recursive rn))
   (setf *root-enode* rn))
 
 (defun deinitialize-rnodes ()
@@ -98,7 +98,7 @@
            summing (%count-visible-rdata-recursive c))))
 
 (defun populate-command-queue (cmd-queue)
-  (with-layout-settings
+  (mopr-gui/layout-shared:with-layout-settings
       (let* ((pixels-w (plus-c:c-ref cmd-queue mopr-gui/repr-def:command-queue :pixels-w))
              ;; (pixels-h (plus-c:c-ref cmd-queue mopr-gui/repr-def:command-queue :pixels-h))
              (root-yn (mopr-gui/repr-rdata:rdata-ynode
@@ -119,7 +119,7 @@
                             :nof-commands (cvec-size wcmds)
                             :commands (autowrap:ptr (cvec-wrapper wcmds))
                             ;; Adjust height to the actual "used" height.
-                            :pixels-h (mopr-gui/repr-shared:layout-dimension root-yn :height)))))
+                            :pixels-h (mopr-gui/layout-shared:layout-dimension root-yn :height)))))
 
 ;; NOTE: Free calls are made from the same module the allocations were made from,
 ;;       to avoid possible issues with multiple malloc implementations in runtime.
