@@ -23,6 +23,12 @@
     :initform nil
     :accessor enode-extensions)))
 
+(defun enode-add-extensions-recursive (node ext-classes)
+  (loop for e in ext-classes
+        unless (member e (enode-extensions node) :key #'type-of)
+          do (push (make-instance e) (enode-extensions node)))
+  (loop for c across (enode-children node) do (enode-add-extensions-recursive c ext-classes)))
+
 (defgeneric enode-initialize-extension (node ext)
   (:documentation "Populate the extension bound to enode."))
 

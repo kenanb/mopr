@@ -1,7 +1,5 @@
 #include "scene.h"
 
-#include "client_ecl.h"
-
 #include "appConfig.h"
 #include "common.h"
 
@@ -19,7 +17,7 @@
 
 #include "base/mopr.h"
 
-#include "wrap/usd/box/layer.h"
+#include <iostream>
 
 // TF_VERIFY calls don't compile without the using directive.
 PXR_NAMESPACE_USING_DIRECTIVE
@@ -27,26 +25,15 @@ PXR_NAMESPACE_USING_DIRECTIVE
 namespace mopr
 {
 
-Scene::Scene( const std::string & usdsPath,
-              const char * camera,
-              float pixelsW,
-              float pixelsH )
+Scene::Scene( const pxr::SdfLayerRefPtr layer, const char * cameraPath )
     : stage( ), camera( ), drawTarget( ), lighting( ), renderSettings( )
 {
-    this->commandOptions.nofOptions = 0;
-    this->commandOptions.options = NULL;
-    this->commandQueue.nofCommands = 0;
-    this->commandQueue.commands = NULL;
-    this->commandQueue.pixelsW = pixelsW;
-    this->commandQueue.pixelsH = pixelsH;
-    this->initStageAndCamera( usdsPath, camera );
-    // mopr_print_command_queue( &this->commandQueue );
+    this->stage = pxr::UsdStage::Open( layer, pxr::UsdStage::LoadAll );
+    if ( cameraPath ) this->camera = pxr::SdfPath( cameraPath );
 }
 
 Scene::~Scene( )
 {
-    Client_ECL_destructCommandQueue( &this->commandQueue );
-    Client_ECL_destructCommandOptions( &this->commandOptions );
 }
 
 void
@@ -98,42 +85,6 @@ bool
     this->initLighting( appState );
 
     return true;
-}
-
-void
- Scene::initStageAndCamera( const std::string & usdsPath, const char * camera )
-{
-    pxr::SdfLayerRefPtr layer = pxr::SdfLayer::CreateAnonymous( );
-    MoprLayer sLayer;
-    sLayer.SetRefPtr( layer );
-    Client_ECL_readLispFile(
-     ( void * ) &sLayer, &this->commandQueue, usdsPath.c_str( ), 1 );
-    if ( !layer )
-    {
-        std::cerr << "Couldn't populate layer! " << std::endl;
-        exit( -1 );
-    }
-    this->stage = pxr::UsdStage::Open( layer, pxr::UsdStage::LoadAll );
-    if ( camera ) this->camera = pxr::SdfPath( camera );
-}
-
-void
- Scene::getCommandOptions( unsigned int id, unsigned int idSub )
-{
-    Client_ECL_populateCommandOptions( &this->commandOptions, id, idSub );
-    // mopr_print_command_options( &this->commandOptions );
-}
-
-void
- Scene::resetCommandOptions( )
-{
-    Client_ECL_destructCommandOptions( &this->commandOptions );
-}
-
-void
- Scene::applyOption( unsigned int id, unsigned int idSub, unsigned int idOpt )
-{
-    Client_ECL_applyOption( id, idSub, idOpt );
 }
 
 void

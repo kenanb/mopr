@@ -1,6 +1,8 @@
 // GL API providers (GLEW, GLApi) should be included before other GL headers.
 #include "pxr/imaging/garch/glApi.h"
 
+#include "client_ecl.h"
+
 #include "appConfig.h"
 #include "appDelegate.h"
 #include "appState.h"
@@ -13,6 +15,8 @@
 #include "scene.h"
 
 #include "repr/command.h"
+
+#include "wrap/usd/box/layer.h"
 
 #include "imgui.h"
 #include "imgui_impl_opengl3.h"
@@ -40,10 +44,39 @@ void
     // Construct scene.
     //
 
+    const std::string & usdsPath = appEnvironment->getResolvedInputPath( );
+    pxr::SdfLayerRefPtr layer = pxr::SdfLayer::CreateAnonymous( );
+    MoprLayer sLayer;
+    sLayer.SetRefPtr( layer );
+    Client_ECL_populateFromLispFile( ( void * ) &sLayer, usdsPath.c_str( ), 1 );
+    if ( !layer )
+    {
+        printf( "Couldn't populate layer!\n" );
+        exit( -1 );
+    }
+
     // Stage needs to be available for app state initialization.
-    Scene scene{
-        appEnvironment->getResolvedInputPath( ), appEnvironment->camera, 640.0, 960.0
-    };
+    Scene scene{ layer, appEnvironment->camera };
+
+    //
+    // Representation classes.
+    //
+
+    Client_ECL_initializeRepr( );
+
+    // Populated and cleaned up on the Lisp side.
+    CommandQueue commandQueue;
+    commandQueue.nofCommands = 0;
+    commandQueue.commands = NULL;
+    commandQueue.pixelsW = 640.0;
+    commandQueue.pixelsH = 960.0;
+
+    CommandOptions commandOptions;
+    commandOptions.nofOptions = 0;
+    commandOptions.options = NULL;
+
+    Client_ECL_populateCommandQueue( &commandQueue );
+    // mopr_print_command_queue( &commandQueue );
 
     //
     // Init app state.
@@ -219,7 +252,8 @@ void
 
         if ( optSelected )
         {
-            scene.applyOption( appState.idSelected, appState.idSubSelected, optSelected );
+            Client_ECL_applyOption(
+             appState.idSelected, appState.idSubSelected, optSelected );
 
             // Reset.
             optSelected = 0;
@@ -227,9 +261,13 @@ void
 
         if ( idPrev != appState.idSelected || idSubPrev != appState.idSubSelected )
         {
-            scene.resetCommandOptions( );
+            Client_ECL_destructCommandOptions( &commandOptions );
             if ( appState.idSelected )
-                scene.getCommandOptions( appState.idSelected, appState.idSubSelected );
+            {
+                Client_ECL_populateCommandOptions(
+                 &commandOptions, appState.idSelected, appState.idSubSelected );
+                // mopr_print_command_options( &commandOptions );
+            }
 
             // Reset.
             idPrev = appState.idSelected;
@@ -289,10 +327,10 @@ void
         ImGui_ImplSDL2_NewFrame( );
         ImGui::NewFrame( );
 
-        editor.draw( &scene.commandQueue, &appState.idSelected, &appState.idSubSelected );
-        if ( scene.commandOptions.nofOptions )
+        editor.draw( &commandQueue, &appState.idSelected, &appState.idSubSelected );
+        if ( commandOptions.nofOptions )
         {
-            editor.drawOptions( &scene.commandOptions, &optSelected );
+            editor.drawOptions( &commandOptions, &optSelected );
         }
 
         ImGui::Render( );
@@ -325,6 +363,10 @@ void
     GL_CALL( glDeleteVertexArrays( 1, &vaoDrawTarget ) );
 
     overlayProgram.fini( );
+
+    Client_ECL_deinitializeRepr( );
+    Client_ECL_destructCommandQueue( &commandQueue );
+    Client_ECL_destructCommandOptions( &commandOptions );
 }
 
 }   // namespace mopr

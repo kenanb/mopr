@@ -12,6 +12,7 @@
 
    ;; Generic APIs
    #:enode-find-extension
+   #:enode-add-extensions-recursive
    #:enode-initialize-extension
    #:enode-initialize-extensions-recursive
    #:debug-print

@@ -41,28 +41,9 @@ struct Scene
 
     pxr::VtDictionary renderSettings;
 
-    // Populated and cleaned up on the Lisp side.
-    CommandQueue commandQueue;
-    CommandOptions commandOptions;
-
-    Scene( const std::string & usdsPath,
-           const char * camera,
-           float pixelsW,
-           float pixelsH );
+    Scene( const pxr::SdfLayerRefPtr layer, const char * camera );
 
     ~Scene( );
-
-    void
-     initStageAndCamera( const std::string & usdsPath, const char * camera );
-
-    void
-     getCommandOptions( unsigned int id, unsigned int idSub );
-
-    void
-     resetCommandOptions( );
-
-    void
-     applyOption( unsigned int id, unsigned int idSub, unsigned int idOpt );
 
     void
      frameAll( double viewTranslate[ 3 ] );

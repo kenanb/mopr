@@ -14,10 +14,18 @@ extern "C"
 #endif
 
     MOPR_API unsigned int
-     Client_ECL_readLispFile( void * pLayer,
-                              CommandQueue * queue,
-                              const char * resolvedPath,
-                              unsigned int callEnabled );
+     Client_ECL_populateFromLispFile( void * pLayer,
+                                      const char * resolvedPath,
+                                      unsigned int callEnabled );
+
+    MOPR_API unsigned int
+     Client_ECL_initializeRepr( );
+
+    MOPR_API unsigned int
+     Client_ECL_deinitializeRepr( );
+
+    MOPR_API unsigned int
+     Client_ECL_populateCommandQueue( CommandQueue * queue );
 
     MOPR_API unsigned int
      Client_ECL_destructCommandQueue( CommandQueue * queue );

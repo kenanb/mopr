@@ -8,8 +8,9 @@
                 #:multiple-set-c-ref)
   (:use :cl)
   (:export
-   #:initialize-and-bind-repr-tree
-   #:deinitialize-rnodes
+   #:bind-for-representation
+   #:initialize-repr
+   #:deinitialize-repr
    #:populate-command-queue
    #:destruct-command-queue
    #:populate-command-options
@@ -32,12 +33,14 @@
 ;;; ENODE Tree
 ;;
 
-(defun initialize-and-bind-repr-tree (rn)
-  (mopr-gui/layout-shared:with-layout-settings
-      (mopr-sgt:enode-initialize-extensions-recursive rn))
-  (setf *root-enode* rn))
+(defun bind-for-representation (rn) (setf *root-enode* rn))
 
-(defun deinitialize-rnodes ()
+(defun initialize-repr ()
+  (mopr-sgt:enode-add-extensions-recursive *root-enode* '(mopr-gui/repr-rnode:rnode))
+  (mopr-gui/layout-shared:with-layout-settings
+      (mopr-sgt:enode-initialize-extensions-recursive *root-enode*)))
+
+(defun deinitialize-repr ()
   (mopr-gui/yoga-fun:node-free-recursive (mopr-gui/repr-rdata:rdata-ynode
                                           (car (enode-rdatas *root-enode*)))))
 
@@ -97,7 +100,10 @@
      (loop for c across (mopr-sgt:enode-children n)
            summing (%count-visible-rdata-recursive c))))
 
-(defun populate-command-queue (cmd-queue)
+(defun populate-command-queue (cmd-queue-ptr
+                               &aux
+                                 (cmd-queue (autowrap:wrap-pointer
+                                             cmd-queue-ptr 'mopr-gui/repr-def:command-queue)))
   (mopr-gui/layout-shared:with-layout-settings
       (let* ((pixels-w (plus-c:c-ref cmd-queue mopr-gui/repr-def:command-queue :pixels-w))
              ;; (pixels-h (plus-c:c-ref cmd-queue mopr-gui/repr-def:command-queue :pixels-h))
