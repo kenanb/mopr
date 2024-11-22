@@ -8,13 +8,13 @@
    #:enode
    #:enode-parent
    #:enode-children
-   #:enode-extensions
+   #:enode-components
 
    ;; Generic APIs
-   #:enode-find-extension
-   #:enode-add-extensions-recursive
-   #:enode-initialize-extension
-   #:enode-initialize-extensions-recursive
+   #:enode-find-component
+   #:enode-add-components-recursive
+   #:enode-initialize-component
+   #:enode-initialize-components-recursive
    #:debug-print
 
    ;; Main ENODE Categories

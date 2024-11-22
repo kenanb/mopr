@@ -17,32 +17,32 @@
     :initarg :parent
     :initform nil
     :accessor enode-parent)
-   (extensions
+   (components
     :type list
-    :initarg :extensions
+    :initarg :components
     :initform nil
-    :accessor enode-extensions)))
+    :accessor enode-components)))
 
-(defun enode-add-extensions-recursive (node ext-classes)
-  (loop for e in ext-classes
-        unless (member e (enode-extensions node) :key #'type-of)
-          do (push (make-instance e) (enode-extensions node)))
-  (loop for c across (enode-children node) do (enode-add-extensions-recursive c ext-classes)))
+(defun enode-add-components-recursive (node component-classes)
+  (loop for cc in component-classes
+        unless (member cc (enode-components node) :key #'type-of)
+          do (push (make-instance cc) (enode-components node)))
+  (loop for ch across (enode-children node)
+        do (enode-add-components-recursive ch component-classes)))
 
-(defgeneric enode-initialize-extension (node ext)
-  (:documentation "Populate the extension bound to enode."))
+(defgeneric enode-initialize-component (node component)
+  (:documentation "Populate the component bound to enode."))
 
-(defun enode-initialize-extensions-recursive (node)
-  (loop for ext in (enode-extensions node) do (enode-initialize-extension node ext))
-  (loop for c across (enode-children node) do (enode-initialize-extensions-recursive c)))
+(defun enode-initialize-components-recursive (node)
+  (loop for co in (enode-components node) do (enode-initialize-component node co))
+  (loop for ch across (enode-children node) do (enode-initialize-components-recursive ch)))
 
-(defun enode-find-extension (node typ)
-  (loop for ext in (enode-extensions node) when (typep ext typ)
-        return ext))
+(defun enode-find-component (node component-class)
+  (loop for co in (enode-components node) when (typep co component-class) return co))
 
 (defun debug-print-recursive (node &optional (nesting 0))
   (format t "~S - ~S~%" nesting node)
-  (loop for c across (enode-children node) do (debug-print-recursive c (1+ nesting))))
+  (loop for ch across (enode-children node) do (debug-print-recursive ch (1+ nesting))))
 
 (defun debug-print (node)
   (format t "DEBUG PRINTING NODE: ~S~%" node)

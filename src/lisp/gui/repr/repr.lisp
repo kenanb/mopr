@@ -26,7 +26,7 @@
 ;;
 
 (defun enode-rdatas (node)
-  (let ((rn (mopr-sgt:enode-find-extension node 'mopr-gui/repr-rnode:rnode)))
+  (let ((rn (mopr-sgt:enode-find-component node 'mopr-gui/repr-rnode:rnode)))
     (mopr-gui/repr-rnode:rnode-rdatas rn)))
 
 ;;
@@ -36,9 +36,9 @@
 (defun bind-for-representation (rn) (setf *root-enode* rn))
 
 (defun initialize-repr ()
-  (mopr-sgt:enode-add-extensions-recursive *root-enode* '(mopr-gui/repr-rnode:rnode))
+  (mopr-sgt:enode-add-components-recursive *root-enode* '(mopr-gui/repr-rnode:rnode))
   (mopr-gui/layout-shared:with-layout-settings
-      (mopr-sgt:enode-initialize-extensions-recursive *root-enode*)))
+      (mopr-sgt:enode-initialize-components-recursive *root-enode*)))
 
 (defun deinitialize-repr ()
   (mopr-gui/yoga-fun:node-free-recursive (mopr-gui/repr-rdata:rdata-ynode
@@ -83,7 +83,7 @@
 
 (defun %populate-commands-recursive (n wcmds
                                      &aux
-                                       (rn (mopr-sgt:enode-find-extension
+                                       (rn (mopr-sgt:enode-find-component
                                             n
                                             'mopr-gui/repr-rnode:rnode)))
   (loop for rd in (mopr-gui/repr-rnode:rnode-rdatas rn)

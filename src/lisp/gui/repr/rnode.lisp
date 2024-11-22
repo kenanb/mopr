@@ -62,7 +62,7 @@
 (defgeneric enode-get-ynode-anchor-index (node)
   (:documentation "Get the index of ynode that should contain child ynodes."))
 
-(defun enode-get-ynode-anchor (n &aux (rn (enode-find-extension n 'rnode)))
+(defun enode-get-ynode-anchor (n &aux (rn (enode-find-component n 'rnode)))
   (mopr-gui/repr-rdata:rdata-ynode
    (elt (rnode-rdatas rn)
         (enode-get-ynode-anchor-index n))))
@@ -76,7 +76,7 @@
 (defmethod enode-get-rdata-options ((node enode) id-sub)
   nil)
 
-(defun find-enode-by-rnode-id (n id &aux (rn (enode-find-extension n 'rnode)))
+(defun find-enode-by-rnode-id (n id &aux (rn (enode-find-component n 'rnode)))
   (if (eql (rnode-id rn) id) n
       (loop for c across (enode-children n) for x = (find-enode-by-rnode-id c id) if x return x)))
 
@@ -119,10 +119,10 @@
 ;;; ROOT-ENODE API
 ;;
 
-(defmethod enode-initialize-extension ((node root-enode) (ext rnode))
+(defmethod enode-initialize-component ((node root-enode) (component rnode))
   (let* ((nrc (make-instance 'mopr-gui/repr-rdata:root-container-rdata
                              :id 0)))
-    (setf (rnode-rdatas ext)
+    (setf (rnode-rdatas component)
           (list nrc))))
 
 (defmethod enode-get-ynode-anchor-index ((n root-enode)) 0)
@@ -131,10 +131,10 @@
 ;;; GROUP-ENODE API
 ;;
 
-(defmethod enode-initialize-extension ((node group-enode) (ext rnode))
+(defmethod enode-initialize-component ((node group-enode) (component rnode))
   (let* ((color mopr-gui/repr-def:+command-theme-expr-bg-9+)
          (ne (get-expr-rdatas color node "GROUP")))
-    (setf (rnode-rdatas ext)
+    (setf (rnode-rdatas component)
           (nconc ne))))
 
 (defmethod enode-get-ynode-anchor-index ((n group-enode)) 2)
@@ -148,7 +148,7 @@
 ;;; VAR-ENODE API
 ;;
 
-(defmethod enode-initialize-extension ((node var-enode) (ext rnode))
+(defmethod enode-initialize-component ((node var-enode) (component rnode))
   (multiple-value-bind (val-form-param-text
                         val-form-param-line-count)
       (format-form (var-enode-val-form-param node) *fill-column*)
@@ -164,7 +164,7 @@
                                :yparent (mopr-gui/repr-rdata:rdata-ynode ncc)
                                :text val-form-param-text
                                :h-co val-form-param-line-count)))
-      (setf (rnode-rdatas ext)
+      (setf (rnode-rdatas component)
             (nconc ne na0 na1 (list nar))))))
 
 ;; TODO
@@ -181,7 +181,7 @@
 ;;; EACH-ENODE API
 ;;
 
-(defmethod enode-initialize-extension ((node each-enode) (ext rnode))
+(defmethod enode-initialize-component ((node each-enode) (component rnode))
   (multiple-value-bind (vals-form-param-text
                         vals-form-param-line-count)
       (format-form (each-enode-vals-form-param node) *fill-column*)
@@ -195,7 +195,7 @@
            (na2 (get-attr-rdatas color ncc 9 "VALUE(S)"
                                  :text vals-form-param-text
                                  :h-co vals-form-param-line-count)))
-      (setf (rnode-rdatas ext)
+      (setf (rnode-rdatas component)
             (nconc ne na0 na1 na2)))))
 
 ;; TODO
@@ -213,7 +213,7 @@
 ;;; IOTA-ENODE API
 ;;
 
-(defmethod enode-initialize-extension ((node iota-enode) (ext rnode))
+(defmethod enode-initialize-component ((node iota-enode) (component rnode))
   (let* ((color mopr-gui/repr-def:+command-theme-expr-bg-2+)
          (ne (get-expr-rdatas color node "IOTA"))
          (ncc (third ne))
@@ -227,7 +227,7 @@
                                :text (format nil "~S" (iota-enode-start-param node))))
          (na4 (get-attr-rdatas color ncc 15 "STEP"
                                :text (format nil "~S" (iota-enode-step-param node)))))
-    (setf (rnode-rdatas ext)
+    (setf (rnode-rdatas component)
           (nconc ne na0 na1 na2 na3 na4))))
 
 ;; TODO
@@ -249,7 +249,7 @@
 ;;; CALL-ENODE API
 ;;
 
-(defmethod enode-initialize-extension ((node call-enode) (ext rnode))
+(defmethod enode-initialize-component ((node call-enode) (component rnode))
   (multiple-value-bind (body-form-param-text
                         body-form-param-line-count)
       (format-form (call-enode-body-form-param node) *fill-column*)
@@ -263,7 +263,7 @@
                                :yparent (mopr-gui/repr-rdata:rdata-ynode ncc)
                                :text body-form-param-text
                                :h-co body-form-param-line-count)))
-      (setf (rnode-rdatas ext)
+      (setf (rnode-rdatas component)
             (nconc ne na0 (list nar))))))
 
 ;; TODO
@@ -278,13 +278,13 @@
 ;;; PRIM-TYPE-ENODE API
 ;;
 
-(defmethod enode-initialize-extension ((node prim-type-enode) (ext rnode))
+(defmethod enode-initialize-component ((node prim-type-enode) (component rnode))
   (let* ((color mopr-gui/repr-def:+command-theme-expr-bg-4+)
          (ne (get-expr-rdatas color node "TYPE"))
          (ncc (third ne))
          (na0 (get-attr-rdatas color ncc 3 "NAME"
                                :text (format nil "~S" (prim-type-enode-name-param node)))))
-    (setf (rnode-rdatas ext)
+    (setf (rnode-rdatas component)
           (nconc ne na0))))
 
 ;; TODO
@@ -298,7 +298,7 @@
 ;;; PRIM-ATTR-ENODE API
 ;;
 
-(defmethod enode-initialize-extension ((node prim-attr-enode) (ext rnode))
+(defmethod enode-initialize-component ((node prim-attr-enode) (component rnode))
   (multiple-value-bind (body-form-param-text
                         body-form-param-line-count)
       (format-form (prim-attr-enode-body-form-param node) *fill-column*)
@@ -318,7 +318,7 @@
                                :yparent (mopr-gui/repr-rdata:rdata-ynode ncc)
                                :text body-form-param-text
                                :h-co body-form-param-line-count)))
-      (setf (rnode-rdatas ext)
+      (setf (rnode-rdatas component)
             (nconc ne na0 na1 na2 na3 (list nar))))))
 
 ;; TODO
@@ -339,7 +339,7 @@
 ;;; PRIM-REL-ENODE API
 ;;
 
-(defmethod enode-initialize-extension ((node prim-rel-enode) (ext rnode))
+(defmethod enode-initialize-component ((node prim-rel-enode) (component rnode))
   (multiple-value-bind (body-form-param-text
                         body-form-param-line-count)
       (format-form (prim-rel-enode-body-form-param node) *fill-column*)
@@ -355,7 +355,7 @@
                                :yparent (mopr-gui/repr-rdata:rdata-ynode ncc)
                                :text body-form-param-text
                                :h-co body-form-param-line-count)))
-      (setf (rnode-rdatas ext)
+      (setf (rnode-rdatas component)
             (nconc ne na0 na1 (list nar))))))
 
 ;; TODO
@@ -372,13 +372,13 @@
 ;;; PRIM-NS-ENODE API
 ;;
 
-(defmethod enode-initialize-extension ((node prim-ns-enode) (ext rnode))
+(defmethod enode-initialize-component ((node prim-ns-enode) (component rnode))
   (let* ((color mopr-gui/repr-def:+command-theme-expr-bg-9+)
          (ne (get-expr-rdatas color node "NS"))
          (ncc (third ne))
          (na0 (get-attr-rdatas color ncc 3 "NAME"
                                :text (format nil "~S" (prim-ns-enode-name-param node)))))
-    (setf (rnode-rdatas ext)
+    (setf (rnode-rdatas component)
           (nconc ne na0))))
 
 ;; TODO
@@ -394,13 +394,13 @@
 ;;; PRIM-ENODE API
 ;;
 
-(defmethod enode-initialize-extension ((node prim-enode) (ext rnode))
+(defmethod enode-initialize-component ((node prim-enode) (component rnode))
   (let* ((color mopr-gui/repr-def:+command-theme-expr-bg-5+)
          (ne (get-expr-rdatas color node "PRIM"))
          (ncc (third ne))
          (na0 (get-attr-rdatas color ncc 3 "PATH"
                                :text (format nil "~S" (prim-enode-path-form-param node)))))
-    (setf (rnode-rdatas ext)
+    (setf (rnode-rdatas component)
           (nconc ne na0))))
 
 ;; TODO
@@ -416,7 +416,7 @@
 ;;; TREE-ENODE API
 ;;
 
-(defmethod enode-initialize-extension ((node tree-enode) (ext rnode))
+(defmethod enode-initialize-component ((node tree-enode) (component rnode))
   (multiple-value-bind (body-form-param-text
                         body-form-param-line-count)
       (format-form (tree-enode-body-form-param node) *fill-column*)
@@ -428,7 +428,7 @@
                                :yparent (mopr-gui/repr-rdata:rdata-ynode ncc)
                                :text body-form-param-text
                                :h-co body-form-param-line-count)))
-      (setf (rnode-rdatas ext)
+      (setf (rnode-rdatas component)
             (nconc ne (list nar))))))
 
 ;; TODO
@@ -442,7 +442,7 @@
 ;;
 
 ;; TODO : Add support for metadata handling.
-(defmethod enode-initialize-extension ((node meta-enode) (ext rnode))
+(defmethod enode-initialize-component ((node meta-enode) (component rnode))
   (multiple-value-bind (body-form-param-text
                         body-form-param-line-count)
       (format-form (meta-enode-body-form-param node) *fill-column*)
@@ -454,7 +454,7 @@
                                :yparent (mopr-gui/repr-rdata:rdata-ynode ncc)
                                :text body-form-param-text
                                :h-co body-form-param-line-count)))
-      (setf (rnode-rdatas ext)
+      (setf (rnode-rdatas component)
             (nconc ne (list nar))))))
 
 ;; TODO
