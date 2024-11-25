@@ -7,205 +7,204 @@
 ;;; Mapping between ENODE and USDS Forms
 ;;
 
-(defgeneric enode-serialize (node)
+(defgeneric extract-payload (payload-class form)
+  (:documentation "Generate the payload that corresponds to USDS form."))
+
+(defgeneric list-enode-children (payload-class form)
+  (:documentation "Get the form that corresponds to the serialized children for given payload class."))
+
+;; DEBUG :
+
+;; (defmethod extract-payload :around (payload-class form)
+;;   (format t "~%EXTRACT-PAYLOAD: ~S ~S ~%" payload-class form)
+;;   (call-next-method))
+
+(defgeneric payload-serialize (payload)
   (:documentation "Get the list that represents the enode in USDS form."))
 
-(defmethod enode-serialize ((n enode))
-  (loop for ch across (enode-children n)
-        collecting (enode-serialize ch)))
+(defun enode-serialize (node)
+  (nconc
+   (payload-serialize (enode-payload node))
+   (loop for ch across (enode-children node)
+         collecting (enode-serialize ch))))
 
-(defmethod enode-serialize ((n root-enode))
-  (call-next-method))
-
-(defun root-form-params (form)
-  (declare (ignore form))
+(defmethod payload-serialize ((payload root-container))
   nil)
 
-(defun root-form-children (form)
-  form)
-
-(defmethod enode-serialize ((n group-enode))
-  `(:group
-    ,@(call-next-method)))
-
-(defun group-form-params (form)
+(defmethod extract-payload ((payload-class (eql 'root-container)) form)
   (declare (ignore form))
-  nil)
+  (make-instance payload-class))
 
-(defun group-form-children (form)
+(defmethod list-enode-children ((payload-class (eql 'root-container)) form)
   form)
 
-(defmethod enode-serialize ((n var-enode))
+(defmethod payload-serialize ((payload group-container))
+  `(:group))
+
+(defmethod extract-payload ((payload-class (eql 'group-container)) form)
+  (declare (ignore form))
+  (make-instance payload-class))
+
+(defmethod list-enode-children ((payload-class (eql 'group-container)) form)
+  form)
+
+(defmethod payload-serialize ((payload var-directive))
   `(:var
-    ,(var-enode-name-param n)
-    ,(var-enode-aux-form-param n)
-    ,@(var-enode-val-form-param n)
-    ,@(call-next-method)))
+    ,(var-directive-name-param payload)
+    ,(var-directive-aux-form-param payload)
+    ,@(var-directive-val-form-param payload)))
 
-(defun var-form-params (form)
-  (list :name-param (car form)
-        :aux-form-param (cadr form)
-        :val-form-param (cddr form)))
+(defmethod extract-payload ((payload-class (eql 'var-directive)) form)
+  (make-instance
+   payload-class
+   :name-param (car form)
+   :aux-form-param (cadr form)
+   :val-form-param (cddr form)))
 
-(defmethod enode-serialize ((n each-enode))
+(defmethod payload-serialize ((payload each-directive))
   `(:each
-    ,(each-enode-name-param n)
-    ,(each-enode-keys-form-param n)
-    ,@(each-enode-vals-form-param n)
-    ,@(call-next-method)))
+    ,(each-directive-name-param payload)
+    ,(each-directive-keys-form-param payload)
+    ,@(each-directive-vals-form-param payload)))
 
-(defun each-form-params (form)
-  (list :name-param (car form)
-        :keys-form-param (cadr form)
-        :vals-form-param (cddr form)))
+(defmethod extract-payload ((payload-class (eql 'each-directive)) form)
+  (make-instance
+   payload-class
+   :name-param (car form)
+   :keys-form-param (cadr form)
+   :vals-form-param (cddr form)))
 
-(defmethod enode-serialize ((n iota-enode))
+(defmethod payload-serialize ((payload iota-directive))
   `(:iota
-    ,(iota-enode-name-param n)
-    ,(iota-enode-key-param n)
-    ,(iota-enode-end-param n)
-    ,@(if (iota-enode-start-param n) (list (iota-enode-start-param n)))
-    ,@(if (iota-enode-step-param n) (list (iota-enode-step-param n)))
-    ,@(call-next-method)))
+    ,(iota-directive-name-param payload)
+    ,(iota-directive-key-param payload)
+    ,(iota-directive-end-param payload)
+    ,@(if (iota-directive-start-param payload) (list (iota-directive-start-param payload)))
+    ,@(if (iota-directive-step-param payload) (list (iota-directive-step-param payload)))))
 
-(defun iota-form-params (form &aux (len (length form)))
-  (list :name-param (nth 0 form)
-        :key-param (nth 1 form)
-        :end-param (nth 2 form)
-        :start-param (if (> len 3) (nth 3 form))
-        :step-param (if (> len 4) (nth 4 form))))
+(defmethod extract-payload ((payload-class (eql 'iota-directive)) form &aux (len (length form)))
+  (make-instance
+   payload-class
+   :name-param (nth 0 form)
+   :key-param (nth 1 form)
+   :end-param (nth 2 form)
+   :start-param (if (> len 3) (nth 3 form))
+   :step-param (if (> len 4) (nth 4 form))))
 
-(defmethod enode-serialize ((n call-enode))
+(defmethod payload-serialize ((payload call-directive))
   `(:call
-    ,(call-enode-aux-form-param n)
-    ,@(call-enode-body-form-param n)
-    ,@(call-next-method)))
+    ,(call-directive-aux-form-param payload)
+    ,@(call-directive-body-form-param payload)))
 
-(defun call-form-params (form)
-  (list :aux-form-param (car form)
-        :body-form-param (cdr form)))
+(defmethod extract-payload ((payload-class (eql 'call-directive)) form)
+  (make-instance
+   payload-class
+   :aux-form-param (car form)
+   :body-form-param (cdr form)))
 
-(defmethod enode-serialize ((n prim-type-enode))
+(defmethod extract-payload ((payload-class (eql 'prim-call-directive)) form)
+  (make-instance
+   payload-class
+   :aux-form-param (car form)
+   :body-form-param (cdr form)))
+
+(defmethod payload-serialize ((payload prim-type-statement))
   `(:type
-    ,(prim-type-enode-name-param n)
-    ,@(call-next-method)))
+    ,(prim-type-statement-name-param payload)))
 
-(defun prim-type-form-params (form)
-  (list :name-param (car form)))
+(defmethod extract-payload ((payload-class (eql 'prim-type-statement)) form)
+  (make-instance
+   payload-class
+   :name-param (car form)))
 
-(defmethod enode-serialize ((n prim-attr-enode))
+(defmethod payload-serialize ((payload prim-attr-statement))
   `(:attr
-    ,(if (prim-attr-enode-meta-form-param n)
+    ,(if (prim-attr-statement-meta-form-param payload)
          (cons
-          (prim-attr-enode-name-param n)
-          (prim-attr-enode-meta-form-param n))
-         (prim-attr-enode-name-param n))
-    ,(prim-attr-enode-category-param n)
-    ,(prim-attr-enode-type-param n)
-    ,@(prim-attr-enode-body-form-param n)
-    ,@(call-next-method)))
+          (prim-attr-statement-name-param payload)
+          (prim-attr-statement-meta-form-param payload))
+         (prim-attr-statement-name-param payload))
+    ,(prim-attr-statement-category-param payload)
+    ,(prim-attr-statement-type-param payload)
+    ,@(prim-attr-statement-body-form-param payload)))
 
-(defun prim-attr-form-params (form &aux (data (car form)))
-  (nconc
+(defmethod extract-payload ((payload-class (eql 'prim-attr-statement)) form &aux (data (car form)))
+  (apply
+   'make-instance
+   payload-class
+   :category-param (cadr form)
+   :type-param (caddr form)
+   :body-form-param (cdddr form)
    (etypecase data
      (symbol (list :name-param data :meta-form-param nil))
      (string (list :name-param data :meta-form-param nil))
-     (list (list :name-param (car data) :meta-form-param (cdr data))))
-   (list :category-param (cadr form)
-         :type-param (caddr form)
-         :body-form-param (cdddr form))))
+     (list (list :name-param (car data) :meta-form-param (cdr data))))))
 
-(defmethod enode-serialize ((n prim-rel-enode))
+(defmethod payload-serialize ((payload prim-rel-statement))
   `(:rel
-    ,(if (prim-rel-enode-meta-form-param n)
+    ,(if (prim-rel-statement-meta-form-param payload)
          (cons
-          (prim-rel-enode-name-param n)
-          (prim-rel-enode-meta-form-param n))
-         (prim-rel-enode-name-param n))
-    ,@(prim-rel-enode-body-form-param n)
-    ,@(call-next-method)))
+          (prim-rel-statement-name-param payload)
+          (prim-rel-statement-meta-form-param payload))
+         (prim-rel-statement-name-param payload))
+    ,@(prim-rel-statement-body-form-param payload)))
 
-(defun prim-rel-form-params (form &aux (data (car form)))
-  (nconc
+(defmethod extract-payload ((payload-class (eql 'prim-rel-statement)) form &aux (data (car form)))
+  (apply
+   'make-instance
+   payload-class
+   :body-form-param (cdr form)
    (etypecase data
      (symbol (list :name-param data :meta-form-param nil))
      (string (list :name-param data :meta-form-param nil))
-     (list (list :name-param (car data) :meta-form-param (cdr data))))
-   (list :body-form-param (cdr form))))
+     (list (list :name-param (car data) :meta-form-param (cdr data))))))
 
-(defmethod enode-serialize ((n prim-ns-enode))
+(defmethod payload-serialize ((payload prim-ns-container))
   `(:ns
-    ,(prim-ns-enode-name-param n)
-    ,@(call-next-method)))
+    ,(prim-ns-container-name-param payload)))
 
-(defun prim-ns-form-params (form)
-  (list :name-param (car form)))
+(defmethod extract-payload ((payload-class (eql 'prim-ns-container)) form)
+  (make-instance
+   payload-class
+   :name-param (car form)))
 
-(defun prim-ns-form-children (form)
+(defmethod list-enode-children ((payload-class (eql 'prim-ns-container)) form)
   (cdr form))
 
-(defmethod enode-serialize ((n prim-enode))
+(defmethod payload-serialize ((payload prim-statement))
   `(:prim
-    ,(prim-enode-path-form-param n)
-    ,@(call-next-method)))
+    ,(prim-statement-path-form-param payload)))
 
-(defun prim-form-params (form)
-  (list :path-form-param (car form)))
+(defmethod extract-payload ((payload-class (eql 'prim-statement)) form)
+  (make-instance
+   payload-class
+   :path-form-param (car form)))
 
-(defun prim-form-children (form)
+(defmethod list-enode-children ((payload-class (eql 'prim-statement)) form)
   (cdr form))
 
-(defmethod enode-serialize ((n tree-enode))
+(defmethod payload-serialize ((payload tree-statement))
   `(:tree
-    ,@(tree-enode-body-form-param n)
-    ,@(call-next-method)))
+    ,@(tree-statement-body-form-param payload)))
 
-(defun tree-form-params (form)
-  (list :body-form-param form))
+(defmethod extract-payload ((payload-class (eql 'tree-statement)) form)
+  (make-instance
+   payload-class
+   :body-form-param form))
 
-(defmethod enode-serialize ((n meta-enode))
+(defmethod payload-serialize ((payload meta-statement))
   `(:meta
-    ,@(meta-enode-body-form-param n)
-    ,@(call-next-method)))
+    ,@(meta-statement-body-form-param payload)))
 
-(defun meta-form-params (form)
-  (list :body-form-param form))
+(defmethod extract-payload ((payload-class (eql 'meta-statement)) form)
+  (make-instance
+   payload-class
+   :body-form-param form))
 
-;;
-;;; Unified Deserialization APIs
-;;
-
-(defun make-enode-instance (class form &key parent component-classes)
-  (apply #'make-instance class
-         :parent parent
-         :components (loop for cc in component-classes collecting (make-instance cc))
-         (funcall
-          (case class
-            ('root-enode #'root-form-params)
-            ('group-enode #'group-form-params)
-            ('var-enode #'var-form-params)
-            ('each-enode #'each-form-params)
-            ('iota-enode #'iota-form-params)
-            ('call-enode #'call-form-params)
-            ('prim-call-enode #'call-form-params)
-            ('prim-type-enode #'prim-type-form-params)
-            ('prim-attr-enode #'prim-attr-form-params)
-            ('prim-rel-enode #'prim-rel-form-params)
-            ('prim-meta-enode #'meta-form-params)
-            ('prim-ns-enode #'prim-ns-form-params)
-            ('prim-enode #'prim-form-params)
-            ('tree-enode #'tree-form-params)
-            ('meta-enode #'meta-form-params))
-          form)))
-
-(defun list-enode-children (class form)
-  (funcall
-   (case class
-     ('root-enode #'root-form-children)
-     ('group-enode #'group-form-children)
-     ('prim-enode #'prim-form-children)
-     ('prim-ns-enode #'prim-ns-form-children))
-   form))
+(defmethod extract-payload ((payload-class (eql 'prim-meta-statement)) form)
+  (make-instance
+   payload-class
+   :body-form-param form))
 
 ;;
 ;;; Form Handlers
@@ -230,76 +229,68 @@
   (when (and (eq action :debug) *debug-mode*)
     (error "Cannot handle form: ~S~%" form)))
 
+(defun generate-enode (parent component-classes payload)
+  (make-instance
+   'enode
+   :parent parent
+   :payload payload
+   :components (loop for cc in component-classes collecting (make-instance cc))))
+
+(defun generate-wired-enode (parent component-classes payload
+                             &aux (n (generate-enode parent component-classes payload)))
+  (vector-push-extend n (enode-children parent))
+  n)
+
 (defun deserialize-var-form (parent form component-classes)
   ;; (format t "~%Called deserialize-var-form!~%: ~S~%" form)
-  (vector-push-extend (make-enode-instance 'var-enode form
-                                           :parent parent
-                                           :component-classes component-classes)
-                      (enode-children parent)))
+  (generate-wired-enode parent component-classes
+                        (extract-payload 'var-directive form)))
 
 (defun deserialize-each-form (parent form component-classes)
   ;; (format t "~%Called deserialize-each-form!~%: ~S~%" form)
-  (vector-push-extend (make-enode-instance 'each-enode form
-                                           :parent parent
-                                           :component-classes component-classes)
-                      (enode-children parent)))
+  (generate-wired-enode parent component-classes
+                        (extract-payload 'each-directive form)))
 
 (defun deserialize-iota-form (parent form component-classes)
   ;; (format t "~%Called deserialize-iota-form!~%: ~S~%" form)
-  (vector-push-extend (make-enode-instance 'iota-enode form
-                                           :parent parent
-                                           :component-classes component-classes)
-                      (enode-children parent)))
+  (generate-wired-enode parent component-classes
+                        (extract-payload 'iota-directive form)))
 
 (defun deserialize-call-form (parent form component-classes)
   ;; (format t "~%Called deserialize-call-form!~%: ~S~%" form)
-  (vector-push-extend (make-enode-instance 'call-enode form
-                                           :parent parent
-                                           :component-classes component-classes)
-                      (enode-children parent)))
+  (generate-wired-enode parent component-classes
+                        (extract-payload 'call-directive form)))
 
 (defun deserialize-prim-call-form (parent form component-classes)
   ;; (format t "~%Called deserialize-call-form!~%: ~S~%" form)
-  (vector-push-extend (make-enode-instance 'prim-call-enode form
-                                           :parent parent
-                                           :component-classes component-classes)
-                      (enode-children parent)))
+  (generate-wired-enode parent component-classes
+                        (extract-payload 'prim-call-directive form)))
 
 (defun deserialize-prim-type-form (parent form component-classes)
   ;; (format t "~%Called deserialize-type-form!~%: ~S~%" form)
-  (vector-push-extend (make-enode-instance 'prim-type-enode form
-                                           :parent parent
-                                           :component-classes component-classes)
-                      (enode-children parent)))
+  (generate-wired-enode parent component-classes
+                        (extract-payload 'prim-type-statement form)))
 
 (defun deserialize-prim-meta-form (parent form component-classes)
   ;; (format t "~%Called deserialize-prim-meta-form!~%: ~S~%" form)
-  (vector-push-extend (make-enode-instance 'prim-meta-enode form
-                                           :parent parent
-                                           :component-classes component-classes)
-                      (enode-children parent)))
+  (generate-wired-enode parent component-classes
+                        (extract-payload 'prim-meta-statement form)))
 
 (defun deserialize-prim-attr-form (parent form component-classes)
   ;; (format t "~%Called deserialize-prim-attr-form!~%: ~S~%" form)
-  (vector-push-extend (make-enode-instance 'prim-attr-enode form
-                                           :parent parent
-                                           :component-classes component-classes)
-                      (enode-children parent)))
+  (generate-wired-enode parent component-classes
+                        (extract-payload 'prim-attr-statement form)))
 
 (defun deserialize-prim-rel-form (parent form component-classes)
   ;; (format t "~%Called deserialize-prim-rel-form!~%: ~S~%" form)
-  (vector-push-extend (make-enode-instance 'prim-rel-enode form
-                                           :parent parent
-                                           :component-classes component-classes)
-                      (enode-children parent)))
+  (generate-wired-enode parent component-classes
+                        (extract-payload 'prim-rel-statement form)))
 
 (defun deserialize-prim-ns-form (parent form component-classes)
   ;; (format t "~%Called deserialize-prim-ns-form!~%: ~S~%" form)
-  (let* ((nn (make-enode-instance 'prim-ns-enode form
-                                  :parent parent
-                                  :component-classes component-classes)))
-    (vector-push-extend nn (enode-children parent))
-    (loop for l in (list-enode-children 'prim-ns-enode form)
+  (let* ((nn (generate-wired-enode parent component-classes
+                                   (extract-payload 'prim-ns-container form))))
+    (loop for l in (list-enode-children 'prim-ns-container form)
           for fn = (case (car l)
                      (:attr   #'deserialize-prim-attr-form)
                      (:|attr| #'deserialize-prim-attr-form)
@@ -336,18 +327,14 @@
 
 (defun deserialize-prim-form (parent form component-classes)
   ;; (format t "~%Called deserialize-prim-form!~%: ~S~%" form)
-  (let* ((pn (make-enode-instance 'prim-enode form
-                                  :parent parent
-                                  :component-classes component-classes)))
-    (vector-push-extend pn (enode-children parent))
-    (deserialize-prim-subforms pn (list-enode-children 'prim-enode form) component-classes)))
+  (let* ((pn (generate-wired-enode parent component-classes
+                                   (extract-payload 'prim-statement form))))
+    (deserialize-prim-subforms pn (list-enode-children 'prim-statement form) component-classes)))
 
 (defun deserialize-group-form-generic (parent form component-classes fn)
-  (let* ((gn (make-enode-instance 'group-enode form
-                                  :parent parent
-                                  :component-classes component-classes)))
-    (vector-push-extend gn (enode-children parent))
-    (funcall fn gn (list-enode-children 'group-enode form) component-classes)))
+  (let* ((gn (generate-wired-enode parent component-classes
+                                   (extract-payload 'group-container form))))
+    (funcall fn gn (list-enode-children 'group-container form) component-classes)))
 
 (defun deserialize-prim-group-form (parent form component-classes)
   ;; (format t "~%Called deserialize-prim-group-form!~%: ~S~%" form)
@@ -355,17 +342,13 @@
 
 (defun deserialize-tree-form (parent form component-classes)
   ;; (format t "~%Called deserialize-tree-form!~%: ~S~%" form)
-  (vector-push-extend (make-enode-instance 'tree-enode form
-                                           :parent parent
-                                           :component-classes component-classes)
-                      (enode-children parent)))
+  (generate-wired-enode parent component-classes
+                        (extract-payload 'tree-statement form)))
 
 (defun deserialize-meta-form (parent form component-classes)
   ;; (format t "~%Called deserialize-meta-form!~%: ~S~%" form)
-  (vector-push-extend (make-enode-instance 'meta-enode form
-                                           :parent parent
-                                           :component-classes component-classes)
-                      (enode-children parent)))
+  (generate-wired-enode parent component-classes
+                        (extract-payload 'meta-statement form)))
 
 (defun deserialize-group-form (parent form component-classes)
   ;; (format t "~%Called deserialize-group-form!~%: ~S~%" form)
@@ -401,9 +384,17 @@
 
 (defun deserialize (usds-data component-classes
                     &aux
-                      (rn (make-enode-instance 'root-enode usds-data
-                                               :component-classes component-classes)))
-  (deserialize-data-subforms rn (list-enode-children 'root-enode usds-data) component-classes)
+                      (rn (generate-enode nil component-classes
+                                          (extract-payload 'root-container usds-data))))
+  (deserialize-data-subforms rn (list-enode-children 'root-container usds-data) component-classes)
+
+  ;; DEBUG :
+
+  ;; (format t "~%COMPARISON: ~S ~%"
+  ;;         (string-equal
+  ;;          (format nil "~S" usds-data)
+  ;;          (format nil "~S" (enode-serialize rn))))
+
   rn)
 
 (defun read-from-usds-file (filepath read-pkg &optional component-classes)

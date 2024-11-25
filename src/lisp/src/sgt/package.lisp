@@ -6,6 +6,7 @@
 
    ;; ENODE API
    #:enode
+   #:enode-payload
    #:enode-parent
    #:enode-children
    #:enode-components
@@ -17,93 +18,91 @@
    #:enode-initialize-components-recursive
    #:debug-print
 
-   ;; Main ENODE Categories
-   #:execution-enode
-   #:container-enode
-   #:directive-enode
+   ;; PAYLOAD CLASSES
+   #:payload
+   #:container
+   #:directive
+   #:statement
 
-   ;; ROOT-ENODE
-   #:root-enode
+   ;; ROOT-CONTAINER
+   #:root-container
 
-   ;; GROUP-ENODE
-   #:group-enode
+   ;; GROUP-CONTAINER
+   #:group-container
 
-   ;; VAR-ENODE
-   #:var-enode
-   #:var-enode-name-param
-   #:var-enode-aux-form-param
-   #:var-enode-val-form-param
+   ;; VAR-DIRECTIVE
+   #:var-directive
+   #:var-directive-name-param
+   #:var-directive-aux-form-param
+   #:var-directive-val-form-param
 
-   ;; EACH-ENODE
-   #:each-enode
-   #:each-enode-name-param
-   #:each-enode-keys-form-param
-   #:each-enode-vals-form-param
+   ;; EACH-DIRECTIVE
+   #:each-directive
+   #:each-directive-name-param
+   #:each-directive-keys-form-param
+   #:each-directive-vals-form-param
 
-   ;; IOTA-ENODE
-   #:iota-enode
-   #:iota-enode-name-param
-   #:iota-enode-key-param
-   #:iota-enode-end-param
-   #:iota-enode-start-param
-   #:iota-enode-step-param
+   ;; IOTA-DIRECTIVE
+   #:iota-directive
+   #:iota-directive-name-param
+   #:iota-directive-key-param
+   #:iota-directive-end-param
+   #:iota-directive-start-param
+   #:iota-directive-step-param
 
-   ;; CALL-ENODE
-   #:call-enode
-   #:call-enode-aux-form-param
-   #:call-enode-body-form-param
+   ;; CALL-DIRECTIVE
+   #:call-directive
+   #:call-directive-aux-form-param
+   #:call-directive-body-form-param
 
-   ;; PRIM-CALL-ENODE
-   #:prim-call-enode
+   ;; PRIM-CALL-DIRECTIVE
+   #:prim-call-directive
 
-   ;; PRIM-SCHEMA-PROP-ENODE
-   #:prim-schema-prop-enode
-   #:prim-schema-prop-enode-info-param
-   #:prim-schema-prop-enode-body-form-param
+   ;; PRIM-SCHEMA-PROP-STATEMENT
+   #:prim-schema-prop-statement
+   #:prim-schema-prop-statement-info-param
+   #:prim-schema-prop-statement-body-form-param
 
-   ;; PRIM-TYPE-ENODE
-   #:prim-type-enode
-   #:prim-type-enode-name-param
+   ;; PRIM-TYPE-STATEMENT
+   #:prim-type-statement
+   #:prim-type-statement-name-param
 
-   ;; PRIM-NS-ENODE
-   #:prim-ns-enode
-   #:prim-ns-enode-name-param
+   ;; PRIM-NS-CONTAINER
+   #:prim-ns-container
+   #:prim-ns-container-name-param
 
-   ;; PRIM-ATTR-ENODE
-   #:prim-attr-enode
-   #:prim-attr-enode-name-param
-   #:prim-attr-enode-meta-form-param
-   #:prim-attr-enode-category-param
-   #:prim-attr-enode-type-param
-   #:prim-attr-enode-body-form-param
+   ;; PRIM-ATTR-STATEMENT
+   #:prim-attr-statement
+   #:prim-attr-statement-name-param
+   #:prim-attr-statement-meta-form-param
+   #:prim-attr-statement-category-param
+   #:prim-attr-statement-type-param
+   #:prim-attr-statement-body-form-param
 
-   ;; PRIM-REL-ENODE
-   #:prim-rel-enode
-   #:prim-rel-enode-name-param
-   #:prim-rel-enode-meta-form-param
-   #:prim-rel-enode-body-form-param
+   ;; PRIM-REL-STATEMENT
+   #:prim-rel-statement
+   #:prim-rel-statement-name-param
+   #:prim-rel-statement-meta-form-param
+   #:prim-rel-statement-body-form-param
 
-   ;; PRIM-META-ENODE
-   #:prim-meta-enode
+   ;; PRIM-META-STATEMENT
+   #:prim-meta-statement
 
-   ;; PRIM-ENODE
-   #:prim-enode
-   #:prim-enode-path-form-param
+   ;; PRIM-STATEMENT
+   #:prim-statement
+   #:prim-statement-path-form-param
 
-   ;; TREE-ENODE
-   #:tree-enode
-   #:tree-enode-body-form-param
+   ;; TREE-STATEMENT
+   #:tree-statement
+   #:tree-statement-body-form-param
 
-   ;; META-ENODE
-   #:meta-enode
-   #:meta-enode-body-form-param
+   ;; META-STATEMENT
+   #:meta-statement
+   #:meta-statement-body-form-param
 
    ;; CALLABLES
    #:make-prop
    #:make-group
-
-   ;; ;; ENODE-COPY
-   ;; #:copy-enode-instance
 
    ;; ;; ENODE-PREPROCESS
    ;; #:preprocess-all

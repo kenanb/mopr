@@ -185,7 +185,7 @@
                                    (cmd-options (autowrap:wrap-pointer
                                                  cmd-options-ptr 'mopr-gui/repr-def:command-options)))
   (let* ((n (mopr-gui/repr-rnode:find-enode-by-rnode-id *root-enode* id))
-         (opts (mopr-gui/repr-rnode:enode-get-rdata-options n id-sub))
+         (opts (mopr-gui/repr-rnode:payload-get-rdata-options (mopr-sgt:enode-payload n) id-sub))
          (nof-opts (length opts))
          (vopts (autowrap:alloc :pointer nof-opts)))
 
@@ -198,6 +198,6 @@
 
 (defun apply-command-option (id id-sub id-opt)
   (let* ((n (mopr-gui/repr-rnode:find-enode-by-rnode-id *root-enode* id))
-         (opts (mopr-gui/repr-rnode:enode-get-rdata-options n id-sub))
+         (opts (mopr-gui/repr-rnode:payload-get-rdata-options (mopr-sgt:enode-payload n) id-sub))
          (idx (1- id-opt)))
     (format t "APPLIED OPTION: ~A~%" (nth idx opts))))

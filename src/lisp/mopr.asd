@@ -93,18 +93,23 @@ mainly in Lisp. UNTESTED. DO NOT USE!"
     :depends-on ("mopr" "info" "plug")
     :components
     ((:file "package")
+     (:module #:payload
+      :depends-on ("package")
+      :components
+      ((:file "base")
+       (:file "container" :depends-on ("base"))
+       (:file "directive" :depends-on ("base"))
+       (:file "statement" :depends-on ("base"))))
      (:file "enode"
-      :depends-on ("package"))
-     (:file "enode-copy"
-      :depends-on ("package" "enode"))
+      :depends-on ("package" "payload"))
      (:file "enode-preprocess"
-      :depends-on ("package" "enode" "enode-copy"))
+      :depends-on ("package" "payload" "enode"))
      (:file "enode-execute"
-      :depends-on ("package" "enode" "enode-preprocess"))
+      :depends-on ("package" "payload" "enode" "enode-preprocess"))
      (:file "enode-serialize"
-      :depends-on ("package" "enode"))
+      :depends-on ("package" "payload" "enode"))
      (:file "callables"
-      :depends-on ("package" "enode"))))))
+      :depends-on ("package" "payload" "enode"))))))
 
 (register-system-packages "mopr"
                           '(:mopr-ffi

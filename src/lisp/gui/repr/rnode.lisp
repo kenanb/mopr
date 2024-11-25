@@ -12,7 +12,7 @@
   (:export
 
    ;; Generic APIs
-   #:enode-get-rdata-options
+   #:payload-get-rdata-options
    #:find-enode-by-rnode-id
    #:populate-command-from-rnode
 
@@ -65,15 +65,15 @@
 (defun enode-get-ynode-anchor (n &aux (rn (enode-find-component n 'rnode)))
   (mopr-gui/repr-rdata:rdata-ynode
    (elt (rnode-rdatas rn)
-        (enode-get-ynode-anchor-index n))))
+        (enode-get-ynode-anchor-index (enode-payload n)))))
 
-(defgeneric enode-get-rdata-options (node id-sub)
+(defgeneric payload-get-rdata-options (payload id-sub)
   (:documentation "Get the options available for the selected rdata of given node."))
 
 (defmethod enode-get-ynode-anchor-index ((n enode))
   (error (format nil "ENODE type ~A doesn't support children!" (class-name (class-of n)))))
 
-(defmethod enode-get-rdata-options ((node enode) id-sub)
+(defmethod payload-get-rdata-options ((node enode) id-sub)
   nil)
 
 (defun find-enode-by-rnode-id (n id &aux (rn (enode-find-component n 'rnode)))
@@ -116,49 +116,49 @@
     (list nac nal nai)))
 
 ;;
-;;; ROOT-ENODE API
+;;; ROOT-CONTAINER API
 ;;
 
-(defmethod enode-initialize-component ((node root-enode) (component rnode))
+(defmethod enode-initialize-component ((payload root-container) node (component rnode))
   (let* ((nrc (make-instance 'mopr-gui/repr-rdata:root-container-rdata
                              :id 0)))
     (setf (rnode-rdatas component)
           (list nrc))))
 
-(defmethod enode-get-ynode-anchor-index ((n root-enode)) 0)
+(defmethod enode-get-ynode-anchor-index ((payload root-container)) 0)
 
 ;;
-;;; GROUP-ENODE API
+;;; GROUP-CONTAINER API
 ;;
 
-(defmethod enode-initialize-component ((node group-enode) (component rnode))
+(defmethod enode-initialize-component ((payload group-container) node (component rnode))
   (let* ((color mopr-gui/repr-def:+command-theme-expr-bg-9+)
          (ne (get-expr-rdatas color node "GROUP")))
     (setf (rnode-rdatas component)
           (nconc ne))))
 
-(defmethod enode-get-ynode-anchor-index ((n group-enode)) 2)
+(defmethod enode-get-ynode-anchor-index ((payload group-container)) 2)
 
 ;; TODO
-(defmethod enode-get-rdata-options ((node group-enode) id-sub)
+(defmethod payload-get-rdata-options ((payload group-container) id-sub)
   (case id-sub
     (1 (list "group expr-label-rdata"))))
 
 ;;
-;;; VAR-ENODE API
+;;; VAR-DIRECTIVE API
 ;;
 
-(defmethod enode-initialize-component ((node var-enode) (component rnode))
+(defmethod enode-initialize-component ((payload var-directive) node (component rnode))
   (multiple-value-bind (val-form-param-text
                         val-form-param-line-count)
-      (format-form (var-enode-val-form-param node) *fill-column*)
+      (format-form (var-directive-val-form-param payload) *fill-column*)
     (let* ((color mopr-gui/repr-def:+command-theme-expr-bg-0+)
            (ne (get-expr-rdatas color node "VAR"))
            (ncc (third ne))
            (na0 (get-attr-rdatas color ncc 3 "NAME"
-                                 :text (format nil "~S" (var-enode-name-param node))))
+                                 :text (format nil "~S" (var-directive-name-param payload))))
            (na1 (get-attr-rdatas color ncc 6 "AUX"
-                                 :text (format nil "~S" (var-enode-aux-form-param node))))
+                                 :text (format nil "~S" (var-directive-aux-form-param payload))))
            (nar (make-instance 'mopr-gui/repr-rdata:attr-input-rdata
                                :id 9
                                :yparent (mopr-gui/repr-rdata:rdata-ynode ncc)
@@ -168,7 +168,7 @@
             (nconc ne na0 na1 (list nar))))))
 
 ;; TODO
-(defmethod enode-get-rdata-options ((node var-enode) id-sub)
+(defmethod payload-get-rdata-options ((payload var-directive) id-sub)
   (case id-sub
     (1 (list "var expr-label-rdata"))
     (4 (list "var attr-label-rdata NAME"))
@@ -178,20 +178,20 @@
     (9 (list "var attr-input-rdata VAL FORM"))))
 
 ;;
-;;; EACH-ENODE API
+;;; EACH-DIRECTIVE API
 ;;
 
-(defmethod enode-initialize-component ((node each-enode) (component rnode))
+(defmethod enode-initialize-component ((payload each-directive) node (component rnode))
   (multiple-value-bind (vals-form-param-text
                         vals-form-param-line-count)
-      (format-form (each-enode-vals-form-param node) *fill-column*)
+      (format-form (each-directive-vals-form-param payload) *fill-column*)
     (let* ((color mopr-gui/repr-def:+command-theme-expr-bg-1+)
            (ne (get-expr-rdatas color node "EACH"))
            (ncc (third ne))
            (na0 (get-attr-rdatas color ncc 3 "NAME"
-                                 :text (format nil "~S" (each-enode-name-param node))))
+                                 :text (format nil "~S" (each-directive-name-param payload))))
            (na1 (get-attr-rdatas color ncc 6 "KEY(S)"
-                                 :text (format nil "~S" (each-enode-keys-form-param node))))
+                                 :text (format nil "~S" (each-directive-keys-form-param payload))))
            (na2 (get-attr-rdatas color ncc 9 "VALUE(S)"
                                  :text vals-form-param-text
                                  :h-co vals-form-param-line-count)))
@@ -199,7 +199,7 @@
             (nconc ne na0 na1 na2)))))
 
 ;; TODO
-(defmethod enode-get-rdata-options ((node each-enode) id-sub)
+(defmethod payload-get-rdata-options ((payload each-directive) id-sub)
   (case id-sub
     (1 (list "each expr-label-rdata"))
     (4 (list "each attr-label-rdata NAME"))
@@ -210,28 +210,28 @@
     (11 (list "each attr-input-rdata VALUE(S)"))))
 
 ;;
-;;; IOTA-ENODE API
+;;; IOTA-DIRECTIVE API
 ;;
 
-(defmethod enode-initialize-component ((node iota-enode) (component rnode))
+(defmethod enode-initialize-component ((payload iota-directive) node (component rnode))
   (let* ((color mopr-gui/repr-def:+command-theme-expr-bg-2+)
          (ne (get-expr-rdatas color node "IOTA"))
          (ncc (third ne))
          (na0 (get-attr-rdatas color ncc 3 "NAME"
-                               :text (format nil "~S" (iota-enode-name-param node))))
+                               :text (format nil "~S" (iota-directive-name-param payload))))
          (na1 (get-attr-rdatas color ncc 6 "KEY"
-                               :text (format nil "~S" (iota-enode-key-param node))))
+                               :text (format nil "~S" (iota-directive-key-param payload))))
          (na2 (get-attr-rdatas color ncc 9 "END"
-                               :text (format nil "~S" (iota-enode-end-param node))))
+                               :text (format nil "~S" (iota-directive-end-param payload))))
          (na3 (get-attr-rdatas color ncc 12 "START"
-                               :text (format nil "~S" (iota-enode-start-param node))))
+                               :text (format nil "~S" (iota-directive-start-param payload))))
          (na4 (get-attr-rdatas color ncc 15 "STEP"
-                               :text (format nil "~S" (iota-enode-step-param node)))))
+                               :text (format nil "~S" (iota-directive-step-param payload)))))
     (setf (rnode-rdatas component)
           (nconc ne na0 na1 na2 na3 na4))))
 
 ;; TODO
-(defmethod enode-get-rdata-options ((node iota-enode) id-sub)
+(defmethod payload-get-rdata-options ((payload iota-directive) id-sub)
   (case id-sub
     (1 (list "iota expr-label-rdata"))
     (4 (list "iota attr-label-rdata NAME"))
@@ -246,18 +246,18 @@
     (17 (list "iota attr-input-rdata STEP"))))
 
 ;;
-;;; CALL-ENODE API
+;;; CALL-DIRECTIVE API
 ;;
 
-(defmethod enode-initialize-component ((node call-enode) (component rnode))
+(defmethod enode-initialize-component ((payload call-directive) node (component rnode))
   (multiple-value-bind (body-form-param-text
                         body-form-param-line-count)
-      (format-form (call-enode-body-form-param node) *fill-column*)
+      (format-form (call-directive-body-form-param payload) *fill-column*)
     (let* ((color mopr-gui/repr-def:+command-theme-expr-bg-3+)
            (ne (get-expr-rdatas color node "CALL"))
            (ncc (third ne))
            (na0 (get-attr-rdatas color ncc 3 "AUX"
-                                 :text (format nil "~S" (call-enode-aux-form-param node))))
+                                 :text (format nil "~S" (call-directive-aux-form-param payload))))
            (nar (make-instance 'mopr-gui/repr-rdata:attr-input-rdata
                                :id 6
                                :yparent (mopr-gui/repr-rdata:rdata-ynode ncc)
@@ -267,7 +267,7 @@
             (nconc ne na0 (list nar))))))
 
 ;; TODO
-(defmethod enode-get-rdata-options ((node call-enode) id-sub)
+(defmethod payload-get-rdata-options ((payload call-directive) id-sub)
   (case id-sub
     (1 (list "call expr-label-rdata"))
     (4 (list "call attr-label-rdata AUX"))
@@ -275,44 +275,44 @@
     (6 (list "call attr-input-rdata BODY"))))
 
 ;;
-;;; PRIM-TYPE-ENODE API
+;;; PRIM-TYPE-STATEMENT API
 ;;
 
-(defmethod enode-initialize-component ((node prim-type-enode) (component rnode))
+(defmethod enode-initialize-component ((payload prim-type-statement) node (component rnode))
   (let* ((color mopr-gui/repr-def:+command-theme-expr-bg-4+)
          (ne (get-expr-rdatas color node "TYPE"))
          (ncc (third ne))
          (na0 (get-attr-rdatas color ncc 3 "NAME"
-                               :text (format nil "~S" (prim-type-enode-name-param node)))))
+                               :text (format nil "~S" (prim-type-statement-name-param payload)))))
     (setf (rnode-rdatas component)
           (nconc ne na0))))
 
 ;; TODO
-(defmethod enode-get-rdata-options ((node prim-type-enode) id-sub)
+(defmethod payload-get-rdata-options ((payload prim-type-statement) id-sub)
   (case id-sub
     (1 (list "prim-type expr-label-rdata"))
     (4 (list "prim-type attr-label-rdata NAME"))
     (5 (list "prim-type attr-input-rdata NAME"))))
 
 ;;
-;;; PRIM-ATTR-ENODE API
+;;; PRIM-ATTR-STATEMENT API
 ;;
 
-(defmethod enode-initialize-component ((node prim-attr-enode) (component rnode))
+(defmethod enode-initialize-component ((payload prim-attr-statement) node (component rnode))
   (multiple-value-bind (body-form-param-text
                         body-form-param-line-count)
-      (format-form (prim-attr-enode-body-form-param node) *fill-column*)
+      (format-form (prim-attr-statement-body-form-param payload) *fill-column*)
     (let* ((color mopr-gui/repr-def:+command-theme-expr-bg-8+)
            (ne (get-expr-rdatas color node "ATTR"))
            (ncc (third ne))
            (na0 (get-attr-rdatas color ncc 3 "NAME"
-                                 :text (format nil "~S" (prim-attr-enode-name-param node))))
+                                 :text (format nil "~S" (prim-attr-statement-name-param payload))))
            (na1 (get-attr-rdatas color ncc 6 "META"
-                                 :text (format nil "~S" (prim-attr-enode-meta-form-param node))))
+                                 :text (format nil "~S" (prim-attr-statement-meta-form-param payload))))
            (na2 (get-attr-rdatas color ncc 9 "CATEGORY"
-                                 :text (format nil "~S" (prim-attr-enode-category-param node))))
+                                 :text (format nil "~S" (prim-attr-statement-category-param payload))))
            (na3 (get-attr-rdatas color ncc 12 "TYPE"
-                                 :text (format nil "~S" (prim-attr-enode-type-param node))))
+                                 :text (format nil "~S" (prim-attr-statement-type-param payload))))
            (nar (make-instance 'mopr-gui/repr-rdata:attr-input-rdata
                                :id 15
                                :yparent (mopr-gui/repr-rdata:rdata-ynode ncc)
@@ -322,7 +322,7 @@
             (nconc ne na0 na1 na2 na3 (list nar))))))
 
 ;; TODO
-(defmethod enode-get-rdata-options ((node prim-attr-enode) id-sub)
+(defmethod payload-get-rdata-options ((payload prim-attr-statement) id-sub)
   (case id-sub
     (1 (list "prim-attr expr-label-rdata"))
     (4 (list "prim-attr attr-label-rdata NAME"))
@@ -336,20 +336,20 @@
     (15 (list "prim-attr attr-input-rdata BODY"))))
 
 ;;
-;;; PRIM-REL-ENODE API
+;;; PRIM-REL-STATEMENT API
 ;;
 
-(defmethod enode-initialize-component ((node prim-rel-enode) (component rnode))
+(defmethod enode-initialize-component ((payload prim-rel-statement) node (component rnode))
   (multiple-value-bind (body-form-param-text
                         body-form-param-line-count)
-      (format-form (prim-rel-enode-body-form-param node) *fill-column*)
+      (format-form (prim-rel-statement-body-form-param payload) *fill-column*)
     (let* ((color mopr-gui/repr-def:+command-theme-expr-bg-8+)
            (ne (get-expr-rdatas color node "REL"))
            (ncc (third ne))
            (na0 (get-attr-rdatas color ncc 3 "NAME"
-                                 :text (format nil "~S" (prim-rel-enode-name-param node))))
+                                 :text (format nil "~S" (prim-rel-statement-name-param payload))))
            (na1 (get-attr-rdatas color ncc 6 "META"
-                                 :text (format nil "~S" (prim-rel-enode-meta-form-param node))))
+                                 :text (format nil "~S" (prim-rel-statement-meta-form-param payload))))
            (nar (make-instance 'mopr-gui/repr-rdata:attr-input-rdata
                                :id 9
                                :yparent (mopr-gui/repr-rdata:rdata-ynode ncc)
@@ -359,7 +359,7 @@
             (nconc ne na0 na1 (list nar))))))
 
 ;; TODO
-(defmethod enode-get-rdata-options ((node prim-rel-enode) id-sub)
+(defmethod payload-get-rdata-options ((payload prim-rel-statement) id-sub)
   (case id-sub
     (1 (list "prim-rel expr-label-rdata"))
     (4 (list "prim-rel attr-label-rdata NAME"))
@@ -369,57 +369,57 @@
     (9 (list "prim-rel attr-input-rdata BODY"))))
 
 ;;
-;;; PRIM-NS-ENODE API
+;;; PRIM-NS-CONTAINER API
 ;;
 
-(defmethod enode-initialize-component ((node prim-ns-enode) (component rnode))
+(defmethod enode-initialize-component ((payload prim-ns-container) node (component rnode))
   (let* ((color mopr-gui/repr-def:+command-theme-expr-bg-9+)
          (ne (get-expr-rdatas color node "NS"))
          (ncc (third ne))
          (na0 (get-attr-rdatas color ncc 3 "NAME"
-                               :text (format nil "~S" (prim-ns-enode-name-param node)))))
+                               :text (format nil "~S" (prim-ns-container-name-param payload)))))
     (setf (rnode-rdatas component)
           (nconc ne na0))))
 
 ;; TODO
-(defmethod enode-get-rdata-options ((node prim-ns-enode) id-sub)
+(defmethod payload-get-rdata-options ((payload prim-ns-container) id-sub)
   (case id-sub
     (1 (list "prim-ns expr-label-rdata"))
     (4 (list "prim-ns attr-label-rdata NAME"))
     (5 (list "prim-ns attr-input-rdata NAME"))))
 
-(defmethod enode-get-ynode-anchor-index ((n prim-ns-enode)) 2)
+(defmethod enode-get-ynode-anchor-index ((payload prim-ns-container)) 2)
 
 ;;
-;;; PRIM-ENODE API
+;;; PRIM-STATEMENT API
 ;;
 
-(defmethod enode-initialize-component ((node prim-enode) (component rnode))
+(defmethod enode-initialize-component ((payload prim-statement) node (component rnode))
   (let* ((color mopr-gui/repr-def:+command-theme-expr-bg-5+)
          (ne (get-expr-rdatas color node "PRIM"))
          (ncc (third ne))
          (na0 (get-attr-rdatas color ncc 3 "PATH"
-                               :text (format nil "~S" (prim-enode-path-form-param node)))))
+                               :text (format nil "~S" (prim-statement-path-form-param payload)))))
     (setf (rnode-rdatas component)
           (nconc ne na0))))
 
 ;; TODO
-(defmethod enode-get-rdata-options ((node prim-enode) id-sub)
+(defmethod payload-get-rdata-options ((payload prim-statement) id-sub)
   (case id-sub
     (1 (list "prim expr-label-rdata"))
     (4 (list "prim attr-label-rdata PATH"))
     (5 (list "prim attr-input-rdata PATH"))))
 
-(defmethod enode-get-ynode-anchor-index ((n prim-enode)) 2)
+(defmethod enode-get-ynode-anchor-index ((payload prim-statement)) 2)
 
 ;;
-;;; TREE-ENODE API
+;;; TREE-STATEMENT API
 ;;
 
-(defmethod enode-initialize-component ((node tree-enode) (component rnode))
+(defmethod enode-initialize-component ((payload tree-statement) node (component rnode))
   (multiple-value-bind (body-form-param-text
                         body-form-param-line-count)
-      (format-form (tree-enode-body-form-param node) *fill-column*)
+      (format-form (tree-statement-body-form-param payload) *fill-column*)
     (let* ((color mopr-gui/repr-def:+command-theme-expr-bg-6+)
            (ne (get-expr-rdatas color node "TREE"))
            (ncc (third ne))
@@ -432,20 +432,20 @@
             (nconc ne (list nar))))))
 
 ;; TODO
-(defmethod enode-get-rdata-options ((node tree-enode) id-sub)
+(defmethod payload-get-rdata-options ((payload tree-statement) id-sub)
   (case id-sub
     (1 (list "tree expr-label-rdata"))
     (3 (list "tree attr-input-rdata BODY"))))
 
 ;;
-;;; META-ENODE API
+;;; META-STATEMENT API
 ;;
 
 ;; TODO : Add support for metadata handling.
-(defmethod enode-initialize-component ((node meta-enode) (component rnode))
+(defmethod enode-initialize-component ((payload meta-statement) node (component rnode))
   (multiple-value-bind (body-form-param-text
                         body-form-param-line-count)
-      (format-form (meta-enode-body-form-param node) *fill-column*)
+      (format-form (meta-statement-body-form-param payload) *fill-column*)
     (let* ((color mopr-gui/repr-def:+command-theme-expr-bg-7+)
            (ne (get-expr-rdatas color node "META"))
            (ncc (third ne))
@@ -458,7 +458,7 @@
             (nconc ne (list nar))))))
 
 ;; TODO
-(defmethod enode-get-rdata-options ((node meta-enode) id-sub)
+(defmethod payload-get-rdata-options ((payload meta-statement) id-sub)
   (case id-sub
     (1 (list "meta expr-label-rdata"))
     (3 (list "meta attr-input-rdata BODY"))))
