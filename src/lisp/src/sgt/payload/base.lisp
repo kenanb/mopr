@@ -3,5 +3,6 @@
 
 (in-package #:mopr-sgt)
 
-(defclass payload ()
-  ())
+(defstruct (payload
+            (:constructor nil)
+            (:copier nil)))

@@ -3,82 +3,67 @@
 
 (in-package #:mopr-sgt)
 
-(defclass statement (payload)
-  ())
+(defstruct (statement
+            (:include payload)
+            (:constructor nil)
+            (:copier nil)))
 
 ;; TODO : Unserializable and unrepresentable until the implementation is revised
 ;;        to only contain the information needed to generate the prop-info instance.
-(defclass prim-schema-prop-statement (statement)
-  ((info-param
-    :type mopr-info:prop-info
-    :initarg :info-param
-    :accessor prim-schema-prop-statement-info-param)
-   (body-form-param
-    :type list
-    :initarg :body-form-param
-    :accessor prim-schema-prop-statement-body-form-param)))
+(defstruct (prim-schema-prop-statement (:include statement))
+  (info-param (error "Unbound prim-schema-prop-statement param: info-param")
+   :read-only t
+   :type mopr-info:prop-info)
+  (body-form-param (error "Unbound prim-schema-prop-statement param: body-form-param")
+   :read-only t
+   :type list))
 
-(defclass prim-type-statement (statement)
-  ((name-param
-    :type base-string
-    :initarg :name-param
-    :accessor prim-type-statement-name-param)))
+(defstruct (prim-type-statement (:include statement))
+  (name-param (error "Unbound prim-type-statement param: name-param")
+   :read-only t
+   :type (or keyword base-string)))
 
-(defclass prim-attr-statement (statement)
-  ((name-param
-    :type (or symbol base-string)
-    :initarg :name-param
-    :accessor prim-attr-statement-name-param)
-   (meta-form-param
-    :type list
-    :initarg :meta-form-param
-    :initform nil
-    :accessor prim-attr-statement-meta-form-param)
-   (category-param
-    :type keyword
-    :initarg :category-param
-    :accessor prim-attr-statement-category-param)
-   (type-param
-    :type keyword
-    :initarg :type-param
-    :accessor prim-attr-statement-type-param)
-   (body-form-param
-    :type list
-    :initarg :body-form-param
-    :accessor prim-attr-statement-body-form-param)))
+(defstruct (prim-attr-statement (:include statement))
+  (name-param (error "Unbound prim-attr-statement param: name-param")
+   :read-only t
+   :type (or symbol base-string))
+  (meta-form-param nil
+   :read-only t
+   :type list)
+  (category-param (error "Unbound prim-attr-statement param: category-param")
+   :read-only t
+   :type keyword)
+  (type-param (error "Unbound prim-attr-statement param: type-param")
+   :read-only t
+   :type keyword)
+  (body-form-param (error "Unbound prim-attr-statement param: body-form-param")
+   :read-only t
+   :type list))
 
-(defclass prim-rel-statement (statement)
-  ((name-param
-    :type (or symbol base-string)
-    :initarg :name-param
-    :accessor prim-rel-statement-name-param)
-   (meta-form-param
-    :type list
-    :initarg :meta-form-param
-    :initform nil
-    :accessor prim-rel-statement-meta-form-param)
-   (body-form-param
-    :type list
-    :initarg :body-form-param
-    :accessor prim-rel-statement-body-form-param)))
+(defstruct (prim-rel-statement (:include statement))
+  (name-param (error "Unbound prim-rel-statement param: name-param")
+   :read-only t
+   :type (or symbol base-string))
+  (meta-form-param nil
+   :read-only t
+   :type list)
+  (body-form-param (error "Unbound prim-rel-statement param: body-form-param")
+   :read-only t
+   :type list))
 
-(defclass prim-statement (statement)
-  ((path-form-param
-    :type list
-    :initarg :path-form-param
-    :accessor prim-statement-path-form-param)))
+(defstruct (prim-statement (:include statement))
+  (path-form-param (error "Unbound prim-statement param: path-form-param")
+   :read-only t
+   :type (or list symbol)))
 
-(defclass tree-statement (statement)
-  ((body-form-param
-    :type list
-    :initarg :body-form-param
-    :accessor tree-statement-body-form-param)))
+(defstruct (tree-statement (:include statement))
+  (body-form-param (error "Unbound tree-statement param: body-form-param")
+   :read-only t
+   :type list))
 
-(defclass meta-statement (statement)
-  ((body-form-param
-    :type list
-    :initarg :body-form-param
-    :accessor meta-statement-body-form-param)))
+(defstruct (meta-statement (:include statement))
+  (body-form-param (error "Unbound meta-statement param: body-form-param")
+   :read-only t
+   :type list))
 
-(defclass prim-meta-statement (meta-statement)
-  ())
+(defstruct (prim-meta-statement (:include meta-statement)))

@@ -33,7 +33,7 @@
 
 (defmethod extract-payload ((payload-class (eql 'root-container)) form)
   (declare (ignore form))
-  (make-instance payload-class))
+  (make-root-container))
 
 (defmethod list-enode-children ((payload-class (eql 'root-container)) form)
   form)
@@ -43,7 +43,7 @@
 
 (defmethod extract-payload ((payload-class (eql 'group-container)) form)
   (declare (ignore form))
-  (make-instance payload-class))
+  (make-group-container))
 
 (defmethod list-enode-children ((payload-class (eql 'group-container)) form)
   form)
@@ -55,8 +55,7 @@
     ,@(var-directive-val-form-param payload)))
 
 (defmethod extract-payload ((payload-class (eql 'var-directive)) form)
-  (make-instance
-   payload-class
+  (make-var-directive
    :name-param (car form)
    :aux-form-param (cadr form)
    :val-form-param (cddr form)))
@@ -68,8 +67,7 @@
     ,@(each-directive-vals-form-param payload)))
 
 (defmethod extract-payload ((payload-class (eql 'each-directive)) form)
-  (make-instance
-   payload-class
+  (make-each-directive
    :name-param (car form)
    :keys-form-param (cadr form)
    :vals-form-param (cddr form)))
@@ -83,8 +81,7 @@
     ,@(if (iota-directive-step-param payload) (list (iota-directive-step-param payload)))))
 
 (defmethod extract-payload ((payload-class (eql 'iota-directive)) form &aux (len (length form)))
-  (make-instance
-   payload-class
+  (make-iota-directive
    :name-param (nth 0 form)
    :key-param (nth 1 form)
    :end-param (nth 2 form)
@@ -97,14 +94,12 @@
     ,@(call-directive-body-form-param payload)))
 
 (defmethod extract-payload ((payload-class (eql 'call-directive)) form)
-  (make-instance
-   payload-class
+  (make-call-directive
    :aux-form-param (car form)
    :body-form-param (cdr form)))
 
 (defmethod extract-payload ((payload-class (eql 'prim-call-directive)) form)
-  (make-instance
-   payload-class
+  (make-prim-call-directive
    :aux-form-param (car form)
    :body-form-param (cdr form)))
 
@@ -113,8 +108,7 @@
     ,(prim-type-statement-name-param payload)))
 
 (defmethod extract-payload ((payload-class (eql 'prim-type-statement)) form)
-  (make-instance
-   payload-class
+  (make-prim-type-statement
    :name-param (car form)))
 
 (defmethod payload-serialize ((payload prim-attr-statement))
@@ -128,17 +122,22 @@
     ,(prim-attr-statement-type-param payload)
     ,@(prim-attr-statement-body-form-param payload)))
 
+(defun map-property-name-and-meta (data)
+  (etypecase data
+    (symbol (list :name-param data :meta-form-param nil))
+    (string (list :name-param (coerce data 'base-string) :meta-form-param nil))
+    (list (list :name-param (etypecase (car data)
+                              (symbol (car data))
+                              (string (coerce (car data) 'base-string)))
+                :meta-form-param (cdr data)))))
+
 (defmethod extract-payload ((payload-class (eql 'prim-attr-statement)) form &aux (data (car form)))
   (apply
-   'make-instance
-   payload-class
+   'make-prim-attr-statement
    :category-param (cadr form)
    :type-param (caddr form)
    :body-form-param (cdddr form)
-   (etypecase data
-     (symbol (list :name-param data :meta-form-param nil))
-     (string (list :name-param data :meta-form-param nil))
-     (list (list :name-param (car data) :meta-form-param (cdr data))))))
+   (map-property-name-and-meta data)))
 
 (defmethod payload-serialize ((payload prim-rel-statement))
   `(:rel
@@ -151,22 +150,17 @@
 
 (defmethod extract-payload ((payload-class (eql 'prim-rel-statement)) form &aux (data (car form)))
   (apply
-   'make-instance
-   payload-class
+   'make-prim-rel-statement
    :body-form-param (cdr form)
-   (etypecase data
-     (symbol (list :name-param data :meta-form-param nil))
-     (string (list :name-param data :meta-form-param nil))
-     (list (list :name-param (car data) :meta-form-param (cdr data))))))
+   (map-property-name-and-meta data)))
 
 (defmethod payload-serialize ((payload prim-ns-container))
   `(:ns
     ,(prim-ns-container-name-param payload)))
 
 (defmethod extract-payload ((payload-class (eql 'prim-ns-container)) form)
-  (make-instance
-   payload-class
-   :name-param (car form)))
+  (make-prim-ns-container
+   :name-param (coerce (car form) 'base-string)))
 
 (defmethod list-enode-children ((payload-class (eql 'prim-ns-container)) form)
   (cdr form))
@@ -176,8 +170,7 @@
     ,(prim-statement-path-form-param payload)))
 
 (defmethod extract-payload ((payload-class (eql 'prim-statement)) form)
-  (make-instance
-   payload-class
+  (make-prim-statement
    :path-form-param (car form)))
 
 (defmethod list-enode-children ((payload-class (eql 'prim-statement)) form)
@@ -188,8 +181,7 @@
     ,@(tree-statement-body-form-param payload)))
 
 (defmethod extract-payload ((payload-class (eql 'tree-statement)) form)
-  (make-instance
-   payload-class
+  (make-tree-statement
    :body-form-param form))
 
 (defmethod payload-serialize ((payload meta-statement))
@@ -197,13 +189,11 @@
     ,@(meta-statement-body-form-param payload)))
 
 (defmethod extract-payload ((payload-class (eql 'meta-statement)) form)
-  (make-instance
-   payload-class
+  (make-meta-statement
    :body-form-param form))
 
 (defmethod extract-payload ((payload-class (eql 'prim-meta-statement)) form)
-  (make-instance
-   payload-class
+  (make-prim-meta-statement
    :body-form-param form))
 
 ;;

@@ -3,17 +3,16 @@
 
 (in-package #:mopr-sgt)
 
-(defclass container (payload)
-  ())
+(defstruct (container
+            (:include payload)
+            (:constructor nil)
+            (:copier nil)))
 
-(defclass root-container (container)
-  ())
+(defstruct (root-container (:include container)))
 
-(defclass group-container (container)
-  ())
+(defstruct (group-container (:include container)))
 
-(defclass prim-ns-container (container)
-  ((name-param
-    :type base-string
-    :initarg :name-param
-    :accessor prim-ns-container-name-param)))
+(defstruct (prim-ns-container (:include container))
+  (name-param (error "Unbound prim-ns-container: name-param")
+   :read-only t
+   :type base-string))
