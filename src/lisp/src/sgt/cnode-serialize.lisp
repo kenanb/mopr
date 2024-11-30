@@ -4,7 +4,7 @@
 (in-package #:mopr-sgt)
 
 ;;
-;;; Mapping between ENODE and USDS Forms
+;;; Mapping between CNODE and USDS Forms
 ;;
 
 (defgeneric extract-payload (payload-class form)
@@ -20,7 +20,7 @@
 ;;   (call-next-method))
 
 (defgeneric payload-serialize (payload)
-  (:documentation "Get the list that represents the enode in USDS form."))
+  (:documentation "Get the list that represents the cnode in USDS form."))
 
 (defun cnode-serialize (node)
   (nconc

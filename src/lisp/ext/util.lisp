@@ -31,4 +31,4 @@
   "CAUTION: Calls to functions registered to call tables can be dangerous, if enabled."
   (let* ((cn (mopr-sgt:read-from-usds-file filepath (get-mopr-user-package))))
     (mopr-sgt:populate-layer layer-h cn call-enabled)
-    (mopr-sgt:enode-from-cnode-recursive cn)))
+    cn))

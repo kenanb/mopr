@@ -33,7 +33,8 @@
 ;;; ENODE Tree
 ;;
 
-(defun bind-for-representation (rn) (setf *root-enode* rn))
+(defun bind-for-representation (rn)
+  (setf *root-enode* (mopr-sgt:enode-from-cnode-recursive rn)))
 
 (defun initialize-repr ()
   (mopr-sgt:enode-add-components-recursive *root-enode* '(mopr-gui/repr-rnode:rnode))
