@@ -104,14 +104,14 @@ mainly in Lisp. UNTESTED. DO NOT USE!"
       :depends-on ("package" "payload"))
      (:file "cnode-serialize"
       :depends-on ("package" "payload" "cnode"))
+     (:file "cnode-preprocess"
+      :depends-on ("package" "payload" "cnode"))
+     (:file "cnode-callables"
+      :depends-on ("package" "payload" "cnode"))
      (:file "enode"
       :depends-on ("package" "payload" "cnode"))
-     (:file "enode-preprocess"
-      :depends-on ("package" "payload" "enode"))
      (:file "enode-execute"
-      :depends-on ("package" "payload" "enode" "enode-preprocess"))
-     (:file "callables"
-      :depends-on ("package" "payload" "enode"))))))
+      :depends-on ("package" "payload" "enode" "cnode-preprocess"))))))
 
 (register-system-packages "mopr"
                           '(:mopr-ffi

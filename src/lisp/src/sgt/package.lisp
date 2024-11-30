@@ -147,6 +147,14 @@
    #:cnode-serialize
    #:read-from-usds-file
 
+   ;; ;; CNODE-PREPROCESS
+   ;; #:preprocess-all
+   ;; #:preprocess-all-call-enabled
+
+   ;; CNODE-CALLABLES
+   #:make-prop
+   #:make-group
+
    ;; EXTENDED NODE API
    #:make-enode
    #:enode-p
@@ -163,15 +171,7 @@
    #:enode-initialize-component
    #:enode-initialize-components-recursive
 
-   ;; ;; ENODE-PREPROCESS
-   ;; #:preprocess-all
-   ;; #:preprocess-all-call-enabled
-
    ;; ENODE-EXECUTE
    #:populate-layer
-
-   ;; CALLABLES
-   #:make-prop
-   #:make-group
 
    ))

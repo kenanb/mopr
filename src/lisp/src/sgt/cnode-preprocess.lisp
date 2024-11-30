@@ -22,18 +22,18 @@
 (defgeneric preprocess (payload)
   (:documentation "Preprocess payload."))
 
-(defun enode-preprocess (node)
-  (etypecase (enode-payload node)
-    (directive (preprocess (enode-payload node)))
-    (payload (list (make-enode :payload (enode-payload node))))))
+(defun cnode-preprocess (node)
+  (etypecase (cnode-payload node)
+    (directive (preprocess (cnode-payload node)))
+    (payload (list (make-cnode :payload (cnode-payload node))))))
 
 (defun preprocess-recursive (node &optional parent
-                             &aux (preprocessed (enode-preprocess node)))
-  "Create a preprocessed enode hierarchy."
+                             &aux (preprocessed (cnode-preprocess node)))
+  "Create a preprocessed cnode hierarchy."
   (loop for e in preprocessed
         do (progn
-             (when parent (vector-push-extend e (enode-children parent)))
-             (loop for c across (enode-children node) do (preprocess-recursive c e))))
+             (when parent (vector-push-extend e (cnode-children parent)))
+             (loop for c across (cnode-children node) do (preprocess-recursive c e))))
   preprocessed)
 
 ;; Assumes being called within a with-registry scope.
@@ -107,14 +107,14 @@
   nil)
 
 (defun has-directives-recursive (node)
-  (if (typep (enode-payload node) 'directive)
+  (if (typep (cnode-payload node) 'directive)
       t
-      (some #'has-directives-recursive (enode-children node))))
+      (some #'has-directives-recursive (cnode-children node))))
 
 (defun process-and-filter-call-stack (args body-form)
   (let ((initial-result
           (remove-if-not
-           (lambda (x) (typep x 'enode))
+           (lambda (x) (typep x 'cnode))
            (mopr-plug:process-call-stack args body-form *var-table*))))
     (if (some #'has-directives-recursive initial-result)
         (loop for n in initial-result nconc (preprocess-recursive n))

@@ -10,11 +10,6 @@
 (defvar *bind-table* nil)
 (defvar *alias-table* nil)
 
-(defun enode-record-parent-recursive (node)
-  (loop for ch across (enode-children node)
-        do (setf (enode-parent ch) node)
-        do (enode-record-parent-recursive ch)))
-
 (defun enode-execute (node target-h)
   (etypecase (enode-payload node)
     (container (enode-continue-execution node target-h))
@@ -32,20 +27,20 @@
           (*alias-table* (make-hash-table)))
      ,@body))
 
-(defun populate-layer (layer-h rn call-enabled)
+(defun populate-layer (layer-h cn call-enabled)
   (unless (zerop (mopr:layer-try-upgrade layer-h))
     (mopr:with-handle (stage-h :stage)
       (mopr:stage-open-layer stage-h layer-h)
       (mopr-info:with-registry (:supported-cases '(:upcase))
-        ;; (cnode-debug-print rn)
+        ;; (cnode-debug-print cn)
         (let* ((preprocess-all-fn (if call-enabled
                                       #'preprocess-all-call-enabled
                                       #'preprocess-all))
-               (rn-preprocessed (funcall preprocess-all-fn rn)))
-          ;; (cnode-debug-print rn-preprocessed)
-          (enode-record-parent-recursive rn-preprocessed)
+               (cn-preprocessed (funcall preprocess-all-fn cn))
+               (en-preprocessed (mopr-sgt:enode-from-cnode-recursive cn-preprocessed)))
+          ;; (cnode-debug-print cn-preprocessed)
           (with-execution-variables ()
-            (enode-execute rn-preprocessed stage-h)))))))
+            (enode-execute en-preprocessed stage-h)))))))
 
 (defgeneric execute (payload node target-h)
   (:documentation "Execute enode payload."))
