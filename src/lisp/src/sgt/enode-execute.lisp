@@ -37,12 +37,12 @@
     (mopr:with-handle (stage-h :stage)
       (mopr:stage-open-layer stage-h layer-h)
       (mopr-info:with-registry (:supported-cases '(:upcase))
-        ;; (debug-print rn)
+        ;; (cnode-debug-print rn)
         (let* ((preprocess-all-fn (if call-enabled
                                       #'preprocess-all-call-enabled
                                       #'preprocess-all))
                (rn-preprocessed (funcall preprocess-all-fn rn)))
-          ;; (debug-print rn-preprocessed)
+          ;; (cnode-debug-print rn-preprocessed)
           (enode-record-parent-recursive rn-preprocessed)
           (with-execution-variables ()
             (enode-execute rn-preprocessed stage-h)))))))

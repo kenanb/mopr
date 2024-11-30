@@ -10,7 +10,8 @@
   (:import-from :mopr-gui/repr-rnode)
   (:import-from :mopr-gui/repr)
   (:use #:cl)
-  (:export))
+  (:export
+   #:populate-from-lisp-file))
 
 (in-package :mopr-ext/util)
 
@@ -28,6 +29,7 @@
 
 (defun populate-from-lisp-file (layer-h filepath call-enabled)
   "CAUTION: Calls to functions registered to call tables can be dangerous, if enabled."
-  (let ((rn (mopr-sgt:read-from-usds-file filepath (get-mopr-user-package))))
-    (mopr-sgt:populate-layer layer-h rn call-enabled)
-    rn))
+  (let* ((cn (mopr-sgt:read-from-usds-file filepath (get-mopr-user-package)))
+         (en (mopr-sgt:enode-from-cnode-recursive cn)))
+    (mopr-sgt:populate-layer layer-h en call-enabled)
+    en))

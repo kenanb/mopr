@@ -3,9 +3,13 @@
 
 (in-package #:mopr-sgt)
 
-(defstruct (enode-core
+;;
+;;; CNODE
+;;
+
+(defstruct (cnode
             (:copier nil))
-  "Structure: ENODE-CORE
+  "Structure: CNODE
 
 Represents  the readably-printable,  serializable  and content-addressable  core
 enode content.
@@ -20,23 +24,44 @@ deep-copy."
 
   (payload (error "An enode cannot be initialized without a payload.")
    :type payload)
-  (children (make-array 0 :element-type 'enode-core
+  (children (make-array 0 :element-type 'cnode
                           :adjustable t
                           :fill-pointer 0)
-   :type (vector enode-core)))
+   :type (vector cnode)))
+
+(defun cnode-debug-print-recursive (node &optional (nesting 0))
+  (format t "~S - ~S~%" nesting node)
+  (loop for ch across (enode-children node) do (cnode-debug-print-recursive ch (1+ nesting))))
+
+(defun cnode-debug-print (node)
+  (format t "DEBUG PRINTING NODE:~% ~S~%" node)
+  (cnode-debug-print-recursive node)
+  (format t "~%" node))
+
+;;
+;;; ENODE
+;;
 
 (defmethod print-enode (node stream)
   (print-unreadable-object (node stream :type t :identity t)
     (princ (type-of (enode-payload node)) stream)))
 
 (defstruct (enode
-            (:include enode-core)
+            (:include cnode)
             (:copier nil)
             (:print-object print-enode))
   (parent nil
    :type (or null enode))
   (components nil
    :type list))
+
+(defun enode-from-cnode-recursive (cn &aux (en (make-enode :payload (cnode-payload cn))))
+  (loop for ch across (cnode-children cn)
+        for ch-ext = (enode-from-cnode-recursive ch)
+        do (progn
+             (vector-push-extend ch-ext (enode-children en))
+             (setf (enode-parent ch-ext) en)))
+  en)
 
 (defun enode-add-components-recursive (node component-classes)
   (loop for cc in component-classes
@@ -54,12 +79,3 @@ deep-copy."
 
 (defun enode-find-component (node component-class)
   (loop for co in (enode-components node) when (typep co component-class) return co))
-
-(defun debug-print-recursive (node &optional (nesting 0))
-  (format t "~S - ~S~%" nesting node)
-  (loop for ch across (enode-children node) do (debug-print-recursive ch (1+ nesting))))
-
-(defun debug-print (node)
-  (format t "DEBUG PRINTING NODE:~% ~S~%" node)
-  (debug-print-recursive node)
-  (format t "~%" node))

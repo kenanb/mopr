@@ -4,22 +4,6 @@
   (:use #:cl)
   (:export
 
-   ;; ENODE API
-   #:make-enode
-   #:enode-p
-   #:enode
-   #:enode-payload
-   #:enode-parent
-   #:enode-children
-   #:enode-components
-
-   ;; Generic APIs
-   #:enode-find-component
-   #:enode-add-components-recursive
-   #:enode-initialize-component
-   #:enode-initialize-components-recursive
-   #:debug-print
-
    ;; PAYLOAD CLASSES
    #:payload
    #:container
@@ -150,9 +134,34 @@
    #:meta-statement
    #:meta-statement-body-form-param
 
-   ;; CALLABLES
-   #:make-prop
-   #:make-group
+   ;; CORE NODE API
+   #:make-cnode
+   #:cnode-p
+   #:cnode
+   #:cnode-payload
+   #:cnode-children
+   #:cnode-debug-print
+
+   ;; CNODE-SERIALIZE
+   #:deserialize
+   #:cnode-serialize
+   #:read-from-usds-file
+
+   ;; EXTENDED NODE API
+   #:make-enode
+   #:enode-p
+   #:enode
+   #:enode-payload
+   #:enode-children
+   #:enode-parent
+   #:enode-components
+
+   ;; Generic APIs
+   #:enode-from-cnode-recursive
+   #:enode-find-component
+   #:enode-add-components-recursive
+   #:enode-initialize-component
+   #:enode-initialize-components-recursive
 
    ;; ;; ENODE-PREPROCESS
    ;; #:preprocess-all
@@ -161,9 +170,8 @@
    ;; ENODE-EXECUTE
    #:populate-layer
 
-   ;; ENODE-SERIALIZE
-   #:deserialize
-   #:enode-serialize
-   #:read-from-usds-file
+   ;; CALLABLES
+   #:make-prop
+   #:make-group
 
    ))
