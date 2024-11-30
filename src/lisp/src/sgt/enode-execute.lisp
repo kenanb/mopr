@@ -10,16 +10,19 @@
 (defvar *bind-table* nil)
 (defvar *alias-table* nil)
 
-(defun enode-execute (node target-h)
-  (etypecase (enode-payload node)
-    (container (enode-continue-execution node target-h))
+(defgeneric execute (payload node target-h containers)
+  (:documentation "Execute cnode payload."))
+
+(defun cnode-execute (node target-h &optional containers)
+  (etypecase (cnode-payload node)
+    (container (cnode-continue-execution node target-h (cons (cnode-payload node) containers)))
     ;; NOTE : If recursive re-expansion works correctly, no "directive"
     ;;        should be left in the tree by the time we execute it.
     (directive (error "Encountered directive that should have been preprocessed."))
-    (statement (execute (enode-payload node) node target-h))))
+    (statement (execute (cnode-payload node) node target-h containers))))
 
-(defun enode-continue-execution (node target-h)
-  (loop for ch across (enode-children node) do (enode-execute ch target-h)))
+(defun cnode-continue-execution (node target-h containers)
+  (loop for ch across (cnode-children node) do (cnode-execute ch target-h containers)))
 
 (defmacro with-execution-variables ((&key)
                                     &body body)
@@ -36,14 +39,10 @@
         (let* ((preprocess-all-fn (if call-enabled
                                       #'preprocess-all-call-enabled
                                       #'preprocess-all))
-               (cn-preprocessed (funcall preprocess-all-fn cn))
-               (en-preprocessed (mopr-sgt:enode-from-cnode-recursive cn-preprocessed)))
+               (cn-preprocessed (funcall preprocess-all-fn cn)))
           ;; (cnode-debug-print cn-preprocessed)
           (with-execution-variables ()
-            (enode-execute en-preprocessed stage-h)))))))
-
-(defgeneric execute (payload node target-h)
-  (:documentation "Execute enode payload."))
+            (cnode-execute cn-preprocessed stage-h)))))))
 
 ;;
 ;;; EXECUTE IMPLEMENTATIONS
@@ -73,7 +72,7 @@
                             (reverse r-prim-path)
                             r-prim-path)))
 
-(defmethod execute ((payload prim-type-statement) node prim-h
+(defmethod execute ((payload prim-type-statement) node prim-h containers
                     &aux (schema-name (prim-type-statement-name-param payload)))
   (declare (ignore node))
   (when schema-name
@@ -129,7 +128,7 @@
 
 ;; TODO: This node ignores the prim-ns-statement ancestors as it gets namespace information
 ;;       from schema. Its construction within a prim-ns-statement should probably be disallowed.
-(defmethod execute ((payload prim-schema-prop-statement) node prim-h
+(defmethod execute ((payload prim-schema-prop-statement) node prim-h containers
                     &aux (info (prim-schema-prop-statement-info-param payload)))
   (declare (ignore node))
   (etypecase info
@@ -139,16 +138,14 @@
      ;; TODO: We don't handle relationships yet.
      nil)))
 
-(defun collect-namespace (node &optional ns-list
-                          &aux
-                            (pn (enode-parent node))
-                            (pp (enode-payload pn)))
+(defun collect-namespace (containers &optional ns-list &aux (pp (car containers)))
   (etypecase pp
-    (prim-ns-container (collect-namespace pn (cons (prim-ns-container-name-param pp) ns-list)))
+    (prim-ns-container (collect-namespace (cdr containers)
+                                          (cons (prim-ns-container-name-param pp) ns-list)))
     (t ns-list)))
 
-(defmethod execute ((payload prim-attr-statement) node prim-h)
-  (let* ((ns-list (collect-namespace node))
+(defmethod execute ((payload prim-attr-statement) node prim-h containers)
+  (let* ((ns-list (collect-namespace containers))
          (array-attr-p (not (null (member (prim-attr-statement-category-param payload)
                                           '(:array :|array|)))))
          (info (make-instance
@@ -160,17 +157,17 @@
                 :meta (prim-attr-statement-meta-form-param payload))))
     (execute-attr info (prim-attr-statement-body-form-param payload) prim-h)))
 
-(defmethod execute ((payload prim-rel-statement) node prim-h)
+(defmethod execute ((payload prim-rel-statement) node prim-h containers)
   (declare (ignore node prim-h))
   ;; TODO: We don't handle relationships yet.
   nil)
 
-(defmethod execute ((payload prim-meta-statement) node prim-h)
+(defmethod execute ((payload prim-meta-statement) node prim-h containers)
   (declare (ignore node prim-h))
   ;; TODO: We don't handle metadata yet.
   nil)
 
-(defmethod execute ((payload prim-statement) node stage-h)
+(defmethod execute ((payload prim-statement) node stage-h containers)
   (declare (ignore node))
   (with-accessors ((prim-form prim-statement-path-form-param)) payload
     (let* ((prim-path (etypecase prim-form
@@ -181,7 +178,7 @@
                            (prim-h :prim))
         (mopr:path-ctor-cstr path-h prim-path-str)
         (mopr:stage-get-prim-at-path prim-h stage-h path-h)
-        (enode-continue-execution node prim-h)))))
+        (cnode-continue-execution node prim-h containers)))))
 
 (defclass tnode ()
   ((path
@@ -253,11 +250,11 @@
                                    r-prim-path))
     (process-prim-tree-recursive stage-h (cdr tree) r-ancestors)))
 
-(defmethod execute ((payload tree-statement) node stage-h)
+(defmethod execute ((payload tree-statement) node stage-h containers)
   (declare (ignore node))
   (process-prim-tree-recursive stage-h (tree-statement-body-form-param payload)))
 
-(defmethod execute ((payload meta-statement) node stage-h)
+(defmethod execute ((payload meta-statement) node stage-h containers)
   (declare (ignore node))
   ;; TODO: We don't handle metadata yet.
   nil)

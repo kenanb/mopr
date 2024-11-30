@@ -155,6 +155,9 @@
    #:make-prop
    #:make-group
 
+   ;; CNODE-EXECUTE
+   #:populate-layer
+
    ;; EXTENDED NODE API
    #:make-enode
    #:enode-p
@@ -170,8 +173,5 @@
    #:enode-add-components-recursive
    #:enode-initialize-component
    #:enode-initialize-components-recursive
-
-   ;; ENODE-EXECUTE
-   #:populate-layer
 
    ))
