@@ -141,6 +141,7 @@
    #:cnode-payload
    #:cnode-children
    #:cnode-debug-print
+   #:cnode-from-node-recursive
 
    ;; CNODE-SERIALIZE
    #:deserialize
@@ -166,9 +167,7 @@
    #:enode-children
    #:enode-parent
    #:enode-components
-
-   ;; Generic APIs
-   #:enode-from-cnode-recursive
+   #:enode-from-node-recursive
    #:enode-find-component
    #:enode-add-components-recursive
    #:enode-initialize-component

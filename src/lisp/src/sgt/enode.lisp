@@ -16,13 +16,12 @@
   (components nil
    :type list))
 
-(defun enode-from-cnode-recursive (cn &aux (en (make-enode :payload (cnode-payload cn))))
-  (loop for ch across (cnode-children cn)
-        for ch-ext = (enode-from-cnode-recursive ch)
-        do (progn
-             (vector-push-extend ch-ext (enode-children en))
-             (setf (enode-parent ch-ext) en)))
-  en)
+(defun enode-from-node-recursive (inode &aux (onode (make-enode :payload (cnode-payload inode))))
+  (loop for ch across (cnode-children inode)
+        for ch-new = (enode-from-node-recursive ch)
+        do (vector-push-extend ch-new (cnode-children onode))
+        do (setf (enode-parent ch-new) onode))
+  onode)
 
 (defun enode-add-components-recursive (node component-classes)
   (loop for cc in component-classes
