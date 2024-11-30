@@ -220,8 +220,7 @@
     (error "Cannot handle form: ~S~%" form)))
 
 (defun generate-enode (parent component-classes payload)
-  (make-instance
-   'enode
+  (make-enode
    :parent parent
    :payload payload
    :components (loop for cc in component-classes collecting (make-instance cc))))

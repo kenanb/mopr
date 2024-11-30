@@ -5,6 +5,8 @@
   (:export
 
    ;; ENODE API
+   #:make-enode
+   #:enode-p
    #:enode
    #:enode-payload
    #:enode-parent

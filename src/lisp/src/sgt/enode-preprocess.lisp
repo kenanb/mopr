@@ -25,7 +25,7 @@
 (defun enode-preprocess (node)
   (etypecase (enode-payload node)
     (directive (preprocess (enode-payload node)))
-    (payload (list (make-instance (class-of node) :payload (enode-payload node))))))
+    (payload (list (make-enode :payload (enode-payload node))))))
 
 (defun preprocess-recursive (node &optional parent
                              &aux (preprocessed (enode-preprocess node)))
