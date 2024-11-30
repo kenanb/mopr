@@ -100,14 +100,16 @@ mainly in Lisp. UNTESTED. DO NOT USE!"
        (:file "container" :depends-on ("base"))
        (:file "directive" :depends-on ("base"))
        (:file "statement" :depends-on ("base"))))
-     (:file "enode"
+     (:file "cnode"
       :depends-on ("package" "payload"))
+     (:file "cnode-serialize"
+      :depends-on ("package" "payload" "cnode"))
+     (:file "enode"
+      :depends-on ("package" "payload" "cnode"))
      (:file "enode-preprocess"
       :depends-on ("package" "payload" "enode"))
      (:file "enode-execute"
       :depends-on ("package" "payload" "enode" "enode-preprocess"))
-     (:file "enode-serialize"
-      :depends-on ("package" "payload" "enode"))
      (:file "callables"
       :depends-on ("package" "payload" "enode"))))))
 
