@@ -108,10 +108,10 @@ mainly in Lisp. UNTESTED. DO NOT USE!"
       :depends-on ("package" "payload" "cnode"))
      (:file "cnode-callables"
       :depends-on ("package" "payload" "cnode"))
+     (:file "cnode-execute"
+      :depends-on ("package" "payload" "cnode" "cnode-preprocess"))
      (:file "enode"
-      :depends-on ("package" "payload" "cnode"))
-     (:file "enode-execute"
-      :depends-on ("package" "payload" "enode" "cnode-preprocess"))))))
+      :depends-on ("package" "payload" "cnode"))))))
 
 (register-system-packages "mopr"
                           '(:mopr-ffi
