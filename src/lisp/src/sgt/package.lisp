@@ -134,6 +134,11 @@
    #:meta-statement
    #:meta-statement-body-form-param
 
+   ;; HEADER API
+   #:make-header
+   #:header-p
+   #:header
+
    ;; CORE NODE API
    #:make-cnode
    #:cnode-p
@@ -148,16 +153,9 @@
    #:cnode-serialize
    #:read-from-usds-file
 
-   ;; ;; CNODE-PREPROCESS
-   ;; #:preprocess-all
-   ;; #:preprocess-all-call-enabled
-
    ;; CNODE-CALLABLES
    #:make-prop
    #:make-group
-
-   ;; CNODE-EXECUTE
-   #:populate-layer
 
    ;; EXTENDED NODE API
    #:make-enode
@@ -172,5 +170,16 @@
    #:enode-add-components-recursive
    #:enode-initialize-component
    #:enode-initialize-components-recursive
+
+   ;; PROCEDURE API
+   #:make-procedure
+   #:make-cnode-procedure
+   #:make-enode-procedure
+   #:make-cnode-procedure-from-usds-file
+   #:procedure-p
+   #:procedure
+   #:procedure-header
+   #:procedure-root
+   #:procedure-apply-to-layer
 
    ))

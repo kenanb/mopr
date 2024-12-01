@@ -30,20 +30,6 @@
           (*alias-table* (make-hash-table)))
      ,@body))
 
-(defun populate-layer (layer-h cn call-enabled)
-  (unless (zerop (mopr:layer-try-upgrade layer-h))
-    (mopr:with-handle (stage-h :stage)
-      (mopr:stage-open-layer stage-h layer-h)
-      (mopr-info:with-registry (:supported-cases '(:upcase))
-        ;; (cnode-debug-print cn)
-        (let* ((preprocess-all-fn (if call-enabled
-                                      #'preprocess-all-call-enabled
-                                      #'preprocess-all))
-               (cn-preprocessed (funcall preprocess-all-fn cn)))
-          ;; (cnode-debug-print cn-preprocessed)
-          (with-execution-variables ()
-            (cnode-execute cn-preprocessed stage-h)))))))
-
 ;;
 ;;; EXECUTE IMPLEMENTATIONS
 ;;

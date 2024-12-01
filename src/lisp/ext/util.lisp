@@ -29,6 +29,6 @@
 
 (defun populate-from-lisp-file (layer-h filepath call-enabled)
   "CAUTION: Calls to functions registered to call tables can be dangerous, if enabled."
-  (let* ((cn (mopr-sgt:read-from-usds-file filepath (get-mopr-user-package))))
-    (mopr-sgt:populate-layer layer-h cn call-enabled)
-    cn))
+  (let* ((pr (mopr-sgt:make-cnode-procedure-from-usds-file filepath (get-mopr-user-package))))
+    (mopr-sgt:procedure-apply-to-layer pr layer-h call-enabled)
+    pr))

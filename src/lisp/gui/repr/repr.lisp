@@ -19,7 +19,7 @@
 
 (in-package :mopr-gui/repr)
 
-(defvar *root-enode* nil)
+(defvar *procedure* nil)
 
 ;;
 ;;; Utilities
@@ -29,21 +29,23 @@
   (let ((rn (mopr-sgt:enode-find-component node 'mopr-gui/repr-rnode:rnode)))
     (mopr-gui/repr-rnode:rnode-rdatas rn)))
 
+(defun get-root-enode () (mopr-sgt:procedure-root *procedure*))
+
 ;;
 ;;; ENODE Tree
 ;;
 
-(defun bind-for-representation (rn)
-  (setf *root-enode* (mopr-sgt:enode-from-node-recursive rn)))
+(defun bind-for-representation (pr)
+  (setf *procedure* (mopr-sgt:make-enode-procedure pr)))
 
 (defun initialize-repr ()
-  (mopr-sgt:enode-add-components-recursive *root-enode* '(mopr-gui/repr-rnode:rnode))
+  (mopr-sgt:enode-add-components-recursive (get-root-enode) '(mopr-gui/repr-rnode:rnode))
   (mopr-gui/layout-shared:with-layout-settings
-      (mopr-sgt:enode-initialize-components-recursive *root-enode*)))
+      (mopr-sgt:enode-initialize-components-recursive (get-root-enode))))
 
 (defun deinitialize-repr ()
   (mopr-gui/yoga-fun:node-free-recursive (mopr-gui/repr-rdata:rdata-ynode
-                                          (car (enode-rdatas *root-enode*)))))
+                                          (car (enode-rdatas (get-root-enode))))))
 
 ;;
 ;;; Trivial Vector Type Backed by a C Array
@@ -109,18 +111,18 @@
       (let* ((pixels-w (plus-c:c-ref cmd-queue mopr-gui/repr-def:command-queue :pixels-w))
              ;; (pixels-h (plus-c:c-ref cmd-queue mopr-gui/repr-def:command-queue :pixels-h))
              (root-yn (mopr-gui/repr-rdata:rdata-ynode
-                       (car (enode-rdatas *root-enode*))))
+                       (car (enode-rdatas (get-root-enode)))))
              (wcmds
                (make-instance 'cvec
                               :ctype 'mopr-gui/repr-def:combined-command
-                              :size (%count-visible-rdata-recursive *root-enode*))))
+                              :size (%count-visible-rdata-recursive (get-root-enode)))))
 
         (mopr-gui/yoga-fun:node-calculate-layout root-yn
                                                  pixels-w
                                                  mopr-gui/yoga-def:+undefined+ ;; pixels-h
                                                  mopr-gui/yoga-def:+direction-ltr+)
 
-        (%populate-commands-recursive *root-enode* wcmds)
+        (%populate-commands-recursive (get-root-enode) wcmds)
 
         (multiple-set-c-ref cmd-queue (mopr-gui/repr-def:command-queue)
                             :nof-commands (cvec-size wcmds)
@@ -185,7 +187,7 @@
                                  &aux
                                    (cmd-options (autowrap:wrap-pointer
                                                  cmd-options-ptr 'mopr-gui/repr-def:command-options)))
-  (let* ((n (mopr-gui/repr-rnode:find-enode-by-rnode-id *root-enode* id))
+  (let* ((n (mopr-gui/repr-rnode:find-enode-by-rnode-id (get-root-enode) id))
          (opts (mopr-gui/repr-rnode:payload-get-rdata-options (mopr-sgt:enode-payload n) id-sub))
          (nof-opts (length opts))
          (vopts (autowrap:alloc :pointer nof-opts)))
@@ -198,7 +200,7 @@
                         :options (autowrap:ptr vopts))))
 
 (defun apply-command-option (id id-sub id-opt)
-  (let* ((n (mopr-gui/repr-rnode:find-enode-by-rnode-id *root-enode* id))
+  (let* ((n (mopr-gui/repr-rnode:find-enode-by-rnode-id (get-root-enode) id))
          (opts (mopr-gui/repr-rnode:payload-get-rdata-options (mopr-sgt:enode-payload n) id-sub))
          (idx (1- id-opt)))
     (format t "APPLIED OPTION: ~A~%" (nth idx opts))))

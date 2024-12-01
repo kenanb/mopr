@@ -100,18 +100,30 @@ mainly in Lisp. UNTESTED. DO NOT USE!"
        (:file "container" :depends-on ("base"))
        (:file "directive" :depends-on ("base"))
        (:file "statement" :depends-on ("base"))))
-     (:file "cnode"
+     (:file "header"
       :depends-on ("package" "payload"))
+     (:file "cnode"
+      :depends-on ("package" "payload" "header"))
      (:file "cnode-serialize"
-      :depends-on ("package" "payload" "cnode"))
+      :depends-on ("package" "payload" "header" "cnode"))
      (:file "cnode-preprocess"
-      :depends-on ("package" "payload" "cnode"))
+      :depends-on ("package" "payload" "header" "cnode"))
      (:file "cnode-callables"
-      :depends-on ("package" "payload" "cnode"))
+      :depends-on ("package" "payload" "header" "cnode"))
      (:file "cnode-execute"
-      :depends-on ("package" "payload" "cnode" "cnode-preprocess"))
+      :depends-on ("package" "payload" "header" "cnode"))
      (:file "enode"
-      :depends-on ("package" "payload" "cnode"))))))
+      :depends-on ("package" "payload" "header" "cnode"))
+     (:file "procedure"
+      :depends-on
+      ("package"
+       "payload"
+       "header"
+       "cnode"
+       "cnode-serialize"
+       "cnode-preprocess"
+       "cnode-execute"
+       "enode"))))))
 
 (register-system-packages "mopr"
                           '(:mopr-ffi
