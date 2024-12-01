@@ -175,11 +175,13 @@
    #:make-procedure
    #:make-cnode-procedure
    #:make-enode-procedure
+   ;; #:make-preprocessed-cnode-procedure
    #:make-cnode-procedure-from-usds-file
    #:procedure-p
    #:procedure
    #:procedure-header
    #:procedure-root
+   #:procedure-debug-print
    #:procedure-apply-to-layer
 
    ))
