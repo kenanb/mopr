@@ -177,6 +177,8 @@
    #:make-enode-procedure
    ;; #:make-preprocessed-cnode-procedure
    #:make-cnode-procedure-from-usds-file
+   #:read-cnode-procedure-from-file
+   #:dump-cnode-procedure-to-file
    #:procedure-p
    #:procedure
    #:procedure-header

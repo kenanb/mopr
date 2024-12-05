@@ -35,3 +35,18 @@
           ;; (procedure-debug-print pr)
           (with-execution-variables ()
             (cnode-execute (procedure-root pr-preprocessed) stage-h)))))))
+
+(defun read-cnode-procedure-from-file (filepath)
+  "CAUTION: Even though READ-EVAL is disabled, relying on READ for data is still dangerous!"
+  (with-open-file (in filepath)
+    (with-standard-io-syntax
+      (let ((*print-readably* t)
+            (*read-eval* nil))
+        (read in nil)))))
+
+(defun dump-cnode-procedure-to-file (pr filepath &key (if-exists :supersede))
+  (with-open-file (out filepath :direction :output :if-exists if-exists)
+    (with-standard-io-syntax
+      (let ((*print-readably* t)
+            (*read-eval* nil))
+        (prin1 pr out)))))
