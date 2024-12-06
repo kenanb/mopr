@@ -25,7 +25,7 @@ deep-copy."
                           :fill-pointer 0)
    :type (vector cnode)))
 
-(defun cnode-from-node-recursive (inode &aux (onode (make-cnode :payload (cnode-payload cn))))
+(defun cnode-from-node-recursive (inode &aux (onode (make-cnode :payload (cnode-payload inode))))
   (loop for ch across (cnode-children inode)
         for ch-new = (cnode-from-node-recursive ch)
         do (vector-push-extend ch-new (cnode-children onode)))

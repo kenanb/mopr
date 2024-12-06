@@ -36,17 +36,42 @@
           (with-execution-variables ()
             (cnode-execute (procedure-root pr-preprocessed) stage-h)))))))
 
+(defmacro with-limited-procedure-io-syntax ((&key read-pkg) &body body)
+  `(with-standard-io-syntax
+     (let ((*package* ,read-pkg)
+           ;; Assignments based on uiop/stream:with-safe-io-syntax .
+           (*print-readably* nil)
+           (*read-eval* nil))
+       ,@body)))
+
+(defmacro with-generic-procedure-io-syntax ((&key) &body body)
+  `(with-standard-io-syntax
+     (let ((*print-readably* t)
+           (*read-eval* nil))
+       ,@body)))
+
+(defun read-from-usds-file (filepath read-pkg)
+  "CAUTION: Even though READ-EVAL is disabled, relying on READ for data is still dangerous!"
+  (with-open-file (in filepath)
+    (with-limited-procedure-io-syntax (:read-pkg read-pkg)
+        (deserialize (read in nil)))))
+
+(defun save-cnode-procedure-to-usds-file (pr filepath &key (if-exists :supersede))
+  (with-open-file (out filepath :direction :output :if-exists if-exists)
+    (with-generic-procedure-io-syntax ()
+      (pprint (cnode-serialize (procedure-root pr)) out))))
+
+(defun save-cnode-procedure-to-usds-string (pr)
+  (with-generic-procedure-io-syntax ()
+    (prin1-to-string (cnode-serialize (procedure-root pr)))))
+
 (defun read-cnode-procedure-from-file (filepath)
   "CAUTION: Even though READ-EVAL is disabled, relying on READ for data is still dangerous!"
   (with-open-file (in filepath)
-    (with-standard-io-syntax
-      (let ((*print-readably* t)
-            (*read-eval* nil))
-        (read in nil)))))
+    (with-generic-procedure-io-syntax ()
+      (read in nil))))
 
 (defun dump-cnode-procedure-to-file (pr filepath &key (if-exists :supersede))
   (with-open-file (out filepath :direction :output :if-exists if-exists)
-    (with-standard-io-syntax
-      (let ((*print-readably* t)
-            (*read-eval* nil))
-        (prin1 pr out)))))
+    (with-generic-procedure-io-syntax ()
+      (prin1 pr out))))

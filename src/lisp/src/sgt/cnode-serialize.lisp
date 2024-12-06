@@ -363,13 +363,3 @@
   ;;          (format nil "~S" (cnode-serialize rn))))
 
   rn)
-
-(defun read-from-usds-file (filepath read-pkg)
-  "CAUTION: Even though READ-EVAL is disabled, relying on READ for data is still dangerous!"
-  (with-open-file (in filepath)
-    (with-standard-io-syntax
-      (let ((*package* read-pkg)
-            ;; Assignments based on uiop/stream:with-safe-io-syntax .
-            (*print-readably* nil)
-            (*read-eval* nil))
-        (deserialize (read in nil))))))

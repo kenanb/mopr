@@ -148,11 +148,6 @@
    #:cnode-debug-print
    #:cnode-from-node-recursive
 
-   ;; CNODE-SERIALIZE
-   #:deserialize
-   #:cnode-serialize
-   #:read-from-usds-file
-
    ;; CNODE-CALLABLES
    #:make-prop
    #:make-group
@@ -179,6 +174,8 @@
    #:make-cnode-procedure-from-usds-file
    #:read-cnode-procedure-from-file
    #:dump-cnode-procedure-to-file
+   #:save-cnode-procedure-to-usds-file
+   #:save-cnode-procedure-to-usds-string
    #:procedure-p
    #:procedure
    #:procedure-header
