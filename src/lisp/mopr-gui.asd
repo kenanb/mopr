@@ -53,6 +53,7 @@
 
   :depends-on
   (#:mopr
+   #:mopr-sgt
    #:uiop
    #:cffi
    #:alexandria
