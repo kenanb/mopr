@@ -13,8 +13,7 @@ mainly in Lisp. UNTESTED. DO NOT USE!"
   (#:uiop
    #:cffi
    #:alexandria
-   #:cl-autowrap
-   #:ironclad/digest/sha1)
+   #:cl-autowrap)
 
   :components
   ((:module #:ffi
