@@ -25,7 +25,7 @@
 (defun cnode-preprocess (node &aux (p (bnode-find-payload node)))
   (etypecase p
     (directive (preprocess p))
-    (payload (list (make-dnode :payload p)))))
+    (payload (list (as-dnode p)))))
 
 (defun preprocess-recursive (node &optional parent
                              &aux (preprocessed (cnode-preprocess node)))

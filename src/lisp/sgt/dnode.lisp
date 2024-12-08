@@ -6,7 +6,8 @@
 (defstruct (dnode
             (:include bnode)
             (:copier nil)
-            (:constructor))
+            (:constructor)
+            (:constructor as-dnode (payload)))
   "Structure: DNODE
 
 Represents the node content that's considered temporary, mainly resulting from

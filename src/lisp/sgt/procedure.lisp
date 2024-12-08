@@ -4,7 +4,8 @@
 (in-package #:mopr-sgt)
 
 (defstruct (procedure
-            (:copier nil))
+            (:copier nil)
+            (:constructor))
   (header (make-header)
    :type header)
   (root nil

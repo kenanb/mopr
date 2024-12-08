@@ -8,14 +8,13 @@
   '(or null float integer))
 
 (defun make-prop (datum time info-args)
-  (make-dnode
-   :payload
+  (as-dnode
    (make-prim-schema-prop-statement
     :info-param (apply #'mopr-info:get-prop-info-for-schema info-args)
     :body-form-param (list (if time (cons time datum) datum)))))
 
 (defun make-group (data
-                   &aux (node (make-dnode :payload (make-group-container))))
+                   &aux (node (as-dnode (make-group-container))))
   (loop for ch in data do (vector-push-extend ch (dnode-children node)))
   node)
 

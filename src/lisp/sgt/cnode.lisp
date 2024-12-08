@@ -6,8 +6,9 @@
 (defstruct (cnode
             (:include bnode)
             (:copier nil)
-            (:constructor make-cnode
-                (&key payload &aux (digest (register-payload-to-bound-header payload)))))
+            (:constructor)
+            (:constructor as-cnode
+                (payload &aux (digest (register-payload-to-bound-header payload)))))
   "Structure: CNODE
 
 Represents  the readably-printable,  serializable  and content-addressable  core
@@ -26,7 +27,7 @@ well as more granular change tracking."
 (defmethod bnode-find-payload ((node cnode))
   (find-payload-in-bound-header (cnode-digest node)))
 
-(defun cnode-from-node-recursive (inode &aux (onode (make-cnode :payload (bnode-find-payload inode))))
+(defun cnode-from-node-recursive (inode &aux (onode (as-cnode (bnode-find-payload inode))))
   (loop for ch across (cnode-children inode)
         for ch-new = (cnode-from-node-recursive ch)
         do (vector-push-extend ch-new (cnode-children onode)))

@@ -150,6 +150,7 @@
 
    ;; CORE NODE API
    #:make-cnode
+   #:as-cnode
    #:cnode-p
    #:cnode
    #:cnode-digest
@@ -158,6 +159,7 @@
 
    ;; DIRECTIVE NODE API
    #:make-dnode
+   #:as-dnode
    #:dnode-p
    #:dnode
    #:dnode-payload
@@ -169,6 +171,7 @@
 
    ;; EXTENDED NODE API
    #:make-enode
+   #:as-enode
    #:enode-p
    #:enode
    #:enode-digest

@@ -10,15 +10,16 @@
 (defstruct (enode
             (:include cnode)
             (:copier nil)
-            (:constructor make-enode
-                (&key payload &aux (digest (register-payload-to-bound-header payload))))
+            (:constructor)
+            (:constructor as-enode
+                (payload &aux (digest (register-payload-to-bound-header payload))))
             (:print-object print-enode))
   (parent nil
    :type (or null enode))
   (components nil
    :type list))
 
-(defun enode-from-node-recursive (inode &aux (onode (make-enode :payload (bnode-find-payload inode))))
+(defun enode-from-node-recursive (inode &aux (onode (as-enode (bnode-find-payload inode))))
   (loop for ch across (cnode-children inode)
         for ch-new = (enode-from-node-recursive ch)
         do (vector-push-extend ch-new (cnode-children onode))

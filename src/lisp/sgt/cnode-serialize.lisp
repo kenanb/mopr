@@ -219,7 +219,7 @@
   (when (and (eq action :debug) *debug-mode*)
     (error "Cannot handle form: ~S~%" form)))
 
-(defun generate-wired-cnode (parent payload &aux (n (make-cnode :payload payload)))
+(defun generate-wired-cnode (parent payload &aux (n (as-cnode payload)))
   (vector-push-extend n (cnode-children parent))
   n)
 
@@ -352,7 +352,7 @@
 
 (defun deserialize (usds-data
                     &aux
-                      (rn (make-cnode :payload (extract-payload 'root-container usds-data))))
+                      (rn (as-cnode (extract-payload 'root-container usds-data))))
   (deserialize-data-subforms rn (list-cnode-children 'root-container usds-data))
 
   ;; DEBUG :
