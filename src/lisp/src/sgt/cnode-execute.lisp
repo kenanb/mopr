@@ -13,13 +13,14 @@
 (defgeneric execute (payload node target-h containers)
   (:documentation "Execute cnode payload."))
 
-(defun cnode-execute (node target-h &optional containers)
-  (etypecase (cnode-payload node)
-    (container (cnode-continue-execution node target-h (cons (cnode-payload node) containers)))
+(defun cnode-execute (node target-h &optional containers
+                      &aux (p (cnode-find-payload node)))
+  (etypecase p
+    (container (cnode-continue-execution node target-h (cons p containers)))
     ;; NOTE : If recursive re-expansion works correctly, no "directive"
     ;;        should be left in the tree by the time we execute it.
     (directive (error "Encountered directive that should have been preprocessed."))
-    (statement (execute (cnode-payload node) node target-h containers))))
+    (statement (execute p node target-h containers))))
 
 (defun cnode-continue-execution (node target-h containers)
   (loop for ch across (cnode-children node) do (cnode-execute ch target-h containers)))

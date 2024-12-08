@@ -4,26 +4,38 @@
 (in-package #:mopr-sgt)
 
 (defstruct (procedure
-            (:copier nil)
-            (:constructor)
-            (:constructor make-cnode-procedure
-                (pr &aux (root (cnode-from-node-recursive (procedure-root pr)))))
-            (:constructor make-enode-procedure
-                (pr &aux (root (enode-from-node-recursive (procedure-root pr)))))
-            (:constructor make-preprocessed-cnode-procedure
-                (pr call-enabled &aux (preprocess-all-fn (if call-enabled
-                                                             #'preprocess-all-call-enabled
-                                                             #'preprocess-all))
-                                   (root (funcall preprocess-all-fn (procedure-root pr)))))
-            (:constructor make-cnode-procedure-from-usds-file
-                (filepath read-pkg &aux (root (read-from-usds-file filepath read-pkg)))))
+            (:copier nil))
   (header (make-header)
    :type header)
   (root nil
    :type (or null cnode)))
 
+(defun procedure-call (pr fn &rest args)
+  (let ((*header* (procedure-header pr)))
+    (apply fn (procedure-root pr) args)))
+
+(defun procedure-call-constructor (pr fn &rest args)
+  (let ((*header* (clone-header (procedure-header pr))))
+    (make-procedure :header *header* :root (apply fn (procedure-root pr) args))))
+
+(defun make-cnode-procedure (pr)
+  (procedure-call-constructor pr #'cnode-from-node-recursive))
+
+(defun make-enode-procedure (pr)
+  (procedure-call-constructor pr #'enode-from-node-recursive))
+
+(defun make-preprocessed-cnode-procedure (pr call-enabled)
+  (procedure-call-constructor pr (if call-enabled
+                                     #'preprocess-all-call-enabled
+                                     #'preprocess-all)))
+
+(defun make-cnode-procedure-from-usds-file (filepath read-pkg &aux (pr (make-procedure)))
+  (let ((*header* (procedure-header pr)))
+    (setf (procedure-root pr) (read-from-usds-file filepath read-pkg)))
+  pr)
+
 (defun procedure-debug-print (pr)
-  (cnode-debug-print (procedure-root pr)))
+  (procedure-call pr #'cnode-debug-print))
 
 (defun procedure-apply-to-layer (pr layer-h call-enabled)
   (unless (zerop (mopr:layer-try-upgrade layer-h))
@@ -34,7 +46,7 @@
         (let* ((pr-preprocessed (make-preprocessed-cnode-procedure pr call-enabled)))
           ;; (procedure-debug-print pr)
           (with-execution-variables ()
-            (cnode-execute (procedure-root pr-preprocessed) stage-h)))))))
+            (procedure-call pr-preprocessed #'cnode-execute stage-h)))))))
 
 (defmacro with-limited-procedure-io-syntax ((&key read-pkg) &body body)
   `(with-standard-io-syntax
@@ -54,7 +66,7 @@
   "CAUTION: Even though READ-EVAL is disabled, relying on READ for data is still dangerous!"
   (with-open-file (in filepath)
     (with-limited-procedure-io-syntax (:read-pkg read-pkg)
-        (deserialize (read in nil)))))
+      (deserialize (read in nil)))))
 
 (defun save-cnode-procedure-to-usds-file (pr filepath &key (if-exists :supersede))
   (with-open-file (out filepath :direction :output :if-exists if-exists)

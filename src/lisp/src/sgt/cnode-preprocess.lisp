@@ -22,10 +22,10 @@
 (defgeneric preprocess (payload)
   (:documentation "Preprocess payload."))
 
-(defun cnode-preprocess (node)
-  (etypecase (cnode-payload node)
-    (directive (preprocess (cnode-payload node)))
-    (payload (list (make-cnode :payload (cnode-payload node))))))
+(defun cnode-preprocess (node &aux (p (cnode-find-payload node)))
+  (etypecase p
+    (directive (preprocess p))
+    (payload (list (make-cnode :payload p)))))
 
 (defun preprocess-recursive (node &optional parent
                              &aux (preprocessed (cnode-preprocess node)))
@@ -107,7 +107,7 @@
   nil)
 
 (defun has-directives-recursive (node)
-  (if (typep (cnode-payload node) 'directive)
+  (if (typep (cnode-find-payload node) 'directive)
       t
       (some #'has-directives-recursive (cnode-children node))))
 

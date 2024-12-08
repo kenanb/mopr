@@ -6,6 +6,8 @@
 
    ;; PAYLOAD CLASSES
    #:payload
+   #:payload-calculate-digest
+
    #:container
    #:directive
    #:statement
@@ -143,8 +145,9 @@
    #:make-cnode
    #:cnode-p
    #:cnode
-   #:cnode-payload
+   #:cnode-digest
    #:cnode-children
+   #:cnode-find-payload
    #:cnode-debug-print
    #:cnode-from-node-recursive
 
@@ -156,7 +159,7 @@
    #:make-enode
    #:enode-p
    #:enode
-   #:enode-payload
+   #:enode-digest
    #:enode-children
    #:enode-parent
    #:enode-components
@@ -180,6 +183,7 @@
    #:procedure
    #:procedure-header
    #:procedure-root
+   #:procedure-call
    #:procedure-debug-print
    #:procedure-apply-to-layer
 

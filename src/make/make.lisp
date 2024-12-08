@@ -23,9 +23,18 @@
 
 ;; (ql:quickload :float-features)
 
+;; TODO : There is a recent ECL + IRONCLAD issue, causing ironclad:byte-array-to-hex-string
+;;        to produce incorrect results: https://github.com/sharplispers/ironclad/issues/78
+;;
+;;        I observed expected behaviour when I tested with local build that includes commit:
+;;        https://github.com/sharplispers/ironclad/commit/f6519450b47a7648f837126e9f269857033e352a
+
+;; (ql:quickload :ironclad/digest/sha1)
+
 (asdf:oos 'asdf:load-op :cffi)
 (asdf:oos 'asdf:load-op :cl-autowrap)
 (asdf:oos 'asdf:load-op :float-features)
+(asdf:oos 'asdf:load-op :ironclad/digest/sha1)
 
 (asdf:make-build :mopr-user
                  :type :shared-library

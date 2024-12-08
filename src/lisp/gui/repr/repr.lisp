@@ -31,6 +31,9 @@
 
 (defun get-root-enode () (mopr-sgt:procedure-root *procedure*))
 
+(defun call-for-root-enode (fn &rest args)
+  (apply #'mopr-sgt:procedure-call *procedure* fn args))
+
 ;;
 ;;; ENODE Tree
 ;;
@@ -38,10 +41,13 @@
 (defun bind-for-representation (pr)
   (setf *procedure* (mopr-sgt:make-enode-procedure pr)))
 
-(defun initialize-repr ()
-  (mopr-sgt:enode-add-components-recursive (get-root-enode) '(mopr-gui/repr-rnode:rnode))
+(defun root-enode-initialize-repr (root-enode)
+  (mopr-sgt:enode-add-components-recursive root-enode '(mopr-gui/repr-rnode:rnode))
   (mopr-gui/layout-shared:with-layout-settings
-      (mopr-sgt:enode-initialize-components-recursive (get-root-enode))))
+    (mopr-sgt:enode-initialize-components-recursive root-enode)))
+
+(defun initialize-repr ()
+  (call-for-root-enode #'root-enode-initialize-repr))
 
 (defun deinitialize-repr ()
   (mopr-gui/yoga-fun:node-free-recursive (mopr-gui/repr-rdata:rdata-ynode
@@ -108,27 +114,27 @@
                                  (cmd-queue (autowrap:wrap-pointer
                                              cmd-queue-ptr 'mopr-gui/repr-def:command-queue)))
   (mopr-gui/layout-shared:with-layout-settings
-      (let* ((pixels-w (plus-c:c-ref cmd-queue mopr-gui/repr-def:command-queue :pixels-w))
-             ;; (pixels-h (plus-c:c-ref cmd-queue mopr-gui/repr-def:command-queue :pixels-h))
-             (root-yn (mopr-gui/repr-rdata:rdata-ynode
-                       (car (enode-rdatas (get-root-enode)))))
-             (wcmds
-               (make-instance 'cvec
-                              :ctype 'mopr-gui/repr-def:combined-command
-                              :size (%count-visible-rdata-recursive (get-root-enode)))))
+    (let* ((pixels-w (plus-c:c-ref cmd-queue mopr-gui/repr-def:command-queue :pixels-w))
+           ;; (pixels-h (plus-c:c-ref cmd-queue mopr-gui/repr-def:command-queue :pixels-h))
+           (root-yn (mopr-gui/repr-rdata:rdata-ynode
+                     (car (enode-rdatas (get-root-enode)))))
+           (wcmds
+             (make-instance 'cvec
+                            :ctype 'mopr-gui/repr-def:combined-command
+                            :size (%count-visible-rdata-recursive (get-root-enode)))))
 
-        (mopr-gui/yoga-fun:node-calculate-layout root-yn
-                                                 pixels-w
-                                                 mopr-gui/yoga-def:+undefined+ ;; pixels-h
-                                                 mopr-gui/yoga-def:+direction-ltr+)
+      (mopr-gui/yoga-fun:node-calculate-layout root-yn
+                                               pixels-w
+                                               mopr-gui/yoga-def:+undefined+ ;; pixels-h
+                                               mopr-gui/yoga-def:+direction-ltr+)
 
-        (%populate-commands-recursive (get-root-enode) wcmds)
+      (%populate-commands-recursive (get-root-enode) wcmds)
 
-        (multiple-set-c-ref cmd-queue (mopr-gui/repr-def:command-queue)
-                            :nof-commands (cvec-size wcmds)
-                            :commands (autowrap:ptr (cvec-wrapper wcmds))
-                            ;; Adjust height to the actual "used" height.
-                            :pixels-h (mopr-gui/layout-shared:layout-dimension root-yn :height)))))
+      (multiple-set-c-ref cmd-queue (mopr-gui/repr-def:command-queue)
+                          :nof-commands (cvec-size wcmds)
+                          :commands (autowrap:ptr (cvec-wrapper wcmds))
+                          ;; Adjust height to the actual "used" height.
+                          :pixels-h (mopr-gui/layout-shared:layout-dimension root-yn :height)))))
 
 ;; NOTE: Free calls are made from the same module the allocations were made from,
 ;;       to avoid possible issues with multiple malloc implementations in runtime.
@@ -183,12 +189,9 @@
     (multiple-set-c-ref cmd-options (mopr-gui/repr-def:command-options) :nof-options 0
                                                                         :options (autowrap:ptr nil))))
 
-(defun populate-command-options (cmd-options-ptr id id-sub
-                                 &aux
-                                   (cmd-options (autowrap:wrap-pointer
-                                                 cmd-options-ptr 'mopr-gui/repr-def:command-options)))
-  (let* ((n (mopr-gui/repr-rnode:find-enode-by-rnode-id (get-root-enode) id))
-         (opts (mopr-gui/repr-rnode:payload-get-rdata-options (mopr-sgt:enode-payload n) id-sub))
+(defun root-enode-populate-command-options (root-enode cmd-options id id-sub)
+  (let* ((n (mopr-gui/repr-rnode:find-enode-by-rnode-id root-enode id))
+         (opts (mopr-gui/repr-rnode:payload-get-rdata-options (mopr-sgt:cnode-find-payload n) id-sub))
          (nof-opts (length opts))
          (vopts (autowrap:alloc :pointer nof-opts)))
 
@@ -199,8 +202,17 @@
                         :nof-options nof-opts
                         :options (autowrap:ptr vopts))))
 
-(defun apply-command-option (id id-sub id-opt)
-  (let* ((n (mopr-gui/repr-rnode:find-enode-by-rnode-id (get-root-enode) id))
-         (opts (mopr-gui/repr-rnode:payload-get-rdata-options (mopr-sgt:enode-payload n) id-sub))
+(defun populate-command-options (cmd-options-ptr id id-sub
+                                 &aux
+                                   (cmd-options (autowrap:wrap-pointer
+                                                 cmd-options-ptr 'mopr-gui/repr-def:command-options)))
+  (call-for-root-enode #'root-enode-populate-command-options cmd-options id id-sub))
+
+(defun root-enode-apply-command-option (root-enode id id-sub id-opt)
+  (let* ((n (mopr-gui/repr-rnode:find-enode-by-rnode-id root-enode id))
+         (opts (mopr-gui/repr-rnode:payload-get-rdata-options (mopr-sgt:cnode-find-payload n) id-sub))
          (idx (1- id-opt)))
     (format t "APPLIED OPTION: ~A~%" (nth idx opts))))
+
+(defun apply-command-option (id id-sub id-opt)
+  (call-for-root-enode #'root-enode-apply-command-option id id-sub id-opt))

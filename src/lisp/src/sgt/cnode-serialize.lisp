@@ -24,7 +24,7 @@
 
 (defun cnode-serialize (node)
   (nconc
-   (payload-serialize (cnode-payload node))
+   (payload-serialize (cnode-find-payload node))
    (loop for ch across (cnode-children node)
          collecting (cnode-serialize ch))))
 

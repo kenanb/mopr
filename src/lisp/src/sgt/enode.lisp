@@ -5,18 +5,20 @@
 
 (defmethod print-enode (node stream)
   (print-unreadable-object (node stream :type t :identity t)
-    (princ (type-of (enode-payload node)) stream)))
+    (princ (type-of (cnode-find-payload node)) stream)))
 
 (defstruct (enode
             (:include cnode)
             (:copier nil)
+            (:constructor make-enode
+                (&key payload &aux (digest (register-payload payload))))
             (:print-object print-enode))
   (parent nil
    :type (or null enode))
   (components nil
    :type list))
 
-(defun enode-from-node-recursive (inode &aux (onode (make-enode :payload (cnode-payload inode))))
+(defun enode-from-node-recursive (inode &aux (onode (make-enode :payload (cnode-find-payload inode))))
   (loop for ch across (cnode-children inode)
         for ch-new = (enode-from-node-recursive ch)
         do (vector-push-extend ch-new (cnode-children onode))
@@ -33,8 +35,8 @@
 (defgeneric enode-initialize-component (payload node component)
   (:documentation "Populate the component bound to enode."))
 
-(defun enode-initialize-components-recursive (node)
-  (loop for co in (enode-components node) do (enode-initialize-component (enode-payload node) node co))
+(defun enode-initialize-components-recursive (node &aux (p (cnode-find-payload node)))
+  (loop for co in (enode-components node) do (enode-initialize-component p node co))
   (loop for ch across (enode-children node) do (enode-initialize-components-recursive ch)))
 
 (defun enode-find-component (node component-class)

@@ -65,7 +65,7 @@
 (defun enode-get-ynode-anchor (n &aux (rn (enode-find-component n 'rnode)))
   (mopr-gui/repr-rdata:rdata-ynode
    (elt (rnode-rdatas rn)
-        (enode-get-ynode-anchor-index (enode-payload n)))))
+        (enode-get-ynode-anchor-index (cnode-find-payload n)))))
 
 (defgeneric payload-get-rdata-options (payload id-sub)
   (:documentation "Get the options available for the selected rdata of given node."))
