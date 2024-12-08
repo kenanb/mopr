@@ -142,14 +142,26 @@
    #:header
 
    ;; CORE NODE API
+   #:bnode-p
+   #:bnode
+   #:bnode-children
+   #:bnode-find-payload
+   #:bnode-debug-print
+
+   ;; CORE NODE API
    #:make-cnode
    #:cnode-p
    #:cnode
    #:cnode-digest
    #:cnode-children
-   #:cnode-find-payload
-   #:cnode-debug-print
    #:cnode-from-node-recursive
+
+   ;; DIRECTIVE NODE API
+   #:make-dnode
+   #:dnode-p
+   #:dnode
+   #:dnode-payload
+   #:dnode-children
 
    ;; CNODE-CALLABLES
    #:make-prop

@@ -16,17 +16,17 @@
   '(:test-gen-xform-info
     #S(mopr-plug:callable :fn prim-fn-test-gen-xform-info
                           :i (:tr-array array :rt-array array)
-                          :o (:group-cnode mopr-sgt:cnode))
+                          :o (:group-dnode mopr-sgt:dnode))
 
     :test-gen-cubes
     #S(mopr-plug:callable :fn data-fn-test-gen-cubes
                           :i (:r fixnum)
-                          :o (:group-cnode mopr-sgt:cnode))
+                          :o (:group-dnode mopr-sgt:dnode))
 
     :test-tree-gen
     #S(mopr-plug:callable :fn data-fn-test-tree-gen
                           :i ()
-                          :o (:tree-cnode mopr-sgt:cnode))))
+                          :o (:tree-dnode mopr-sgt:dnode))))
 
 (defvar *attr-info-xform-op-order*
   (make-instance 'mopr-info:attr-info
@@ -52,18 +52,18 @@
 (defun prim-fn-test-gen-xform-info (tr-array rt-array)
   (mopr-sgt:make-group
    (list
-    (mopr-sgt:make-cnode
+    (mopr-sgt:make-dnode
      :payload
      (mopr-sgt:make-prim-schema-prop-statement
       :info-param *attr-info-xform-op-order*
       :body-form-param (list #1A (("xformOp" "translate")
                                   ("xformOp" "rotateXYZ")))))
-    (mopr-sgt:make-cnode
+    (mopr-sgt:make-dnode
      :payload
      (mopr-sgt:make-prim-schema-prop-statement
       :info-param *attr-info-translate*
       :body-form-param (list tr-array)))
-    (mopr-sgt:make-cnode
+    (mopr-sgt:make-dnode
      :payload
      (mopr-sgt:make-prim-schema-prop-statement
       :info-param *attr-info-rotate-x-y-z*
@@ -76,7 +76,7 @@
                   (tr-a (make-array 3 :initial-contents tr))
                   (rt-a (make-array 3 :initial-contents rt))
                   (prim-node
-                    (mopr-sgt:make-cnode
+                    (mopr-sgt:make-dnode
                      :payload
                      (mopr-sgt:make-prim-statement
                       :path-form-param (list prim-name))))
@@ -95,8 +95,8 @@
                      :body-form-param (list tr-a rt-a :test-gen-xform-info)))
                   (prim-node-children (list prim-type-payload size-attr-payload call-payload)))
              (loop for p in prim-node-children
-                   do (vector-push-extend (mopr-sgt:make-cnode :payload p)
-                                          (mopr-sgt:cnode-children prim-node)))
+                   do (vector-push-extend (mopr-sgt:make-dnode :payload p)
+                                          (mopr-sgt:dnode-children prim-node)))
              prim-node)))
 
     (loop for x below (* r r)
@@ -104,13 +104,13 @@
           collecting (list prim-name :spec :def) into tree
           collecting (define-cube x r prim-name) into prims
           finally (return (mopr-sgt:make-group
-                           (cons (mopr-sgt:make-cnode :payload
+                           (cons (mopr-sgt:make-dnode :payload
                                                       (mopr-sgt:make-tree-statement
                                                        :body-form-param tree))
                                  prims))))))
 
 (defun data-fn-test-tree-gen ()
-  (mopr-sgt:make-cnode
+  (mopr-sgt:make-dnode
    :payload
    (mopr-sgt:make-tree-statement
     :body-form-param

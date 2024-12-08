@@ -29,11 +29,11 @@ COPY-LIST should be sufficient to maintain isolation across PROCEDURE instances.
   (string= x y :end1 +digest-prefix-size+
                :end2 +digest-prefix-size+))
 
-(defun find-payload (digest)
-  (unless *header* (error "FIND-PAYLOAD called without a header bound."))
+(defun find-payload-in-bound-header (digest)
+  (unless *header* (error "FIND-PAYLOAD-IN-BOUND-HEADER called without a header bound."))
   (cdr (assoc digest (header-payloads *header*) :test #'digest-prefix=)))
 
-(defun register-payload (p &aux (digest (payload-calculate-digest p)))
-  (unless *header* (error "REGISTER-PAYLOAD called without a header bound."))
+(defun register-payload-to-bound-header (p &aux (digest (payload-calculate-digest p)))
+  (unless *header* (error "REGISTER-PAYLOAD-TO-BOUND-HEADER called without a header bound."))
   (setf (header-payloads *header*) (acons digest p (header-payloads *header*)))
   (subseq digest 0 +digest-prefix-size+))

@@ -103,14 +103,18 @@ mainly in Lisp. UNTESTED. DO NOT USE!"
        (:file "statement" :depends-on ("base"))))
      (:file "header"
       :depends-on ("package" "payload"))
+     (:file "bnode"
+      :depends-on ("package" "payload"))
      (:file "cnode"
-      :depends-on ("package" "payload" "header"))
+      :depends-on ("package" "payload" "header" "bnode"))
+     (:file "dnode"
+      :depends-on ("package" "payload" "bnode"))
      (:file "cnode-serialize"
       :depends-on ("package" "payload" "header" "cnode"))
      (:file "cnode-preprocess"
-      :depends-on ("package" "payload" "header" "cnode"))
+      :depends-on ("package" "payload" "header" "cnode" "dnode"))
      (:file "cnode-callables"
-      :depends-on ("package" "payload" "header" "cnode"))
+      :depends-on ("package" "payload" "header" "cnode" "dnode"))
      (:file "cnode-execute"
       :depends-on ("package" "payload" "header" "cnode"))
      (:file "enode"

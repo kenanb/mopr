@@ -14,7 +14,7 @@
   (:documentation "Execute cnode payload."))
 
 (defun cnode-execute (node target-h &optional containers
-                      &aux (p (cnode-find-payload node)))
+                      &aux (p (bnode-find-payload node)))
   (etypecase p
     (container (cnode-continue-execution node target-h (cons p containers)))
     ;; NOTE : If recursive re-expansion works correctly, no "directive"
@@ -23,7 +23,7 @@
     (statement (execute p node target-h containers))))
 
 (defun cnode-continue-execution (node target-h containers)
-  (loop for ch across (cnode-children node) do (cnode-execute ch target-h containers)))
+  (loop for ch across (bnode-children node) do (cnode-execute ch target-h containers)))
 
 (defmacro with-execution-variables ((&key)
                                     &body body)

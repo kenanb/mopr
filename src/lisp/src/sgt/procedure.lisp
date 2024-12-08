@@ -8,7 +8,7 @@
   (header (make-header)
    :type header)
   (root nil
-   :type (or null cnode)))
+   :type (or null bnode)))
 
 (defun procedure-call (pr fn &rest args)
   (let ((*header* (procedure-header pr)))
@@ -35,7 +35,7 @@
   pr)
 
 (defun procedure-debug-print (pr)
-  (procedure-call pr #'cnode-debug-print))
+  (procedure-call pr #'bnode-debug-print))
 
 (defun procedure-apply-to-layer (pr layer-h call-enabled)
   (unless (zerop (mopr:layer-try-upgrade layer-h))

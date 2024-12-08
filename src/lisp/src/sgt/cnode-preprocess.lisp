@@ -22,18 +22,18 @@
 (defgeneric preprocess (payload)
   (:documentation "Preprocess payload."))
 
-(defun cnode-preprocess (node &aux (p (cnode-find-payload node)))
+(defun cnode-preprocess (node &aux (p (bnode-find-payload node)))
   (etypecase p
     (directive (preprocess p))
-    (payload (list (make-cnode :payload p)))))
+    (payload (list (make-dnode :payload p)))))
 
 (defun preprocess-recursive (node &optional parent
                              &aux (preprocessed (cnode-preprocess node)))
   "Create a preprocessed cnode hierarchy."
   (loop for e in preprocessed
         do (progn
-             (when parent (vector-push-extend e (cnode-children parent)))
-             (loop for c across (cnode-children node) do (preprocess-recursive c e))))
+             (when parent (vector-push-extend e (bnode-children parent)))
+             (loop for c across (bnode-children node) do (preprocess-recursive c e))))
   preprocessed)
 
 ;; Assumes being called within a with-registry scope.
@@ -107,14 +107,14 @@
   nil)
 
 (defun has-directives-recursive (node)
-  (if (typep (cnode-find-payload node) 'directive)
+  (if (typep (bnode-find-payload node) 'directive)
       t
-      (some #'has-directives-recursive (cnode-children node))))
+      (some #'has-directives-recursive (bnode-children node))))
 
 (defun process-and-filter-call-stack (args body-form)
   (let ((initial-result
           (remove-if-not
-           (lambda (x) (typep x 'cnode))
+           (lambda (x) (typep x 'bnode))
            (mopr-plug:process-call-stack args body-form *var-table*))))
     (if (some #'has-directives-recursive initial-result)
         (loop for n in initial-result nconc (preprocess-recursive n))
