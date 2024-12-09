@@ -141,14 +141,14 @@
    #:header-p
    #:header
 
-   ;; CORE NODE API
+   ;; BASE NODE API
    #:bnode-p
    #:bnode
    #:bnode-children
    #:bnode-find-payload
    #:bnode-debug-print
 
-   ;; CORE NODE API
+   ;; COMPACT NODE API
    #:make-cnode
    #:as-cnode
    #:cnode-p
@@ -165,7 +165,7 @@
    #:dnode-payload
    #:dnode-children
 
-   ;; CNODE-CALLABLES
+   ;; NODE CALLABLES
    #:make-prop
    #:make-group
 
@@ -188,12 +188,12 @@
    #:make-procedure
    #:make-cnode-procedure
    #:make-enode-procedure
-   ;; #:make-preprocessed-cnode-procedure
+   ;; #:make-preprocessed-dnode-procedure
    #:make-cnode-procedure-from-usds-file
+   #:save-bnode-procedure-to-usds-file
+   #:save-bnode-procedure-to-usds-string
    #:read-cnode-procedure-from-file
    #:dump-cnode-procedure-to-file
-   #:save-cnode-procedure-to-usds-file
-   #:save-cnode-procedure-to-usds-string
    #:procedure-p
    #:procedure
    #:procedure-header

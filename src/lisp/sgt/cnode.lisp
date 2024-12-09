@@ -11,7 +11,7 @@
                 (payload &aux (digest (register-payload-to-bound-header payload)))))
   "Structure: CNODE
 
-Represents  the readably-printable,  serializable  and content-addressable  core
+Represents  the readably-printable,  serializable  and content-addressable compact
 node content.
 
 Payload is stored in the bound header, in a content-addressed fashion. This is a

@@ -11,19 +11,19 @@
 (defvar *alias-table* nil)
 
 (defgeneric execute (payload node target-h containers)
-  (:documentation "Execute cnode payload."))
+  (:documentation "Execute node payload."))
 
-(defun cnode-execute (node target-h &optional containers
-                      &aux (p (bnode-find-payload node)))
+(defun node-execute (node target-h &optional containers
+                     &aux (p (bnode-find-payload node)))
   (etypecase p
-    (container (cnode-continue-execution node target-h (cons p containers)))
+    (container (node-continue-execution node target-h (cons p containers)))
     ;; NOTE : If recursive re-expansion works correctly, no "directive"
     ;;        should be left in the tree by the time we execute it.
     (directive (error "Encountered directive that should have been preprocessed."))
     (statement (execute p node target-h containers))))
 
-(defun cnode-continue-execution (node target-h containers)
-  (loop for ch across (bnode-children node) do (cnode-execute ch target-h containers)))
+(defun node-continue-execution (node target-h containers)
+  (loop for ch across (bnode-children node) do (node-execute ch target-h containers)))
 
 (defmacro with-execution-variables ((&key)
                                     &body body)
@@ -165,7 +165,7 @@
                            (prim-h :prim))
         (mopr:path-ctor-cstr path-h prim-path-str)
         (mopr:stage-get-prim-at-path prim-h stage-h path-h)
-        (cnode-continue-execution node prim-h containers)))))
+        (node-continue-execution node prim-h containers)))))
 
 (defclass tnode ()
   ((path

@@ -32,13 +32,13 @@ mainly in Lisp. UNTESTED. DO NOT USE!"
     :depends-on ("package" "payload" "header" "bnode"))
    (:file "dnode"
     :depends-on ("package" "payload" "bnode"))
-   (:file "cnode-serialize"
+   (:file "node-serialize"
     :depends-on ("package" "payload" "header" "cnode"))
-   (:file "cnode-preprocess"
+   (:file "node-preprocess"
     :depends-on ("package" "payload" "header" "cnode" "dnode"))
-   (:file "cnode-callables"
+   (:file "node-callables"
     :depends-on ("package" "payload" "header" "cnode" "dnode"))
-   (:file "cnode-execute"
+   (:file "node-execute"
     :depends-on ("package" "payload" "header" "cnode"))
    (:file "enode"
     :depends-on ("package" "payload" "header" "cnode"))
@@ -49,7 +49,7 @@ mainly in Lisp. UNTESTED. DO NOT USE!"
      "header"
      "bnode"
      "cnode"
-     "cnode-serialize"
-     "cnode-preprocess"
-     "cnode-execute"
+     "node-serialize"
+     "node-preprocess"
+     "node-execute"
      "enode"))))

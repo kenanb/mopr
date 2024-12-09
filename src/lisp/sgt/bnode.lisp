@@ -8,7 +8,7 @@
             (:constructor nil))
   "Structure: BNODE
 
-Represents  the base node content.
+Represents the base node content.
 
 Mutability:
 

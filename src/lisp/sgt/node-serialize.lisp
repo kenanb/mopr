@@ -4,13 +4,13 @@
 (in-package #:mopr-sgt)
 
 ;;
-;;; Mapping between CNODE and USDS Forms
+;;; Mapping between NODE and USDS Forms
 ;;
 
 (defgeneric extract-payload (payload-class form)
   (:documentation "Generate the payload that corresponds to USDS form."))
 
-(defgeneric list-cnode-children (payload-class form)
+(defgeneric list-node-children (payload-class form)
   (:documentation "Get the form that corresponds to the serialized children for given payload class."))
 
 ;; DEBUG :
@@ -20,13 +20,13 @@
 ;;   (call-next-method))
 
 (defgeneric payload-serialize (payload)
-  (:documentation "Get the list that represents the cnode in USDS form."))
+  (:documentation "Get the list that represents the node in USDS form."))
 
-(defun cnode-serialize (node)
+(defun node-serialize (node)
   (nconc
    (payload-serialize (bnode-find-payload node))
-   (loop for ch across (cnode-children node)
-         collecting (cnode-serialize ch))))
+   (loop for ch across (bnode-children node)
+         collecting (node-serialize ch))))
 
 (defmethod payload-serialize ((payload root-container))
   nil)
@@ -35,7 +35,7 @@
   (declare (ignore form))
   (make-root-container))
 
-(defmethod list-cnode-children ((payload-class (eql 'root-container)) form)
+(defmethod list-node-children ((payload-class (eql 'root-container)) form)
   form)
 
 (defmethod payload-serialize ((payload group-container))
@@ -45,7 +45,7 @@
   (declare (ignore form))
   (make-group-container))
 
-(defmethod list-cnode-children ((payload-class (eql 'group-container)) form)
+(defmethod list-node-children ((payload-class (eql 'group-container)) form)
   form)
 
 (defmethod payload-serialize ((payload var-directive))
@@ -162,7 +162,7 @@
   (make-prim-ns-container
    :name-param (coerce (car form) 'base-string)))
 
-(defmethod list-cnode-children ((payload-class (eql 'prim-ns-container)) form)
+(defmethod list-node-children ((payload-class (eql 'prim-ns-container)) form)
   (cdr form))
 
 (defmethod payload-serialize ((payload prim-statement))
@@ -173,7 +173,7 @@
   (make-prim-statement
    :path-form-param (car form)))
 
-(defmethod list-cnode-children ((payload-class (eql 'prim-statement)) form)
+(defmethod list-node-children ((payload-class (eql 'prim-statement)) form)
   (cdr form))
 
 (defmethod payload-serialize ((payload tree-statement))
@@ -220,7 +220,7 @@
     (error "Cannot handle form: ~S~%" form)))
 
 (defun generate-wired-cnode (parent payload &aux (n (as-cnode payload)))
-  (vector-push-extend n (cnode-children parent))
+  (vector-push-extend n (bnode-children parent))
   n)
 
 (defun deserialize-var-form (parent form)
@@ -262,7 +262,7 @@
 (defun deserialize-prim-ns-form (parent form)
   ;; (format t "~%Called deserialize-prim-ns-form!~%: ~S~%" form)
   (let* ((nn (generate-wired-cnode parent (extract-payload 'prim-ns-container form))))
-    (loop for l in (list-cnode-children 'prim-ns-container form)
+    (loop for l in (list-node-children 'prim-ns-container form)
           for fn = (case (car l)
                      (:attr   #'deserialize-prim-attr-form)
                      (:|attr| #'deserialize-prim-attr-form)
@@ -300,11 +300,11 @@
 (defun deserialize-prim-form (parent form)
   ;; (format t "~%Called deserialize-prim-form!~%: ~S~%" form)
   (let* ((pn (generate-wired-cnode parent (extract-payload 'prim-statement form))))
-    (deserialize-prim-subforms pn (list-cnode-children 'prim-statement form))))
+    (deserialize-prim-subforms pn (list-node-children 'prim-statement form))))
 
 (defun deserialize-group-form-generic (parent form fn)
   (let* ((gn (generate-wired-cnode parent (extract-payload 'group-container form))))
-    (funcall fn gn (list-cnode-children 'group-container form))))
+    (funcall fn gn (list-node-children 'group-container form))))
 
 (defun deserialize-prim-group-form (parent form)
   ;; (format t "~%Called deserialize-prim-group-form!~%: ~S~%" form)
@@ -353,13 +353,13 @@
 (defun deserialize (usds-data
                     &aux
                       (rn (as-cnode (extract-payload 'root-container usds-data))))
-  (deserialize-data-subforms rn (list-cnode-children 'root-container usds-data))
+  (deserialize-data-subforms rn (list-node-children 'root-container usds-data))
 
   ;; DEBUG :
 
   ;; (format t "~%COMPARISON: ~S ~%"
   ;;         (string-equal
   ;;          (format nil "~S" usds-data)
-  ;;          (format nil "~S" (cnode-serialize rn))))
+  ;;          (format nil "~S" (node-serialize rn))))
 
   rn)

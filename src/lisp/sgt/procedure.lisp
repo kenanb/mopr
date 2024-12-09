@@ -25,7 +25,7 @@
 (defun make-enode-procedure (pr)
   (procedure-call-constructor pr #'enode-from-node-recursive))
 
-(defun make-preprocessed-cnode-procedure (pr call-enabled)
+(defun make-preprocessed-dnode-procedure (pr call-enabled)
   (procedure-call-constructor pr (if call-enabled
                                      #'preprocess-all-call-enabled
                                      #'preprocess-all)))
@@ -44,10 +44,10 @@
       (mopr:stage-open-layer stage-h layer-h)
       (mopr-info:with-registry (:supported-cases '(:upcase))
         ;; (procedure-debug-print pr)
-        (let* ((pr-preprocessed (make-preprocessed-cnode-procedure pr call-enabled)))
+        (let* ((pr-preprocessed (make-preprocessed-dnode-procedure pr call-enabled)))
           ;; (procedure-debug-print pr)
           (with-execution-variables ()
-            (procedure-call pr-preprocessed #'cnode-execute stage-h)))))))
+            (procedure-call pr-preprocessed #'node-execute stage-h)))))))
 
 (defmacro with-limited-procedure-io-syntax ((&key read-pkg) &body body)
   `(with-standard-io-syntax
@@ -69,14 +69,14 @@
     (with-limited-procedure-io-syntax (:read-pkg read-pkg)
       (deserialize (read in nil)))))
 
-(defun save-cnode-procedure-to-usds-file (pr filepath &key (if-exists :supersede))
+(defun save-bnode-procedure-to-usds-file (pr filepath &key (if-exists :supersede))
   (with-open-file (out filepath :direction :output :if-exists if-exists)
     (with-generic-procedure-io-syntax ()
-      (pprint (cnode-serialize (procedure-root pr)) out))))
+      (pprint (node-serialize (procedure-root pr)) out))))
 
-(defun save-cnode-procedure-to-usds-string (pr)
+(defun save-bnode-procedure-to-usds-string (pr)
   (with-generic-procedure-io-syntax ()
-    (prin1-to-string (cnode-serialize (procedure-root pr)))))
+    (prin1-to-string (node-serialize (procedure-root pr)))))
 
 (defun read-cnode-procedure-from-file (filepath)
   "CAUTION: Even though READ-EVAL is disabled, relying on READ for data is still dangerous!"

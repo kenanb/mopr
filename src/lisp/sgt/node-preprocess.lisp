@@ -22,14 +22,14 @@
 (defgeneric preprocess (payload)
   (:documentation "Preprocess payload."))
 
-(defun cnode-preprocess (node &aux (p (bnode-find-payload node)))
+(defun node-preprocess (node &aux (p (bnode-find-payload node)))
   (etypecase p
     (directive (preprocess p))
     (payload (list (as-dnode p)))))
 
 (defun preprocess-recursive (node &optional parent
-                             &aux (preprocessed (cnode-preprocess node)))
-  "Create a preprocessed cnode hierarchy."
+                             &aux (preprocessed (node-preprocess node)))
+  "Create a preprocessed node hierarchy."
   (loop for e in preprocessed
         do (progn
              (when parent (vector-push-extend e (bnode-children parent)))

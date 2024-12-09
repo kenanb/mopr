@@ -14,6 +14,11 @@
             (:constructor as-enode
                 (payload &aux (digest (register-payload-to-bound-header payload))))
             (:print-object print-enode))
+  "Structure: ENODE
+
+Represents the extended compact node content, currently used to handle editor
+interaction."
+
   (parent nil
    :type (or null enode))
   (components nil
