@@ -15,9 +15,10 @@ mainly in Lisp. UNTESTED. DO NOT USE!"
    #:alexandria
    #:cl-autowrap)
 
+  :pathname "src"
+
   :components
   ((:module #:ffi
-    :pathname "src/ffi"
     :components
     ((:file "package")
      (:file "autowrap-core"
@@ -35,7 +36,6 @@ mainly in Lisp. UNTESTED. DO NOT USE!"
      (:static-file "moprCoreIncludes.h")))
 
    (:module #:mopr
-    :pathname "src/mopr"
     :depends-on ("ffi")
     :components
     ((:file "package")
@@ -45,7 +45,6 @@ mainly in Lisp. UNTESTED. DO NOT USE!"
       :depends-on ("package" "raii"))))
 
    (:module #:val
-    :pathname "src/val"
     :depends-on ("mopr")
     :components
     ((:file "package")
@@ -57,7 +56,6 @@ mainly in Lisp. UNTESTED. DO NOT USE!"
       :depends-on ("package" "types"))))
 
    (:module #:info
-    :pathname "src/info"
     :depends-on ("mopr" "val")
     :components
     ((:file "package")

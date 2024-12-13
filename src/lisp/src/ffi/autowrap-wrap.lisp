@@ -10,7 +10,8 @@
  :sysincludes
  (cl:list (cl:namestring
            (uiop/pathname:pathname-parent-directory-pathname
-            (asdf:component-pathname (asdf:find-system :mopr cl:t)))))
+            (uiop/pathname:pathname-parent-directory-pathname
+             (asdf:component-pathname (asdf:find-system :mopr cl:t))))))
 
  ;; For now, we limit spec generation to avoid committing too many changes.
  :exclude-arch
