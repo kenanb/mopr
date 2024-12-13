@@ -5,7 +5,7 @@
 (in-package :cl-user)
 
 (defpackage :mopr-ext/grid
-  (:import-from :mopr)
+  (:import-from :mopr-sgt)
   (:use :cl)
   (:export
    #:aref-point

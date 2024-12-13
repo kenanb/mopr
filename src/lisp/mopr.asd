@@ -74,22 +74,9 @@ mainly in Lisp. UNTESTED. DO NOT USE!"
      (:file "registry"
       :depends-on ("package" "value" "schema" "bundle"))
      (:file "util"
-      :depends-on ("package" "prop" "value" "schema" "bundle" "registry"))))
-
-   (:module #:plug
-    :pathname "src/plug"
-    :depends-on ("mopr" "info")
-    :components
-    ((:file "package")
-     (:file "config"
-      :depends-on ("package"))
-     (:file "call"
-      :depends-on ("package" "config"))
-     (:file "generic"
-      :depends-on ("package" "config" "call"))))))
+      :depends-on ("package" "prop" "value" "schema" "bundle" "registry"))))))
 
 (register-system-packages "mopr"
                           '(:mopr-ffi
                             :mopr-info
-                            :mopr-plug
                             :mopr-val))
