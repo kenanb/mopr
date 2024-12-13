@@ -6,25 +6,25 @@
 (defun generate-prop-info (prop-name prop-def-h)
   (let (info-type
         info-args)
-    (if (zerop (mopr:property-definition-is-attribute-p prop-def-h))
+    (if (zerop (mopr-usd:property-definition-is-attribute-p prop-def-h))
         (setf info-type 'rel-info)
-        (mopr:with-handles*  ((scalar-token-h :token)
-                              (this-vtn-h :value-type-name)
-                              (scalar-vtn-h :value-type-name))
+        (mopr-usd:with-handles* ((scalar-token-h :token)
+                                 (this-vtn-h :value-type-name)
+                                 (scalar-vtn-h :value-type-name))
           (setf info-type 'attr-info)
-          (mopr:property-definition-attribute-get-type-name this-vtn-h prop-def-h)
-          (let ((array-p (not (zerop (mopr:value-type-name-is-array-p this-vtn-h)))))
+          (mopr-usd:property-definition-attribute-get-type-name this-vtn-h prop-def-h)
+          (let ((array-p (not (zerop (mopr-usd:value-type-name-is-array-p this-vtn-h)))))
             (setf (getf info-args :array-p) array-p)
             (if array-p
                 (progn
-                  (mopr:value-type-name-get-scalar-type scalar-vtn-h this-vtn-h)
-                  (mopr:value-type-name-get-as-token scalar-token-h scalar-vtn-h))
-                (mopr:value-type-name-get-as-token scalar-token-h this-vtn-h))
+                  (mopr-usd:value-type-name-get-scalar-type scalar-vtn-h this-vtn-h)
+                  (mopr-usd:value-type-name-get-as-token scalar-token-h scalar-vtn-h))
+                (mopr-usd:value-type-name-get-as-token scalar-token-h this-vtn-h))
             (setf (getf info-args :type-key)
-                  (intern (mopr:token-cstr scalar-token-h) :keyword)))))
+                  (intern (mopr-usd:token-cstr scalar-token-h) :keyword)))))
     (apply #'make-instance info-type
            :base-name prop-name
-           :variability (mopr:property-definition-get-variability prop-def-h)
+           :variability (mopr-usd:property-definition-get-variability prop-def-h)
            info-args)))
 
 (defun create-property-info-table (prim-token-h schema-type
@@ -33,20 +33,20 @@
                                      (table (make-hash-table)))
   (setf prim-def-fn
         (case schema-type
-          (:api #'mopr:prim-definition-ctor-api)
-          (:isa #'mopr:prim-definition-ctor-isa)
+          (:api #'mopr-usd:prim-definition-ctor-api)
+          (:isa #'mopr-usd:prim-definition-ctor-isa)
           (otherwise (error "Unknown keyword for schema type!"))))
 
-  (mopr:with-handles* ((prim-def-h :prim-definition)
-                       (prop-token-h :token)
-                       (prop-def-h :property-definition))
+  (mopr-usd:with-handles* ((prim-def-h :prim-definition)
+                           (prop-token-h :token)
+                           (prop-def-h :property-definition))
     (funcall prim-def-fn prim-def-h prim-token-h)
-    (when (zerop (mopr:prim-definition-is-empty-p prim-def-h))
-      (loop for i below (mopr:prim-definition-get-property-count prim-def-h)
+    (when (zerop (mopr-usd:prim-definition-is-empty-p prim-def-h))
+      (loop for i below (mopr-usd:prim-definition-get-property-count prim-def-h)
             do (progn
-                 (mopr:prim-definition-get-property-name prop-token-h prim-def-h i)
-                 (mopr:prim-definition-get-property prop-def-h prim-def-h prop-token-h)
-                 (let* ((prop-name (mopr:token-cstr prop-token-h))
+                 (mopr-usd:prim-definition-get-property-name prop-token-h prim-def-h i)
+                 (mopr-usd:prim-definition-get-property prop-def-h prim-def-h prop-token-h)
+                 (let* ((prop-name (mopr-usd:token-cstr prop-token-h))
                         (info (generate-prop-info prop-name prop-def-h)))
                    (write-mapping-with-case table
                                             (intern prop-name :keyword)
@@ -62,8 +62,8 @@
                  version
                  &aux
                    (name-token
-                    (let ((prim-token-h (mopr:create-token)))
-                      (mopr:token-ctor-cstr
+                    (let ((prim-token-h (mopr-usd:create-token)))
+                      (mopr-usd:token-ctor-cstr
                        prim-token-h
                        schema-name)
                       prim-token-h))
@@ -72,7 +72,7 @@
   "..."
   (name-token
    (error "SCHEMA should have a NAME-TOKEN.")
-   :type mopr:mopr-token-h)
+   :type mopr-usd:mopr-token-h)
   (family
    (error "SCHEMA should have a FAMILY.")
    :type keyword)
@@ -92,5 +92,5 @@
 (defmethod teardown-entry ((val schema)
                            &aux (tok (schema-name-token val)))
   ;; (format t "DELETING SCHEMA: ~A~%" val)
-  (mopr:delete-token tok)
+  (mopr-usd:delete-token tok)
   (autowrap:invalidate tok))

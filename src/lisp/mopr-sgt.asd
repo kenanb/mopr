@@ -10,7 +10,7 @@
 mainly in Lisp. UNTESTED. DO NOT USE!"
 
   :depends-on
-  (#:mopr ;; TODO : Move out the execute module and remove dependency.
+  (#:mopr-usd ;; TODO : Move out the execute module and remove dependency.
    #:ironclad/digest/sha1)
 
   :pathname "sgt"

@@ -28,7 +28,7 @@
    (variability
     :type bit
     :initarg :variability
-    :initform mopr:+mopr-property-variability-varying+
+    :initform mopr-usd:+mopr-property-variability-varying+
     :reader prop-info-variability
     :documentation "...")
    (meta

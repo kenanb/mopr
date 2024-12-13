@@ -1,7 +1,7 @@
 ;;;; -*- Mode: LISP; Syntax: COMMON-LISP; Package: ASDF-USER -*-
 ;;
 
-(defsystem #:mopr
+(defsystem #:mopr-usd
   :version "0.0.1"
   :author "Kenan Bölükbaşı"
   :license "BSD-3-Clause"
@@ -35,7 +35,7 @@ mainly in Lisp. UNTESTED. DO NOT USE!"
      (:static-file "moprWrapIncludes.h")
      (:static-file "moprCoreIncludes.h")))
 
-   (:module #:mopr
+   (:module #:main
     :depends-on ("ffi")
     :components
     ((:file "package")
@@ -45,7 +45,7 @@ mainly in Lisp. UNTESTED. DO NOT USE!"
       :depends-on ("package" "raii"))))
 
    (:module #:val
-    :depends-on ("mopr")
+    :depends-on ("main")
     :components
     ((:file "package")
      (:file "types"
@@ -56,7 +56,7 @@ mainly in Lisp. UNTESTED. DO NOT USE!"
       :depends-on ("package" "types"))))
 
    (:module #:info
-    :depends-on ("mopr" "val")
+    :depends-on ("main" "val")
     :components
     ((:file "package")
      (:file "shared"
@@ -74,7 +74,7 @@ mainly in Lisp. UNTESTED. DO NOT USE!"
      (:file "util"
       :depends-on ("package" "prop" "value" "schema" "bundle" "registry"))))))
 
-(register-system-packages "mopr"
+(register-system-packages "mopr-usd"
                           '(:mopr-ffi
                             :mopr-info
                             :mopr-val))

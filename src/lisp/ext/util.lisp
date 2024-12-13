@@ -4,7 +4,7 @@
 (in-package :cl-user)
 
 (defpackage :mopr-ext/util
-  (:import-from :mopr)
+  (:import-from :mopr-usd)
   (:import-from :mopr-sgt)
   (:import-from :mopr-gui/repr-def)
   (:import-from :mopr-gui/repr-rnode)
@@ -16,9 +16,9 @@
 (in-package :mopr-ext/util)
 
 (defun test-mopr ()
-  (let ((core-ret (mopr:test-core))
-        (wrap-std-ret (mopr:test-wrap-std))
-        (wrap-usd-ret (mopr:test-wrap-usd)))
+  (let ((core-ret (mopr-usd:test-core))
+        (wrap-std-ret (mopr-usd:test-wrap-std))
+        (wrap-usd-ret (mopr-usd:test-wrap-usd)))
     (format t "CORE LIBRARY CALL RETURN VALUE: ~A~%" core-ret)
     (format t "WRAP-STD LIBRARY CALL RETURN VALUE: ~A~%" wrap-std-ret)
     (format t "WRAP-USD LIBRARY CALL RETURN VALUE: ~A~%" wrap-usd-ret)))

@@ -3,13 +3,13 @@
 
 (in-package #:mopr-info)
 
-(defun build-value-type-name (tn &aux (tn-h (mopr:create-value-type-name)))
-  (mopr:value-type-name-find-cstr tn-h tn)
+(defun build-value-type-name (tn &aux (tn-h (mopr-usd:create-value-type-name)))
+  (mopr-usd:value-type-name-find-cstr tn-h tn)
   tn-h)
 
 (defun calculate-value-type-dims (scalar-tn-h &aux dims)
-  (let ((dim-0 (mopr:value-type-name-get-dimension scalar-tn-h 0))
-        (dim-1 (mopr:value-type-name-get-dimension scalar-tn-h 1)))
+  (let ((dim-0 (mopr-usd:value-type-name-get-dimension scalar-tn-h 0))
+        (dim-1 (mopr-usd:value-type-name-get-dimension scalar-tn-h 1)))
     (unless (zerop dim-1) (push dim-1 dims))
     (unless (zerop dim-0) (push dim-0 dims))
     dims))
@@ -37,11 +37,11 @@
    :read-only t)
   (scalar-type-name
    (error "VALUE-TYPE should have a SCALAR-TYPE-NAME.")
-   :type mopr:mopr-value-type-name-h
+   :type mopr-usd:mopr-value-type-name-h
    :read-only t)
   (vector-type-name
    (error "VALUE-TYPE should have a VECTOR-TYPE-NAME.")
-   :type mopr:mopr-value-type-name-h
+   :type mopr-usd:mopr-value-type-name-h
    :read-only t)
   (dims
    nil
@@ -61,9 +61,9 @@
                              (val-scalar (value-type-scalar-type-name val))
                              (val-vector (value-type-vector-type-name val)))
   ;; (format t "DELETING VTYPE : ~A~%" val)
-  (mopr:delete-value-type-name val-scalar)
+  (mopr-usd:delete-value-type-name val-scalar)
   (autowrap:invalidate val-scalar)
-  (mopr:delete-value-type-name val-vector)
+  (mopr-usd:delete-value-type-name val-vector)
   (autowrap:invalidate val-vector))
 
 (defun value-type-name (value-type value-type-array-p)

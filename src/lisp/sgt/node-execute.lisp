@@ -69,23 +69,23 @@
   (declare (ignore node))
   (when schema-name
     (alexandria:if-let ((s (mopr-info:get-schema :isa schema-name)))
-      (mopr:prim-set-type-name prim-h (mopr-info:schema-name-token s))
+      (mopr-usd:prim-set-type-name prim-h (mopr-info:schema-name-token s))
       (payload-content-error payload :debug))))
 
 (defun set-attr-for-all-timecodes (fn attribute-h value-h value-list)
-  (mopr:with-handles* ((timecode-h :timecode))
+  (mopr-usd:with-handles* ((timecode-h :timecode))
     (loop for val-elt in value-list
           do (let (val)
                (etypecase val-elt
                  (array
-                  (mopr:timecode-ctor-default timecode-h)
+                  (mopr-usd:timecode-ctor-default timecode-h)
                   (setf val val-elt))
                  (cons
-                  (mopr:timecode-ctor-double timecode-h
-                                             (coerce (car val-elt) 'double-float))
+                  (mopr-usd:timecode-ctor-double timecode-h
+                                                 (coerce (car val-elt) 'double-float))
                   (setf val (cdr val-elt))))
                (funcall fn val value-h)
-               (mopr:attribute-set-value attribute-h value-h timecode-h)))))
+               (mopr-usd:attribute-set-value attribute-h value-h timecode-h)))))
 
 (defun execute-attr (info body-form prim-h
                      &aux
@@ -95,18 +95,18 @@
   ;; (mopr-info:print-prop-info info)
 
   (if attr-type
-      (mopr:with-handles* ((attribute-h :attribute)
-                           (prop-name-h :token)
-                           (value-h :value))
-        (mopr:token-ctor-cstr prop-name-h (mopr-info:prop-info-full-name info))
-        (mopr:prim-create-attribute attribute-h
-                                    prim-h
-                                    prop-name-h
-                                    (mopr-info:value-type-name
-                                     attr-type
-                                     (mopr-info:attr-info-array-p info))
-                                    0 ; bool custom
-                                    mopr:+mopr-property-variability-varying+)
+      (mopr-usd:with-handles* ((attribute-h :attribute)
+                               (prop-name-h :token)
+                               (value-h :value))
+        (mopr-usd:token-ctor-cstr prop-name-h (mopr-info:prop-info-full-name info))
+        (mopr-usd:prim-create-attribute attribute-h
+                                        prim-h
+                                        prop-name-h
+                                        (mopr-info:value-type-name
+                                         attr-type
+                                         (mopr-info:attr-info-array-p info))
+                                        0 ; bool custom
+                                        mopr-usd:+mopr-property-variability-varying+)
         (alexandria:if-let
             ((transfer-for-type-fn
               (mopr-val:get-transfer-for-type-function
@@ -167,10 +167,10 @@
                         (symbol (gethash prim-form *alias-table*))
                         (list prim-form)))
            (prim-path-str (prim-path-string prim-path)))
-      (mopr:with-handles* ((path-h :path)
-                           (prim-h :prim))
-        (mopr:path-ctor-cstr path-h prim-path-str)
-        (mopr:stage-get-prim-at-path prim-h stage-h path-h)
+      (mopr-usd:with-handles* ((path-h :path)
+                               (prim-h :prim))
+        (mopr-usd:path-ctor-cstr path-h prim-path-str)
+        (mopr-usd:stage-get-prim-at-path prim-h stage-h path-h)
         (node-continue-execution node prim-h containers)))))
 
 (defclass tnode ()
@@ -218,15 +218,15 @@
   ;; (describe tn)
   (alexandria:if-let
       ((fn (case (tnode-spec tn)
-             (:def     #'mopr:stage-define-prim)
-             (:|def|   #'mopr:stage-define-prim)
-             (:over    #'mopr:stage-override-prim)
-             (:|over|  #'mopr:stage-override-prim)
-             (:class   #'mopr:stage-create-class-prim)
-             (:|class| #'mopr:stage-create-class-prim))))
-    (mopr:with-handles* ((path-h :path)
-                         (prim-h :prim))
-      (mopr:path-ctor-cstr path-h (prim-path-string (tnode-path tn) :reverse-p t))
+             (:def     #'mopr-usd:stage-define-prim)
+             (:|def|   #'mopr-usd:stage-define-prim)
+             (:over    #'mopr-usd:stage-override-prim)
+             (:|over|  #'mopr-usd:stage-override-prim)
+             (:class   #'mopr-usd:stage-create-class-prim)
+             (:|class| #'mopr-usd:stage-create-class-prim))))
+    (mopr-usd:with-handles* ((path-h :path)
+                             (prim-h :prim))
+      (mopr-usd:path-ctor-cstr path-h (prim-path-string (tnode-path tn) :reverse-p t))
       (funcall fn prim-h stage-h path-h))
     (payload-content-error (tnode-spec tn) :debug)))
 

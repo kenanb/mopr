@@ -5,10 +5,10 @@
 
 (defconstant +ignored-schema-kinds+
   (list
-   mopr:+mopr-schema-kind-invalid+
-   mopr:+mopr-schema-kind-abstract-base+
-   mopr:+mopr-schema-kind-abstract-typed+
-   mopr:+mopr-schema-kind-non-applied-api+))
+   mopr-usd:+mopr-schema-kind-invalid+
+   mopr-usd:+mopr-schema-kind-abstract-base+
+   mopr-usd:+mopr-schema-kind-abstract-typed+
+   mopr-usd:+mopr-schema-kind-non-applied-api+))
 
 (defclass registry-entry-bundle ()
   ((array
@@ -62,44 +62,44 @@
                  create-schema))
 
 (defun schema-valid-p (schema-info-h)
-  (and (zerop (mopr:schema-info-is-empty-p schema-info-h))
-       (not (member (mopr:schema-info-get-kind schema-info-h)
+  (and (zerop (mopr-usd:schema-info-is-empty-p schema-info-h))
+       (not (member (mopr-usd:schema-info-get-kind schema-info-h)
                     +ignored-schema-kinds+))))
 
 (defun get-schema-family (schema-info-h)
-  (mopr:with-handle (token-h :token)
-    (mopr:schema-info-get-family token-h schema-info-h)
-    (intern (mopr:token-cstr token-h) :keyword)))
+  (mopr-usd:with-handle (token-h :token)
+    (mopr-usd:schema-info-get-family token-h schema-info-h)
+    (intern (mopr-usd:token-cstr token-h) :keyword)))
 
 (defun get-schema-id (schema-info-h)
-  (mopr:with-handle (token-h :token)
-    (mopr:schema-info-get-identifier token-h schema-info-h)
-    (intern (mopr:token-cstr token-h) :keyword)))
+  (mopr-usd:with-handle (token-h :token)
+    (mopr-usd:schema-info-get-identifier token-h schema-info-h)
+    (intern (mopr-usd:token-cstr token-h) :keyword)))
 
 (defun create-schema (id schema-type schema-info-h)
   (make-schema
    (symbol-name id)
    (get-schema-family schema-info-h)
    schema-type
-   (mopr:schema-info-get-kind schema-info-h)
-   (mopr:schema-info-get-version schema-info-h)))
+   (mopr-usd:schema-info-get-kind schema-info-h)
+   (mopr-usd:schema-info-get-version schema-info-h)))
 
 (defun create-generic-schemas (bundle type-set-h schema-type)
-  (mopr:with-handle (schema-info-h :schema-info)
-    (loop for i below (mopr:schema-type-set-get-type-count type-set-h)
-          do (mopr:schema-type-set-get-schema-info schema-info-h type-set-h i)
+  (mopr-usd:with-handle (schema-info-h :schema-info)
+    (loop for i below (mopr-usd:schema-type-set-get-type-count type-set-h)
+          do (mopr-usd:schema-type-set-get-schema-info schema-info-h type-set-h i)
           when (schema-valid-p schema-info-h)
             do (let ((id (get-schema-id schema-info-h)))
                  (add-entry bundle id (create-schema id schema-type schema-info-h))))))
 
 (defmethod populate-entries ((ob isa-schemas))
-  (mopr:with-handle (type-set-h :schema-type-set)
-    (mopr:schema-type-set-ctor-isa-derived type-set-h)
+  (mopr-usd:with-handle (type-set-h :schema-type-set)
+    (mopr-usd:schema-type-set-ctor-isa-derived type-set-h)
     (create-generic-schemas ob type-set-h :isa)))
 
 (defmethod populate-entries ((ob api-schemas))
-  (mopr:with-handle (type-set-h :schema-type-set)
-    (mopr:schema-type-set-ctor-api-derived type-set-h)
+  (mopr-usd:with-handle (type-set-h :schema-type-set)
+    (mopr-usd:schema-type-set-ctor-api-derived type-set-h)
     (create-generic-schemas ob type-set-h :api)))
 
 (defmethod populate-entries ((ob value-types))

@@ -5,8 +5,7 @@
 
 (defpackage :mopr-user
   (:use
-   #:cl
-   #:mopr)
+   #:cl)
   (:export))
 
 (in-package #:mopr-user)

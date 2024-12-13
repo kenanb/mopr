@@ -39,9 +39,9 @@
   (procedure-call pr #'bnode-debug-print))
 
 (defun procedure-apply-to-layer (pr layer-h call-enabled)
-  (unless (zerop (mopr:layer-try-upgrade layer-h))
-    (mopr:with-handle (stage-h :stage)
-      (mopr:stage-open-layer stage-h layer-h)
+  (unless (zerop (mopr-usd:layer-try-upgrade layer-h))
+    (mopr-usd:with-handle (stage-h :stage)
+      (mopr-usd:stage-open-layer stage-h layer-h)
       ;; (procedure-debug-print pr)
       (let* ((pr-preprocessed (make-preprocessed-dnode-procedure pr call-enabled)))
         ;; (procedure-debug-print pr)

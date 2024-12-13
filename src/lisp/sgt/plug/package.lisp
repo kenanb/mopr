@@ -4,7 +4,7 @@
 (in-package :cl-user)
 
 (defpackage :mopr-plug
-  (:use #:cl #:mopr)
+  (:use #:cl)
 
   ;; CONFIG
   (:export

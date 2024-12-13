@@ -9,7 +9,7 @@
   :description "This system is used only as a root anchor
 for package-inferred extension systems in ext directory."
   :pathname "ext"
-  :depends-on (#:mopr
+  :depends-on (#:mopr-usd
                #:mopr-sgt))
 
 (register-system-packages "cl-plus-c"

@@ -1,6 +1,6 @@
 ;;;; package.lisp
 
-(uiop:define-package #:mopr
+(uiop:define-package #:mopr-usd
     (:use #:cl)
   (:use-reexport #:mopr-def
                  #:mopr-fun)

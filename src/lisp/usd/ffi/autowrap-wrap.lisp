@@ -1,8 +1,8 @@
 (cl:in-package :mopr-def)
 
 (autowrap:c-include
- '(#:mopr #:ffi "moprWrapIncludes.h")
- :spec-path '(#:mopr #:ffi #:spec)
+ '(#:mopr-usd #:ffi "moprWrapIncludes.h")
+ :spec-path '(#:mopr-usd #:ffi #:spec)
 
  ;; According to current directory structure,
  ;; the header lookup should happen relative
@@ -11,7 +11,7 @@
  (cl:list (cl:namestring
            (uiop/pathname:pathname-parent-directory-pathname
             (uiop/pathname:pathname-parent-directory-pathname
-             (asdf:component-pathname (asdf:find-system :mopr cl:t))))))
+             (asdf:component-pathname (asdf:find-system :mopr-usd cl:t))))))
 
  ;; For now, we limit spec generation to avoid committing too many changes.
  :exclude-arch

@@ -15,7 +15,7 @@
   :components
   ((:file "mopr-user"))
   :depends-on
-  (#:mopr
+  (#:mopr-usd
    #:mopr-sgt
    #:mopr-gui
    ;; ENABLED PLUGIN LIST:

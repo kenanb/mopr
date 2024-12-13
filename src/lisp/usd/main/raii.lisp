@@ -1,11 +1,11 @@
-(in-package #:mopr)
+(in-package #:mopr-usd)
 
 (eval-when (:compile-toplevel :load-toplevel :execute)
   (defun get-create-fn-symbol (x)
-    (alexandria:format-symbol "MOPR" "CREATE-~A" x))
+    (alexandria:format-symbol "MOPR-USD" "CREATE-~A" x))
 
   (defun get-delete-fn-symbol (x)
-    (alexandria:format-symbol "MOPR" "DELETE-~A" x)))
+    (alexandria:format-symbol "MOPR-USD" "DELETE-~A" x)))
 
 ;; NOTE: Since the variables are lexically scoped,
 ;; we don't bother calling (autowrap:invalidate stage) at scope exit.
