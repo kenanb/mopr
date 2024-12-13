@@ -15,7 +15,7 @@ mainly in Lisp. UNTESTED. DO NOT USE!"
    #:alexandria
    #:cl-autowrap)
 
-  :pathname "src"
+  :pathname "usd"
 
   :components
   ((:module #:ffi
