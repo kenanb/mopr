@@ -8,10 +8,10 @@
  (:prim ("Grid10x10")
   (:type :Mesh)
   (:call (prop (:isa :Mesh :faceVertexCounts))
-   10 10 :grid-fv-counts nil prop :make-prop)
+   10 10 :grid-fv-counts prop :make-schema-prop)
   (:call (prop (:isa :Mesh :faceVertexIndices))
-   10 10 :cw :grid-fv-indices nil prop :make-prop)
+   10 10 :cw :grid-fv-indices prop :make-schema-prop)
   (:call sine-args
    grid-p :copy-array len time :grid-sine-y
-   :dup time (:isa :Mesh :points) :make-prop
-   :swap :compute-extent time (:isa :Mesh :extent) :make-prop)))
+   :dup time :as-timesample (:isa :Mesh :points) :make-schema-prop
+   :swap :compute-extent time :as-timesample (:isa :Mesh :extent) :make-schema-prop)))

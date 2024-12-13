@@ -72,7 +72,7 @@
    #:copy-prim-schema-prop-statement
    #:prim-schema-prop-statement-p
    #:prim-schema-prop-statement
-   #:prim-schema-prop-statement-info-param
+   #:prim-schema-prop-statement-info-args-param
    #:prim-schema-prop-statement-body-form-param
 
    ;; PRIM-TYPE-STATEMENT
@@ -166,7 +166,8 @@
    #:dnode-children
 
    ;; NODE CALLABLES
-   #:make-prop
+   #:as-timesample
+   #:make-schema-prop
    #:make-group
 
    ;; EXTENDED NODE API

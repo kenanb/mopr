@@ -31,6 +31,11 @@
           (*alias-table* (make-hash-table)))
      ,@body))
 
+(defun execute-all (node stage-h)
+  (mopr-info:with-registry (:supported-cases '(:upcase))
+    (with-execution-variables ()
+      (node-execute node stage-h))))
+
 ;;
 ;;; EXECUTE IMPLEMENTATIONS
 ;;
@@ -116,7 +121,9 @@
 ;; TODO: This node ignores the prim-ns-statement ancestors as it gets namespace information
 ;;       from schema. Its construction within a prim-ns-statement should probably be disallowed.
 (defmethod execute ((payload prim-schema-prop-statement) node prim-h containers
-                    &aux (info (prim-schema-prop-statement-info-param payload)))
+                    &aux ; TODO: Add serialization tests.
+                      (info-args (prim-schema-prop-statement-info-args-param payload))
+                      (info (apply #'mopr-info:get-prop-info-for-schema info-args)))
   (declare (ignore node))
   (etypecase info
     (mopr-info:attr-info
@@ -155,7 +162,6 @@
   nil)
 
 (defmethod execute ((payload prim-statement) node stage-h containers)
-  (declare (ignore node))
   (with-accessors ((prim-form prim-statement-path-form-param)) payload
     (let* ((prim-path (etypecase prim-form
                         (symbol (gethash prim-form *alias-table*))

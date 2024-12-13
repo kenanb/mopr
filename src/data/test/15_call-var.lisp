@@ -9,16 +9,16 @@
  (:prim ("Grid3x3")
   (:type :Mesh)
   (:call (prop (:isa :Mesh :faceVertexCounts))
-   3 3 :grid-fv-counts nil prop :make-prop)
+   3 3 :grid-fv-counts prop :make-schema-prop)
   (:call (prop (:isa :Mesh :faceVertexIndices))
-   3 3 :cw :grid-fv-indices nil prop :make-prop)
+   3 3 :cw :grid-fv-indices prop :make-schema-prop)
   (:call (val 0 time 00)
    base-grid-points :copy-array dim len val :grid-oscillate-y
-   time prop-pts :make-prop)
+   time :as-timesample prop-pts :make-schema-prop)
   (:call (val 7 time 10)
    base-grid-points :copy-array dim len val :grid-oscillate-y
-   time prop-pts :make-prop)
+   time :as-timesample prop-pts :make-schema-prop)
   (:call (val 0 time 20)
    base-grid-points :copy-array dim len val :grid-oscillate-y :dup
-   time prop-pts :make-prop
-   :swap :compute-extent nil prop-ext :make-prop)))
+   time :as-timesample prop-pts :make-schema-prop
+   :swap :compute-extent prop-ext :make-schema-prop)))

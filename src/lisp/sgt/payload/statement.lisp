@@ -8,12 +8,10 @@
             (:constructor nil)
             (:copier nil)))
 
-;; TODO : Unserializable and unrepresentable until the implementation is revised
-;;        to only contain the information needed to generate the prop-info instance.
 (defstruct (prim-schema-prop-statement (:include statement))
-  (info-param (error "Unbound prim-schema-prop-statement param: info-param")
+  (info-args-param (error "Unbound prim-schema-prop-statement param: info-args-param")
    :read-only t
-   :type mopr-info:prop-info)
+   :type list)
   (body-form-param (error "Unbound prim-schema-prop-statement param: body-form-param")
    :read-only t
    :type list))

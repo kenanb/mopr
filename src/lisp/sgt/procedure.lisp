@@ -42,12 +42,10 @@
   (unless (zerop (mopr:layer-try-upgrade layer-h))
     (mopr:with-handle (stage-h :stage)
       (mopr:stage-open-layer stage-h layer-h)
-      (mopr-info:with-registry (:supported-cases '(:upcase))
+      ;; (procedure-debug-print pr)
+      (let* ((pr-preprocessed (make-preprocessed-dnode-procedure pr call-enabled)))
         ;; (procedure-debug-print pr)
-        (let* ((pr-preprocessed (make-preprocessed-dnode-procedure pr call-enabled)))
-          ;; (procedure-debug-print pr)
-          (with-execution-variables ()
-            (procedure-call pr-preprocessed #'node-execute stage-h)))))))
+        (procedure-call pr-preprocessed #'execute-all stage-h)))))
 
 (defmacro with-limited-procedure-io-syntax ((&key read-pkg) &body body)
   `(with-standard-io-syntax

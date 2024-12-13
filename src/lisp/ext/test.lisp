@@ -29,43 +29,31 @@
                           :i ()
                           :o (:tree-dnode mopr-sgt:dnode))))
 
-(defvar *attr-info-xform-op-order*
-  (make-instance 'mopr-info:attr-info
-                 :base-name "xformOpOrder"
-                 :meta '(:interp :uniform)
-                 :array-p t
-                 :type-key :token))
-
-(defvar *attr-info-translate*
-  (make-instance 'mopr-info:attr-info
-                 :namespace '("xformOp")
-                 :base-name "translate"
-                 :type-key :float3))
-
-(defvar *attr-info-rotate-x-y-z*
-  (make-instance 'mopr-info:attr-info
-                 :namespace '("xformOp")
-                 :base-name "rotateXYZ"
-                 :type-key :double3))
-
 ;; Test functions.
 
 (defun prim-fn-test-gen-xform-info (tr-array rt-array)
-  (mopr-sgt:make-group
-   (list
-    (mopr-sgt:as-dnode
-     (mopr-sgt:make-prim-schema-prop-statement
-      :info-param *attr-info-xform-op-order*
-      :body-form-param (list #1A (("xformOp" "translate")
-                                  ("xformOp" "rotateXYZ")))))
-    (mopr-sgt:as-dnode
-     (mopr-sgt:make-prim-schema-prop-statement
-      :info-param *attr-info-translate*
-      :body-form-param (list tr-array)))
-    (mopr-sgt:as-dnode
-     (mopr-sgt:make-prim-schema-prop-statement
-      :info-param *attr-info-rotate-x-y-z*
-      :body-form-param (list rt-array))))))
+  (let* ((op-order-node (mopr-sgt:as-dnode
+                         (mopr-sgt:make-prim-schema-prop-statement
+                          :info-args-param '(:isa :Xform :xformOpOrder)
+                          :body-form-param (list #1A (("xformOp" "translate")
+                                                      ("xformOp" "rotateXYZ"))))))
+         (ns-node (mopr-sgt:as-dnode (mopr-sgt:make-prim-ns-container
+                                      :name-param (coerce "xformOp" 'base-string))))
+         (translate-payload (mopr-sgt:make-prim-attr-statement
+                             :name-param (coerce "translate" 'base-string)
+                             :category-param :datum
+                             :type-param :float3
+                             :body-form-param (list tr-array)))
+         (rotate-payload (mopr-sgt:make-prim-attr-statement
+                          :name-param (coerce "rotateXYZ" 'base-string)
+                          :category-param :datum
+                          :type-param :double3
+                          :body-form-param (list rt-array)))
+         (ns-node-children (list translate-payload rotate-payload)))
+    (loop for p in ns-node-children
+          do (vector-push-extend (mopr-sgt:as-dnode p)
+                                 (mopr-sgt:dnode-children ns-node)))
+    (mopr-sgt:make-group (list op-order-node ns-node))))
 
 (defun data-fn-test-gen-cubes (r)
   (flet ((define-cube (x r prim-name)
