@@ -189,7 +189,7 @@
    #:make-procedure
    #:make-cnode-procedure
    #:make-enode-procedure
-   ;; #:make-preprocessed-dnode-procedure
+   #:make-preprocessed-dnode-procedure
    #:make-cnode-procedure-from-usds-file
    #:save-bnode-procedure-to-usds-file
    #:save-bnode-procedure-to-usds-string
@@ -201,6 +201,5 @@
    #:procedure-root
    #:procedure-call
    #:procedure-debug-print
-   #:procedure-apply-to-layer
 
    ))

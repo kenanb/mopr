@@ -10,8 +10,7 @@
 mainly in Lisp. UNTESTED. DO NOT USE!"
 
   :depends-on
-  (#:mopr-usd ;; TODO : Move out the execute module and remove dependency.
-   #:ironclad/digest/sha1)
+  (#:ironclad/digest/sha1)
 
   :pathname "sgt"
 
@@ -47,8 +46,6 @@ mainly in Lisp. UNTESTED. DO NOT USE!"
     :depends-on ("package" "payload" "header" "cnode" "dnode" "plug"))
    (:file "node-callables"
     :depends-on ("package" "payload" "header" "cnode" "dnode" "plug"))
-   (:file "node-execute"
-    :depends-on ("package" "payload" "header" "cnode"))
    (:file "enode"
     :depends-on ("package" "payload" "header" "cnode"))
    (:file "procedure"
@@ -60,7 +57,6 @@ mainly in Lisp. UNTESTED. DO NOT USE!"
      "cnode"
      "node-serialize"
      "node-preprocess"
-     "node-execute"
      "enode"))))
 
 (register-system-packages "mopr-sgt"

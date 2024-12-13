@@ -4,11 +4,9 @@
 (in-package :cl-user)
 
 (defpackage :mopr-ext/util
-  (:import-from :mopr-usd)
+  (:import-from :mopr-exe)
   (:import-from :mopr-sgt)
-  (:import-from :mopr-gui/repr-def)
-  (:import-from :mopr-gui/repr-rnode)
-  (:import-from :mopr-gui/repr)
+  (:import-from :mopr-usd)
   (:use #:cl)
   (:export
    #:populate-from-lisp-file))
@@ -30,5 +28,5 @@
 (defun populate-from-lisp-file (layer-h filepath call-enabled)
   "CAUTION: Calls to functions registered to call tables can be dangerous, if enabled."
   (let* ((pr (mopr-sgt:make-cnode-procedure-from-usds-file filepath (get-mopr-user-package))))
-    (mopr-sgt:procedure-apply-to-layer pr layer-h call-enabled)
+    (mopr-exe:procedure-execute pr layer-h call-enabled)
     pr))

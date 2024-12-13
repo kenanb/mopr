@@ -1,7 +1,7 @@
 ;;;; -*- Mode: LISP; Syntax: COMMON-LISP; Package: CL-USER -*-
 ;;
 
-(in-package #:mopr-sgt)
+(in-package #:mopr-exe)
 
 ;;
 ;;; MAIN API

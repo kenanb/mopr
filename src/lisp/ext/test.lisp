@@ -5,7 +5,7 @@
 
 (defpackage :mopr-ext/test
   (:import-from :mopr-sgt)
-  (:use #:cl #:mopr-ext/grid)
+  (:use #:cl)
   (:export))
 
 (in-package :mopr-ext/test)

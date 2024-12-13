@@ -17,6 +17,7 @@
   :depends-on
   (#:mopr-usd
    #:mopr-sgt
+   #:mopr-exe
    #:mopr-gui
    ;; ENABLED PLUGIN LIST:
    ;;
