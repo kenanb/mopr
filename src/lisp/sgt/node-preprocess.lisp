@@ -19,36 +19,36 @@
           (*each-table* (make-hash-table)))
      ,@body))
 
-(defgeneric preprocess (payload)
-  (:documentation "Preprocess payload."))
+(defgeneric expand (payload)
+  (:documentation "Expand payload."))
 
-(defun node-preprocess (node &aux (p (bnode-find-payload node)))
+(defun node-expand (node &aux (p (bnode-find-payload node)))
   (etypecase p
-    (directive (preprocess p))
+    (directive (expand p))
     (payload (list (as-dnode p)))))
 
-(defun preprocess-recursive (node &optional parent
-                             &aux (preprocessed (node-preprocess node)))
-  "Create a preprocessed node hierarchy."
-  (loop for e in preprocessed
+(defun node-expand-recursive (node &optional parent
+                              &aux (expanded (node-expand node)))
+  "Create an expanded node hierarchy."
+  (loop for e in expanded
         do (progn
              (when parent (vector-push-extend e (bnode-children parent)))
-             (loop for c across (bnode-children node) do (preprocess-recursive c e))))
-  preprocessed)
+             (loop for c across (bnode-children node) do (node-expand-recursive c e))))
+  expanded)
 
 ;; Assumes being called within a with-registry scope.
-(defun preprocess-all (rn)
+(defun node-expand-all (rn)
   (mopr-plug:with-configuration ()
     (with-expansion-variables (:enable-call nil)
-      (car (preprocess-recursive rn)))))
+      (car (node-expand-recursive rn)))))
 
-(defun preprocess-all-call-enabled (rn)
+(defun node-expand-all-call-enabled (rn)
   (mopr-plug:with-configuration ()
     (with-expansion-variables (:enable-call t)
-      (car (preprocess-recursive rn)))))
+      (car (node-expand-recursive rn)))))
 
 ;;
-;;; PREPROCESS IMPLEMENTATIONS
+;;; EXPAND IMPLEMENTATIONS
 ;;
 
 (defvar *debug-mode* t)
@@ -71,7 +71,7 @@
     (when (and (eq action :debug) *debug-mode*)
       (error "Cannot handle payload: ~S~%" payload))))
 
-(defmethod preprocess ((payload var-directive))
+(defmethod expand ((payload var-directive))
   (validate-call-support payload :debug)
   (with-accessors ((name var-directive-name-param)
                    (aux var-directive-aux-form-param)
@@ -80,7 +80,7 @@
           (car (mopr-plug:process-call-stack aux val *var-table*))))
   nil)
 
-(defmethod preprocess ((payload each-directive))
+(defmethod expand ((payload each-directive))
   (validate-call-support payload :debug)
   (with-accessors ((name each-directive-name-param)
                    (keys each-directive-keys-form-param)
@@ -92,7 +92,7 @@
                   vals)))
   nil)
 
-(defmethod preprocess ((payload iota-directive))
+(defmethod expand ((payload iota-directive))
   (validate-call-support payload :debug)
   (with-accessors ((name iota-directive-name-param)
                    (key iota-directive-key-param)
@@ -117,10 +117,10 @@
            (lambda (x) (typep x 'bnode))
            (mopr-plug:process-call-stack args body-form *var-table*))))
     (if (some #'has-directives-recursive initial-result)
-        (loop for n in initial-result nconc (preprocess-recursive n))
+        (loop for n in initial-result nconc (node-expand-recursive n))
         initial-result)))
 
-(defun preprocess-call-generic (payload)
+(defun expand-call-generic (payload)
   (validate-call-support payload :debug)
   (with-accessors ((aux-form call-directive-aux-form-param)
                    (body-form call-directive-body-form-param)) payload
@@ -130,8 +130,8 @@
       (loop for args in args-list
             nconc (process-and-filter-call-stack args body-form)))))
 
-(defmethod preprocess ((payload prim-call-directive))
-  (preprocess-call-generic payload))
+(defmethod expand ((payload prim-call-directive))
+  (expand-call-generic payload))
 
-(defmethod preprocess ((payload call-directive))
-  (preprocess-call-generic payload))
+(defmethod expand ((payload call-directive))
+  (expand-call-generic payload))

@@ -19,7 +19,7 @@
     (container (node-continue-execution node target-h (cons p containers)))
     ;; NOTE : If recursive re-expansion works correctly, no "directive"
     ;;        should be left in the tree by the time we execute it.
-    (directive (error "Encountered directive that should have been preprocessed."))
+    (directive (error "Encountered directive that should have been expanded."))
     (statement (execute p node target-h containers))))
 
 (defun node-continue-execution (node target-h containers)

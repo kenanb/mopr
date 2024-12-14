@@ -8,6 +8,6 @@
     (mopr-usd:with-handle (stage-h :stage)
       (mopr-usd:stage-open-layer stage-h layer-h)
       ;; (procedure-debug-print pr)
-      (let* ((pr-preprocessed (make-preprocessed-dnode-procedure pr call-enabled)))
+      (let* ((pr-expanded (make-expanded-dnode-procedure pr call-enabled)))
         ;; (procedure-debug-print pr)
-        (procedure-call pr-preprocessed #'execute-all stage-h)))))
+        (procedure-call pr-expanded #'execute-all stage-h)))))

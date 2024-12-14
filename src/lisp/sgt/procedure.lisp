@@ -25,10 +25,10 @@
 (defun make-enode-procedure (pr)
   (procedure-call-constructor pr #'enode-from-node-recursive))
 
-(defun make-preprocessed-dnode-procedure (pr call-enabled)
+(defun make-expanded-dnode-procedure (pr call-enabled)
   (procedure-call-constructor pr (if call-enabled
-                                     #'preprocess-all-call-enabled
-                                     #'preprocess-all)))
+                                     #'node-expand-all-call-enabled
+                                     #'node-expand-all)))
 
 (defun make-cnode-procedure-from-usds-file (filepath read-pkg &aux (pr (make-procedure)))
   (let ((*header* (procedure-header pr)))
