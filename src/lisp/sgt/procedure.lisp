@@ -61,11 +61,11 @@
 (defun save-bnode-procedure-to-usds-file (pr filepath &key (if-exists :supersede))
   (with-open-file (out filepath :direction :output :if-exists if-exists)
     (with-generic-procedure-io-syntax ()
-      (pprint (node-serialize (procedure-root pr)) out))))
+      (pprint (procedure-call pr #'node-serialize) out))))
 
 (defun save-bnode-procedure-to-usds-string (pr)
   (with-generic-procedure-io-syntax ()
-    (prin1-to-string (node-serialize (procedure-root pr)))))
+    (prin1-to-string (procedure-call pr #'node-serialize))))
 
 (defun read-cnode-procedure-from-file (filepath)
   "CAUTION: Even though READ-EVAL is disabled, relying on READ for data is still dangerous!"
