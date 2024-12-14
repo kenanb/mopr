@@ -27,19 +27,19 @@
 
 (defconstant +sgt-op-callables+
   '(:as-timesample
-    #S(mopr-plug:callable :fn as-timesample
-                          :i (:datum t :time any-timecode)
-                          :o (:datum t))
+    #S(mopr-sgt/plug:callable :fn as-timesample
+                              :i (:datum t :time any-timecode)
+                              :o (:datum t))
 
     :make-schema-prop
-    #S(mopr-plug:callable :fn make-schema-prop
-                          :i (:datum t :info-args list)
-                          :o (:prop dnode))
+    #S(mopr-sgt/plug:callable :fn make-schema-prop
+                              :i (:datum t :info-args list)
+                              :o (:prop dnode))
 
     :make-group
-    #S(mopr-plug:callable :fn make-group
-                          :i (:prop-list list)
-                          :o (:group dnode))))
+    #S(mopr-sgt/plug:callable :fn make-group
+                              :i (:prop-list list)
+                              :o (:group dnode))))
 
 (defconstant +configuration+
   `((:callables ,+sgt-op-callables+)))

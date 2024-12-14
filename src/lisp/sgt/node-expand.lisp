@@ -38,12 +38,12 @@
 
 ;; Assumes being called within a with-registry scope.
 (defun node-expand-all (rn)
-  (mopr-plug:with-configuration ()
+  (mopr-sgt/plug:with-configuration ()
     (with-expansion-variables (:enable-call nil)
       (car (node-expand-recursive rn)))))
 
 (defun node-expand-all-call-enabled (rn)
-  (mopr-plug:with-configuration ()
+  (mopr-sgt/plug:with-configuration ()
     (with-expansion-variables (:enable-call t)
       (car (node-expand-recursive rn)))))
 
@@ -77,7 +77,7 @@
                    (aux var-directive-aux-form-param)
                    (val var-directive-val-form-param)) payload
     (setf (gethash name *var-table*)
-          (car (mopr-plug:process-call-stack aux val *var-table*))))
+          (car (mopr-sgt/plug:process-call-stack aux val *var-table*))))
   nil)
 
 (defmethod expand ((payload each-directive))
@@ -115,7 +115,7 @@
   (let ((initial-result
           (remove-if-not
            (lambda (x) (typep x 'bnode))
-           (mopr-plug:process-call-stack args body-form *var-table*))))
+           (mopr-sgt/plug:process-call-stack args body-form *var-table*))))
     (if (some #'has-directives-recursive initial-result)
         (loop for n in initial-result nconc (node-expand-recursive n))
         initial-result)))

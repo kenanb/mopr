@@ -3,7 +3,7 @@
 
 (in-package :cl-user)
 
-(defpackage :mopr-plug
+(defpackage :mopr-sgt/plug
   (:use #:cl)
 
   ;; CONFIG

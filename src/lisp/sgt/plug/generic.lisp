@@ -1,7 +1,7 @@
 ;;;; -*- Mode: LISP; Syntax: COMMON-LISP; Package: CL-USER -*-
 ;;
 
-(in-package #:mopr-plug)
+(in-package #:mopr-sgt/plug)
 
 ;; Basic arithmetic operators.
 (defun add (x y) (+ x y))
@@ -71,10 +71,9 @@
     :4list #S(callable :fn 4list :i (:a t :b t :c t :d t) :o (:list cons))
 
     ;; Custom array operators.
-    :copy-array
-    #S(mopr-plug:callable :fn alexandria:copy-array
-                          :i (:ref-array array)
-                          :o (:new-array array))))
+    :copy-array #S(callable :fn alexandria:copy-array
+                            :i (:ref-array array)
+                            :o (:new-array array))))
 
 (defconstant +configuration+
   `((:callables ,+arith-op-callables+)

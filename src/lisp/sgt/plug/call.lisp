@@ -1,7 +1,7 @@
 ;;;; -*- Mode: LISP; Syntax: COMMON-LISP; Package: CL-USER -*-
 ;;
 
-(in-package #:mopr-plug)
+(in-package #:mopr-sgt/plug)
 
 (eval-when (:compile-toplevel :load-toplevel :execute)
   (defstruct callable

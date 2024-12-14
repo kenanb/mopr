@@ -60,4 +60,4 @@ mainly in Lisp. UNTESTED. DO NOT USE!"
      "enode"))))
 
 (register-system-packages "mopr-sgt"
-                          '(:mopr-plug))
+                          '(:mopr-sgt/plug))

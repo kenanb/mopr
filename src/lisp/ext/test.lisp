@@ -14,19 +14,19 @@
 
 (defconstant +callables+
   '(:test-gen-xform-info
-    #S(mopr-plug:callable :fn prim-fn-test-gen-xform-info
-                          :i (:tr-array array :rt-array array)
-                          :o (:group-dnode mopr-sgt:dnode))
+    #S(mopr-sgt/plug:callable :fn prim-fn-test-gen-xform-info
+                              :i (:tr-array array :rt-array array)
+                              :o (:group-dnode mopr-sgt:dnode))
 
     :test-gen-cubes
-    #S(mopr-plug:callable :fn data-fn-test-gen-cubes
-                          :i (:r fixnum)
-                          :o (:group-dnode mopr-sgt:dnode))
+    #S(mopr-sgt/plug:callable :fn data-fn-test-gen-cubes
+                              :i (:r fixnum)
+                              :o (:group-dnode mopr-sgt:dnode))
 
     :test-tree-gen
-    #S(mopr-plug:callable :fn data-fn-test-tree-gen
-                          :i ()
-                          :o (:tree-dnode mopr-sgt:dnode))))
+    #S(mopr-sgt/plug:callable :fn data-fn-test-tree-gen
+                              :i ()
+                              :o (:tree-dnode mopr-sgt:dnode))))
 
 ;; Test functions.
 

@@ -1,7 +1,7 @@
 ;;;; -*- Mode: LISP; Syntax: COMMON-LISP; Package: CL-USER -*-
 ;;
 
-(in-package :mopr-plug)
+(in-package :mopr-sgt/plug)
 
 ;;;;;;;;;;
 ;;; Config
@@ -26,7 +26,7 @@
 
 (defun configure ()
   "Loads the configuration."
-  (let ((args (loop for pkg in '(:mopr-plug :mopr-sgt :mopr-user)
+  (let ((args (loop for pkg in '(:mopr-sgt/plug :mopr-sgt :mopr-user)
                     for cfg = (multiple-value-list (find-symbol "+CONFIGURATION+" pkg))
                     when (member (cadr cfg) '(:internal :external))
                       append (symbol-value (car cfg)))))
