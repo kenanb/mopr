@@ -42,7 +42,7 @@ mainly in Lisp. UNTESTED. DO NOT USE!"
     :depends-on ("package" "payload" "bnode"))
    (:file "node-serialize"
     :depends-on ("package" "payload" "header" "cnode"))
-   (:file "node-preprocess"
+   (:file "node-expand"
     :depends-on ("package" "payload" "header" "cnode" "dnode" "plug"))
    (:file "node-callables"
     :depends-on ("package" "payload" "header" "cnode" "dnode" "plug"))
@@ -56,7 +56,7 @@ mainly in Lisp. UNTESTED. DO NOT USE!"
      "bnode"
      "cnode"
      "node-serialize"
-     "node-preprocess"
+     "node-expand"
      "enode"))))
 
 (register-system-packages "mopr-sgt"
