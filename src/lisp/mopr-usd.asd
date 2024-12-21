@@ -75,6 +75,6 @@ mainly in Lisp. UNTESTED. DO NOT USE!"
       :depends-on ("package" "prop" "value" "schema" "bundle" "registry"))))))
 
 (register-system-packages "mopr-usd"
-                          '(:mopr-ffi
+                          '(:mopr-usd/ffi
                             :mopr-usd/info
                             :mopr-usd/val))

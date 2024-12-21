@@ -34,7 +34,7 @@ ARCH_CONSTRUCTOR( moprInit, 100, void )
     // In case we need to move the ffi initialization to the boot code.
     // It is currently happening inside mopr-user.
     //
-    // const cl_object pkg_mopr_ffi = ecl_find_package( "MOPR-FFI" );
+    // const cl_object pkg_mopr_ffi = ecl_find_package( "MOPR-USD/FFI" );
     // const cl_object str_ffi_init = ecl_make_constant_base_string( "INIT", -1 );
     // int sym_ffi_init_if = 0;
     // const cl_object sym_ffi_init =

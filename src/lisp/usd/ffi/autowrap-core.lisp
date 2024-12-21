@@ -1,4 +1,4 @@
-(cl:in-package :mopr-def)
+(cl:in-package :mopr-usd/def)
 
 (autowrap:c-include
  '(#:mopr-usd #:ffi "moprCoreIncludes.h")
@@ -38,7 +38,7 @@
                        "^ARCH_.*")
 
  ;; Cleanup prefixes of functions, isolate into a separate package.
- :function-package #:MOPR-FUN
+ :function-package #:MOPR-USD/FUN
  :symbol-regex
  (("^mopr_(.*)" () (cl:lambda (s m r)
                      (cl:declare (cl:ignorable s r))

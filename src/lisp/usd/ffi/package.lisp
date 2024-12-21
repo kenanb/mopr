@@ -1,14 +1,14 @@
 ;;;; package.lisp
 
-(push :mopr-ffi *features*)
+(push :mopr-usd/ffi *features*)
 
-(defpackage #:mopr-ffi
+(defpackage #:mopr-usd/ffi
   (:use)
   (:export #:init-core
            #:init-wrap))
 
-(defpackage #:mopr-def
+(defpackage #:mopr-usd/def
   (:use))
 
-(defpackage #:mopr-fun
+(defpackage #:mopr-usd/fun
   (:use))
