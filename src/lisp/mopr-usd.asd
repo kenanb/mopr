@@ -77,4 +77,4 @@ mainly in Lisp. UNTESTED. DO NOT USE!"
 (register-system-packages "mopr-usd"
                           '(:mopr-ffi
                             :mopr-info
-                            :mopr-val))
+                            :mopr-usd/val))

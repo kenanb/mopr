@@ -109,7 +109,7 @@
                                         mopr-usd:+mopr-property-variability-varying+)
         (alexandria:if-let
             ((transfer-for-type-fn
-              (mopr-val:get-transfer-for-type-function
+              (mopr-usd/val:get-transfer-for-type-function
                (mopr-info:value-type-real-type attr-type)
                (mopr-info:attr-info-array-p info))))
           (set-attr-for-all-timecodes transfer-for-type-fn attribute-h value-h body-form)

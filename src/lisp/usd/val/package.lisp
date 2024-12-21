@@ -1,6 +1,6 @@
 ;;;; package.lisp
 
-(defpackage :mopr-val
+(defpackage :mopr-usd/val
   (:use #:cl)
   (:export
    #:+value-type-list+

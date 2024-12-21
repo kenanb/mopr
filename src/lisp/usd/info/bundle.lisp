@@ -103,8 +103,8 @@
     (create-generic-schemas ob type-set-h :api)))
 
 (defmethod populate-entries ((ob value-types))
-  (loop for sym in (mapcar #'car (append mopr-val:+value-type-list+
-                                         mopr-val:+value-role-list+))
+  (loop for sym in (mapcar #'car (append mopr-usd/val:+value-type-list+
+                                         mopr-usd/val:+value-role-list+))
         do (add-entry ob sym (make-value-type sym))))
 
 (defun teardown-entries (bundle)

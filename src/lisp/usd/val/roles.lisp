@@ -1,7 +1,7 @@
 ;;;; -*- Mode: LISP; Syntax: COMMON-LISP; Package: CL-USER -*-
 ;;
 
-(in-package #:mopr-val)
+(in-package #:mopr-usd/val)
 
 (defconstant +value-role-list+
   '(;; texCoord2x
@@ -45,4 +45,4 @@
     (:|group| . :|opaque|)))
 
 (defun get-real-type (type-key)
-  (or (cdr (assoc type-key mopr-val:+value-role-list+)) type-key))
+  (or (cdr (assoc type-key +value-role-list+)) type-key))

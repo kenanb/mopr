@@ -1,7 +1,7 @@
 ;;;; -*- Mode: LISP; Syntax: COMMON-LISP; Package: CL-USER -*-
 ;;
 
-(in-package #:mopr-val)
+(in-package #:mopr-usd/val)
 
 (eval-when (:compile-toplevel :load-toplevel :execute)
   (defconstant +value-type-list+

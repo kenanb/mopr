@@ -18,8 +18,8 @@
             (:constructor make-value-type
                 (tname
                  &aux
-                   (real-type (mopr-val:get-real-type tname))
-                   (elt-type (cadr (assoc real-type mopr-val:+value-type-list+)))
+                   (real-type (mopr-usd/val:get-real-type tname))
+                   (elt-type (cadr (assoc real-type mopr-usd/val:+value-type-list+)))
                    (scalar-type-name (build-value-type-name (format nil "~A" tname)))
                    (vector-type-name (build-value-type-name (format nil "~A[]" tname)))
                    (dims (calculate-value-type-dims scalar-type-name))
