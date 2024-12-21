@@ -1,7 +1,7 @@
 ;;;; -*- Mode: LISP; Syntax: COMMON-LISP; Package: CL-USER -*-
 ;;
 
-(in-package #:mopr-info)
+(in-package #:mopr-usd/info)
 
 ;; Variable dynamically bound within the with-registry macro.
 (defvar *registry-supported-cases* nil)

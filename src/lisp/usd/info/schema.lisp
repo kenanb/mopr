@@ -1,7 +1,7 @@
 ;;;; -*- Mode: LISP; Syntax: COMMON-LISP; Package: CL-USER -*-
 ;;
 
-(in-package #:mopr-info)
+(in-package #:mopr-usd/info)
 
 (defun generate-prop-info (prop-name prop-def-h)
   (let (info-type

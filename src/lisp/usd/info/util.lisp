@@ -1,7 +1,7 @@
 ;;;; -*- Mode: LISP; Syntax: COMMON-LISP; Package: CL-USER -*-
 ;;
 
-(in-package #:mopr-info)
+(in-package #:mopr-usd/info)
 
 (declaim (inline get-value-type-table
                  get-schema-table))

@@ -1,7 +1,7 @@
 ;;;; -*- Mode: LISP; Syntax: COMMON-LISP; Package: CL-USER -*-
 ;;
 
-(in-package #:mopr-info)
+(in-package #:mopr-usd/info)
 
 (defun build-value-type-name (tn &aux (tn-h (mopr-usd:create-value-type-name)))
   (mopr-usd:value-type-name-find-cstr tn-h tn)

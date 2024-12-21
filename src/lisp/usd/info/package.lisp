@@ -1,6 +1,6 @@
 ;;;; package.lisp
 
-(defpackage :mopr-info
+(defpackage :mopr-usd/info
   (:use #:cl)
   (:export
 

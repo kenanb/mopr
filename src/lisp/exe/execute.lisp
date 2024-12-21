@@ -32,7 +32,7 @@
      ,@body))
 
 (defun execute-all (node stage-h)
-  (mopr-info:with-registry (:supported-cases '(:upcase))
+  (mopr-usd/info:with-registry (:supported-cases '(:upcase))
     (with-execution-variables ()
       (node-execute node stage-h))))
 
@@ -68,8 +68,8 @@
                     &aux (schema-name (prim-type-statement-name-param payload)))
   (declare (ignore node))
   (when schema-name
-    (alexandria:if-let ((s (mopr-info:get-schema :isa schema-name)))
-      (mopr-usd:prim-set-type-name prim-h (mopr-info:schema-name-token s))
+    (alexandria:if-let ((s (mopr-usd/info:get-schema :isa schema-name)))
+      (mopr-usd:prim-set-type-name prim-h (mopr-usd/info:schema-name-token s))
       (payload-content-error payload :debug))))
 
 (defun set-attr-for-all-timecodes (fn attribute-h value-h value-list)
@@ -89,46 +89,46 @@
 
 (defun execute-attr (info body-form prim-h
                      &aux
-                       (attr-type (mopr-info:get-value-type-for-attr-info info)))
+                       (attr-type (mopr-usd/info:get-value-type-for-attr-info info)))
 
   ;; TODO: We don't handle metadata yet.
-  ;; (mopr-info:print-prop-info info)
+  ;; (mopr-usd/info:print-prop-info info)
 
   (if attr-type
       (mopr-usd:with-handles* ((attribute-h :attribute)
                                (prop-name-h :token)
                                (value-h :value))
-        (mopr-usd:token-ctor-cstr prop-name-h (mopr-info:prop-info-full-name info))
+        (mopr-usd:token-ctor-cstr prop-name-h (mopr-usd/info:prop-info-full-name info))
         (mopr-usd:prim-create-attribute attribute-h
                                         prim-h
                                         prop-name-h
-                                        (mopr-info:value-type-name
+                                        (mopr-usd/info:value-type-name
                                          attr-type
-                                         (mopr-info:attr-info-array-p info))
+                                         (mopr-usd/info:attr-info-array-p info))
                                         0 ; bool custom
                                         mopr-usd:+mopr-property-variability-varying+)
         (alexandria:if-let
             ((transfer-for-type-fn
               (mopr-usd/val:get-transfer-for-type-function
-               (mopr-info:value-type-real-type attr-type)
-               (mopr-info:attr-info-array-p info))))
+               (mopr-usd/info:value-type-real-type attr-type)
+               (mopr-usd/info:attr-info-array-p info))))
           (set-attr-for-all-timecodes transfer-for-type-fn attribute-h value-h body-form)
           (format t "SKIPPED UNSUPPORTED ATTRIBUTE: ~A~%"
-                  (mopr-info:prop-info-full-name info))))
+                  (mopr-usd/info:prop-info-full-name info))))
       (format t "SKIPPED UNRECOGNIZED ATTRIBUTE: ~A~%"
-              (mopr-info:prop-info-full-name info))))
+              (mopr-usd/info:prop-info-full-name info))))
 
 ;; TODO: This node ignores the prim-ns-statement ancestors as it gets namespace information
 ;;       from schema. Its construction within a prim-ns-statement should probably be disallowed.
 (defmethod execute ((payload prim-schema-prop-statement) node prim-h containers
                     &aux ; TODO: Add serialization tests.
                       (info-args (prim-schema-prop-statement-info-args-param payload))
-                      (info (apply #'mopr-info:get-prop-info-for-schema info-args)))
+                      (info (apply #'mopr-usd/info:get-prop-info-for-schema info-args)))
   (declare (ignore node))
   (etypecase info
-    (mopr-info:attr-info
+    (mopr-usd/info:attr-info
      (execute-attr info (prim-schema-prop-statement-body-form-param payload) prim-h))
-    (mopr-info:rel-info
+    (mopr-usd/info:rel-info
      ;; TODO: We don't handle relationships yet.
      nil)))
 
@@ -143,7 +143,7 @@
          (array-attr-p (not (null (member (prim-attr-statement-category-param payload)
                                           '(:array :|array|)))))
          (info (make-instance
-                'mopr-info:attr-info
+                'mopr-usd/info:attr-info
                 :array-p array-attr-p
                 :type-key (prim-attr-statement-type-param payload)
                 :namespace (reverse ns-list) ; TODO: Revise ATTR-INFO.
