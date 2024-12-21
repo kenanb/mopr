@@ -180,7 +180,8 @@
    #:enode-parent
    #:enode-components
    #:enode-find-component
-   #:enode-initialize-component
+   #:enode-init-component
+   #:enode-term-component
 
    ;; PROCEDURE API
    #:make-procedure
@@ -200,7 +201,9 @@
    #:with-bound-procedure
    #:with-bound-procedure-slots
    #:with-bound-procedure-accessors
-   #:enode-procedure-add-components
-   #:enode-procedure-initialize-components
+   #:enode-procedure-create-components
+   #:enode-procedure-delete-components
+   #:enode-procedure-init-components
+   #:enode-procedure-term-components
 
    ))

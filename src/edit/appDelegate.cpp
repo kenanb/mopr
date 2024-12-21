@@ -62,7 +62,7 @@ void
     // Representation classes.
     //
 
-    Client_ECL_initializeRepr( );
+    Client_ECL_initRepr( );
 
     // Populated and cleaned up on the Lisp side.
     CommandQueue commandQueue;
@@ -364,7 +364,7 @@ void
 
     overlayProgram.fini( );
 
-    Client_ECL_deinitializeRepr( );
+    Client_ECL_termRepr( );
     Client_ECL_destructCommandQueue( &commandQueue );
     Client_ECL_destructCommandOptions( &commandOptions );
 }

@@ -19,10 +19,10 @@ extern "C"
                                       unsigned int callEnabled );
 
     MOPR_API unsigned int
-     Client_ECL_initializeRepr( );
+     Client_ECL_initRepr( );
 
     MOPR_API unsigned int
-     Client_ECL_deinitializeRepr( );
+     Client_ECL_termRepr( );
 
     MOPR_API unsigned int
      Client_ECL_populateCommandQueue( CommandQueue * queue );

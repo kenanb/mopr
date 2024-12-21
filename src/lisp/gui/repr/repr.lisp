@@ -8,9 +8,9 @@
                 #:multiple-set-c-ref)
   (:use :cl)
   (:export
-   #:bind-for-representation
-   #:initialize-repr
-   #:deinitialize-repr
+   #:bind-repr
+   #:init-repr
+   #:term-repr
    #:populate-command-queue
    #:destruct-command-queue
    #:populate-command-options
@@ -35,17 +35,18 @@
 ;;; ENODE Tree
 ;;
 
-(defun bind-for-representation (pr)
+(defun bind-repr (pr)
   (setf *procedure* (mopr-sgt:make-enode-procedure pr)))
 
-(defun initialize-repr (&aux (component-classes '(mopr-gui/repr-rnode:rnode)))
-  (mopr-sgt:enode-procedure-add-components *procedure* component-classes)
+(defun init-repr (&aux (component-classes '(mopr-gui/repr-rnode:rnode)))
+  (mopr-sgt:enode-procedure-create-components *procedure* component-classes)
   (mopr-gui/layout-shared:with-layout-settings
-      (mopr-sgt:enode-procedure-initialize-components *procedure* component-classes)))
+    (mopr-sgt:enode-procedure-init-components *procedure* component-classes)))
 
-(defun deinitialize-repr ()
-  (mopr-gui/yoga-fun:node-free-recursive (mopr-gui/repr-rdata:rdata-ynode
-                                          (car (enode-rdatas (get-root-enode))))))
+(defun term-repr (&aux (component-classes '(mopr-gui/repr-rnode:rnode)))
+  (mopr-gui/layout-shared:with-layout-settings
+    (mopr-sgt:enode-procedure-term-components *procedure* component-classes))
+  (mopr-sgt:enode-procedure-delete-components *procedure* component-classes))
 
 ;;
 ;;; Trivial Vector Type Backed by a C Array

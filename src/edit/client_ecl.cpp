@@ -25,7 +25,7 @@ unsigned int
     cl_object rootNode_l =
      cl_funcall( 4, symFnRead_l, hLayer_l, strFileName_l, callEnabled ? ECL_T : ECL_NIL );
 
-    cl_object symFnBind_l = getSymbol( "MOPR-GUI/REPR", "BIND-FOR-REPRESENTATION" );
+    cl_object symFnBind_l = getSymbol( "MOPR-GUI/REPR", "BIND-REPR" );
 
     cl_funcall( 2, symFnBind_l, rootNode_l );
 
@@ -33,18 +33,18 @@ unsigned int
 }
 
 unsigned int
- Client_ECL_initializeRepr( )
+ Client_ECL_initRepr( )
 {
-    cl_object symFn_l = getSymbol( "MOPR-GUI/REPR", "INITIALIZE-REPR" );
+    cl_object symFn_l = getSymbol( "MOPR-GUI/REPR", "INIT-REPR" );
 
     cl_funcall( 1, symFn_l );
     return 0;
 }
 
 unsigned int
- Client_ECL_deinitializeRepr( )
+ Client_ECL_termRepr( )
 {
-    cl_object symFn_l = getSymbol( "MOPR-GUI/REPR", "DEINITIALIZE-REPR" );
+    cl_object symFn_l = getSymbol( "MOPR-GUI/REPR", "TERM-REPR" );
 
     cl_funcall( 1, symFn_l );
     return 0;

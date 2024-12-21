@@ -119,7 +119,7 @@
 ;;; ROOT-CONTAINER API
 ;;
 
-(defmethod enode-initialize-component ((payload root-container) node (component rnode))
+(defmethod enode-init-component ((payload root-container) node (component rnode))
   (let* ((nrc (make-instance 'mopr-gui/repr-rdata:root-container-rdata
                              :id 0)))
     (setf (rnode-rdatas component)
@@ -127,11 +127,20 @@
 
 (defmethod enode-get-ynode-anchor-index ((payload root-container)) 0)
 
+(defmethod enode-term-component ((payload payload) node (component rnode))
+  nil)
+
+(defmethod enode-term-component ((payload root-container) node (component rnode))
+  (let* ((rn (mopr-sgt:enode-find-component node 'mopr-gui/repr-rnode:rnode))
+         (rd (mopr-gui/repr-rnode:rnode-rdatas rn))
+         (yn (mopr-gui/repr-rdata:rdata-ynode (car rd))))
+    (mopr-gui/yoga-fun:node-free-recursive yn)))
+
 ;;
 ;;; GROUP-CONTAINER API
 ;;
 
-(defmethod enode-initialize-component ((payload group-container) node (component rnode))
+(defmethod enode-init-component ((payload group-container) node (component rnode))
   (let* ((color mopr-gui/repr-def:+command-theme-expr-bg-9+)
          (ne (get-expr-rdatas color node "GROUP")))
     (setf (rnode-rdatas component)
@@ -148,7 +157,7 @@
 ;;; VAR-DIRECTIVE API
 ;;
 
-(defmethod enode-initialize-component ((payload var-directive) node (component rnode))
+(defmethod enode-init-component ((payload var-directive) node (component rnode))
   (multiple-value-bind (val-form-param-text
                         val-form-param-line-count)
       (format-form (var-directive-val-form-param payload) *fill-column*)
@@ -181,7 +190,7 @@
 ;;; EACH-DIRECTIVE API
 ;;
 
-(defmethod enode-initialize-component ((payload each-directive) node (component rnode))
+(defmethod enode-init-component ((payload each-directive) node (component rnode))
   (multiple-value-bind (vals-form-param-text
                         vals-form-param-line-count)
       (format-form (each-directive-vals-form-param payload) *fill-column*)
@@ -213,7 +222,7 @@
 ;;; IOTA-DIRECTIVE API
 ;;
 
-(defmethod enode-initialize-component ((payload iota-directive) node (component rnode))
+(defmethod enode-init-component ((payload iota-directive) node (component rnode))
   (let* ((color mopr-gui/repr-def:+command-theme-expr-bg-2+)
          (ne (get-expr-rdatas color node "IOTA"))
          (ncc (third ne))
@@ -249,7 +258,7 @@
 ;;; CALL-DIRECTIVE API
 ;;
 
-(defmethod enode-initialize-component ((payload call-directive) node (component rnode))
+(defmethod enode-init-component ((payload call-directive) node (component rnode))
   (multiple-value-bind (body-form-param-text
                         body-form-param-line-count)
       (format-form (call-directive-body-form-param payload) *fill-column*)
@@ -278,7 +287,7 @@
 ;;; PRIM-TYPE-STATEMENT API
 ;;
 
-(defmethod enode-initialize-component ((payload prim-type-statement) node (component rnode))
+(defmethod enode-init-component ((payload prim-type-statement) node (component rnode))
   (let* ((color mopr-gui/repr-def:+command-theme-expr-bg-4+)
          (ne (get-expr-rdatas color node "TYPE"))
          (ncc (third ne))
@@ -298,7 +307,7 @@
 ;;; PRIM-ATTR-STATEMENT API
 ;;
 
-(defmethod enode-initialize-component ((payload prim-attr-statement) node (component rnode))
+(defmethod enode-init-component ((payload prim-attr-statement) node (component rnode))
   (multiple-value-bind (body-form-param-text
                         body-form-param-line-count)
       (format-form (prim-attr-statement-body-form-param payload) *fill-column*)
@@ -339,7 +348,7 @@
 ;;; PRIM-REL-STATEMENT API
 ;;
 
-(defmethod enode-initialize-component ((payload prim-rel-statement) node (component rnode))
+(defmethod enode-init-component ((payload prim-rel-statement) node (component rnode))
   (multiple-value-bind (body-form-param-text
                         body-form-param-line-count)
       (format-form (prim-rel-statement-body-form-param payload) *fill-column*)
@@ -372,7 +381,7 @@
 ;;; PRIM-NS-CONTAINER API
 ;;
 
-(defmethod enode-initialize-component ((payload prim-ns-container) node (component rnode))
+(defmethod enode-init-component ((payload prim-ns-container) node (component rnode))
   (let* ((color mopr-gui/repr-def:+command-theme-expr-bg-9+)
          (ne (get-expr-rdatas color node "NS"))
          (ncc (third ne))
@@ -394,7 +403,7 @@
 ;;; PRIM-STATEMENT API
 ;;
 
-(defmethod enode-initialize-component ((payload prim-statement) node (component rnode))
+(defmethod enode-init-component ((payload prim-statement) node (component rnode))
   (let* ((color mopr-gui/repr-def:+command-theme-expr-bg-5+)
          (ne (get-expr-rdatas color node "PRIM"))
          (ncc (third ne))
@@ -416,7 +425,7 @@
 ;;; TREE-STATEMENT API
 ;;
 
-(defmethod enode-initialize-component ((payload tree-statement) node (component rnode))
+(defmethod enode-init-component ((payload tree-statement) node (component rnode))
   (multiple-value-bind (body-form-param-text
                         body-form-param-line-count)
       (format-form (tree-statement-body-form-param payload) *fill-column*)
@@ -442,7 +451,7 @@
 ;;
 
 ;; TODO : Add support for metadata handling.
-(defmethod enode-initialize-component ((payload meta-statement) node (component rnode))
+(defmethod enode-init-component ((payload meta-statement) node (component rnode))
   (multiple-value-bind (body-form-param-text
                         body-form-param-line-count)
       (format-form (meta-statement-body-form-param payload) *fill-column*)

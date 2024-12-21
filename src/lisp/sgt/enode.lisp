@@ -34,24 +34,46 @@ interaction."
 (defun enode-find-component (node component-class)
   (loop for co in (enode-components node) when (typep co component-class) return co))
 
-(defun enode-add-components-recursive (node component-classes)
+(defun enode-create-components-recursive (node component-classes)
   (loop for cc in component-classes
         for co = (enode-find-component node cc)
         do (if co
                (error "Found existing component for given class!")
                (push (make-instance cc) (enode-components node))))
   (loop for ch across (enode-children node)
-        do (enode-add-components-recursive ch component-classes)))
+        do (enode-create-components-recursive ch component-classes)))
 
-(defgeneric enode-initialize-component (payload node component)
-  (:documentation "Populate the component bound to enode."))
-
-(defun enode-initialize-components-recursive (node component-classes
-                                              &aux (p (bnode-find-payload node)))
+(defun enode-delete-components-recursive (node component-classes)
   (loop for cc in component-classes
         for co = (enode-find-component node cc)
         do (if co
-               (enode-initialize-component p node co)
+               (setf (enode-components node) (delete co (enode-components node)))
+               (error "Component to delete is missing!")))
+  (loop for ch across (enode-children node)
+        do (enode-delete-components-recursive ch component-classes)))
+
+(defgeneric enode-init-component (payload node component)
+  (:documentation "Initialize the component bound to enode."))
+
+(defun enode-init-components-recursive (node component-classes
+                                        &aux (p (bnode-find-payload node)))
+  (loop for cc in component-classes
+        for co = (enode-find-component node cc)
+        do (if co
+               (enode-init-component p node co)
                (error "Component to initialize is missing!")))
   (loop for ch across (enode-children node)
-        do (enode-initialize-components-recursive ch component-classes)))
+        do (enode-init-components-recursive ch component-classes)))
+
+(defgeneric enode-term-component (payload node component)
+  (:documentation "Terminate the component bound to enode."))
+
+(defun enode-term-components-recursive (node component-classes
+                                        &aux (p (bnode-find-payload node)))
+  (loop for cc in component-classes
+        for co = (enode-find-component node cc)
+        do (if co
+               (enode-term-component p node co)
+               (error "Component to terminate is missing!")))
+  (loop for ch across (enode-children node)
+        do (enode-term-components-recursive ch component-classes)))
