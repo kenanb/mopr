@@ -199,7 +199,9 @@
    #:procedure
    #:procedure-header
    #:procedure-root
-   #:procedure-call
    #:procedure-debug-print
+   #:with-bound-procedure
+   #:with-bound-procedure-slots
+   #:with-bound-procedure-accessors
 
    ))

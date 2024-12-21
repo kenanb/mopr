@@ -31,9 +31,6 @@
 
 (defun get-root-enode () (mopr-sgt:procedure-root *procedure*))
 
-(defun call-for-root-enode (fn &rest args)
-  (apply #'mopr-sgt:procedure-call *procedure* fn args))
-
 ;;
 ;;; ENODE Tree
 ;;
@@ -47,7 +44,8 @@
     (mopr-sgt:enode-initialize-components-recursive root-enode)))
 
 (defun initialize-repr ()
-  (call-for-root-enode #'root-enode-initialize-repr))
+  (mopr-sgt:with-bound-procedure-accessors ((root mopr-sgt:procedure-root)) *procedure*
+    (root-enode-initialize-repr root)))
 
 (defun deinitialize-repr ()
   (mopr-gui/yoga-fun:node-free-recursive (mopr-gui/repr-rdata:rdata-ynode
@@ -206,7 +204,8 @@
                                  &aux
                                    (cmd-options (autowrap:wrap-pointer
                                                  cmd-options-ptr 'mopr-gui/repr-def:command-options)))
-  (call-for-root-enode #'root-enode-populate-command-options cmd-options id id-sub))
+  (mopr-sgt:with-bound-procedure-accessors ((root mopr-sgt:procedure-root)) *procedure*
+    (root-enode-populate-command-options root cmd-options id id-sub)))
 
 (defun root-enode-apply-command-option (root-enode id id-sub id-opt)
   (let* ((n (mopr-gui/repr-rnode:find-enode-by-rnode-id root-enode id))
@@ -215,4 +214,5 @@
     (format t "APPLIED OPTION: ~A~%" (nth idx opts))))
 
 (defun apply-command-option (id id-sub id-opt)
-  (call-for-root-enode #'root-enode-apply-command-option id id-sub id-opt))
+  (mopr-sgt:with-bound-procedure-accessors ((root mopr-sgt:procedure-root)) *procedure*
+    (root-enode-apply-command-option root id id-sub id-opt)))

@@ -21,9 +21,6 @@ well as more granular change tracking."
   (digest (error "A CNODE cannot be initialized without a payload code.")
    :type base-string))
 
-(defgeneric bnode-find-payload (node)
-  (:documentation "Get payload for cnode."))
-
 (defmethod bnode-find-payload ((node cnode))
   (find-payload-in-bound-header (cnode-digest node)))
 

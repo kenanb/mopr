@@ -11,32 +11,51 @@
   (root nil
    :type (or null bnode)))
 
-(defun procedure-call (pr fn &rest args)
-  (let ((*header* (procedure-header pr)))
-    (apply fn (procedure-root pr) args)))
+(defmacro with-bound-procedure (pr-instance-form &body body)
+  `(let ((*header* (procedure-header ,pr-instance-form)))
+     ,@body))
 
-(defun procedure-call-constructor (pr fn &rest args)
-  (let ((*header* (clone-header (procedure-header pr))))
-    (make-procedure :header *header* :root (apply fn (procedure-root pr) args))))
+(defmacro with-bound-procedure-slots ((&rest slot-entries) pr-instance-form &body body)
+  (let ((pr-sym (gensym "PROCEDURE-G")))
+    `(let ((,pr-sym ,pr-instance-form))
+       (with-bound-procedure ,pr-sym
+         (with-slots ,slot-entries ,pr-sym
+           ,@body)))))
+
+(defmacro with-bound-procedure-accessors ((&rest slot-entries) pr-instance-form &body body)
+  (let ((pr-sym (gensym "PROCEDURE-G")))
+    `(let ((,pr-sym ,pr-instance-form))
+       (with-bound-procedure ,pr-sym
+         (with-accessors ,slot-entries ,pr-sym
+           ,@body)))))
+
+(defmacro %make-procedure-with-header-clone (pr (&rest header-args) &body body)
+  `(let ((*header* (clone-header (procedure-header ,pr) ,@header-args)))
+     (make-procedure :header *header* :root (progn ,@body))))
 
 (defun make-cnode-procedure (pr)
-  (procedure-call-constructor pr #'cnode-from-node-recursive))
+  (%make-procedure-with-header-clone pr (:node-type 'cnode :metadata nil)
+    (cnode-from-node-recursive (procedure-root pr))))
 
 (defun make-enode-procedure (pr)
-  (procedure-call-constructor pr #'enode-from-node-recursive))
+  (%make-procedure-with-header-clone pr (:node-type 'enode)
+    (enode-from-node-recursive (procedure-root pr))))
 
 (defun make-expanded-dnode-procedure (pr call-enabled)
-  (procedure-call-constructor pr (if call-enabled
-                                     #'node-expand-all-call-enabled
-                                     #'node-expand-all)))
+  (%make-procedure-with-header-clone pr (:node-type 'dnode :metadata nil)
+    (funcall (if call-enabled
+                 #'node-expand-all-call-enabled
+                 #'node-expand-all)
+             (procedure-root pr))))
 
 (defun make-cnode-procedure-from-usds-file (filepath read-pkg &aux (pr (make-procedure)))
-  (let ((*header* (procedure-header pr)))
-    (setf (procedure-root pr) (read-from-usds-file filepath read-pkg)))
+  (with-bound-procedure-accessors ((root procedure-root)) pr
+    (setf root (read-from-usds-file filepath read-pkg)))
   pr)
 
 (defun procedure-debug-print (pr)
-  (procedure-call pr #'bnode-debug-print))
+  (with-bound-procedure-accessors ((root procedure-root)) pr
+    (bnode-debug-print root)))
 
 (defmacro with-limited-procedure-io-syntax ((&key read-pkg) &body body)
   `(with-standard-io-syntax
@@ -60,12 +79,14 @@
 
 (defun save-bnode-procedure-to-usds-file (pr filepath &key (if-exists :supersede))
   (with-open-file (out filepath :direction :output :if-exists if-exists)
-    (with-generic-procedure-io-syntax ()
-      (pprint (procedure-call pr #'node-serialize) out))))
+    (with-bound-procedure-accessors ((root procedure-root)) pr
+      (with-generic-procedure-io-syntax ()
+        (pprint (node-serialize root) out)))))
 
 (defun save-bnode-procedure-to-usds-string (pr)
-  (with-generic-procedure-io-syntax ()
-    (prin1-to-string (procedure-call pr #'node-serialize))))
+  (with-bound-procedure-accessors ((root procedure-root)) pr
+    (with-generic-procedure-io-syntax ()
+      (prin1-to-string (node-serialize root)))))
 
 (defun read-cnode-procedure-from-file (filepath)
   "CAUTION: Even though READ-EVAL is disabled, relying on READ for data is still dangerous!"

@@ -10,4 +10,5 @@
       ;; (procedure-debug-print pr)
       (let* ((pr-expanded (make-expanded-dnode-procedure pr call-enabled)))
         ;; (procedure-debug-print pr)
-        (procedure-call pr-expanded #'execute-all stage-h)))))
+        (with-bound-procedure-accessors ((root procedure-root)) pr-expanded
+          (execute-all root stage-h))))))
