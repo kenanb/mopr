@@ -21,12 +21,8 @@
     (format t "WRAP-STD LIBRARY CALL RETURN VALUE: ~A~%" wrap-std-ret)
     (format t "WRAP-USD LIBRARY CALL RETURN VALUE: ~A~%" wrap-usd-ret)))
 
-(defun get-mopr-user-package ()
-  (or (find-package "MOPR-USER")
-      (error "Cannot find MOPR-USER package.~%")))
-
 (defun populate-from-lisp-file (layer-h filepath call-enabled)
   "CAUTION: Calls to functions registered to call tables can be dangerous, if enabled."
-  (let* ((pr (mopr-sgt:make-cnode-procedure-from-usds-file filepath (get-mopr-user-package))))
+  (let ((pr (mopr-sgt:make-cnode-procedure-from-usds-file filepath)))
     (mopr-exe:procedure-execute pr layer-h call-enabled)
     pr))

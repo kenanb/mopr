@@ -52,9 +52,9 @@
                  #'node-expand-all)
              (procedure-root pr))))
 
-(defun make-cnode-procedure-from-usds-file (filepath read-pkg &aux (pr (make-procedure)))
+(defun make-cnode-procedure-from-usds-file (filepath &aux (pr (make-procedure)))
   (with-bound-procedure-accessors ((root procedure-root)) pr
-    (setf root (read-from-usds-file filepath read-pkg)))
+    (setf root (read-from-usds-file filepath)))
   pr)
 
 (defun procedure-debug-print (pr)
@@ -75,7 +75,11 @@
            (*read-eval* nil))
        ,@body)))
 
-(defun read-from-usds-file (filepath read-pkg)
+(defun get-read-package ()
+  (or (find-package "MOPR-USER")
+      (error "Cannot find MOPR-USER package.~%")))
+
+(defun read-from-usds-file (filepath &aux (read-pkg (get-read-package)))
   "CAUTION: Even though READ-EVAL is disabled, relying on READ for data is still dangerous!"
   (with-open-file (in filepath)
     (with-limited-procedure-io-syntax (:read-pkg read-pkg)
