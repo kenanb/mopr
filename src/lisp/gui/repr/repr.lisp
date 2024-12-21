@@ -38,14 +38,10 @@
 (defun bind-for-representation (pr)
   (setf *procedure* (mopr-sgt:make-enode-procedure pr)))
 
-(defun root-enode-initialize-repr (root-enode)
-  (mopr-sgt:enode-add-components-recursive root-enode '(mopr-gui/repr-rnode:rnode))
+(defun initialize-repr (&aux (component-classes '(mopr-gui/repr-rnode:rnode)))
+  (mopr-sgt:enode-procedure-add-components *procedure* component-classes)
   (mopr-gui/layout-shared:with-layout-settings
-    (mopr-sgt:enode-initialize-components-recursive root-enode)))
-
-(defun initialize-repr ()
-  (mopr-sgt:with-bound-procedure-accessors ((root mopr-sgt:procedure-root)) *procedure*
-    (root-enode-initialize-repr root)))
+      (mopr-sgt:enode-procedure-initialize-components *procedure* component-classes)))
 
 (defun deinitialize-repr ()
   (mopr-gui/yoga-fun:node-free-recursive (mopr-gui/repr-rdata:rdata-ynode

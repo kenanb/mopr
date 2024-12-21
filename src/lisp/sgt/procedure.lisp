@@ -34,15 +34,19 @@
      (make-procedure :header *header* :root (progn ,@body))))
 
 (defun make-cnode-procedure (pr)
-  (%make-procedure-with-header-clone pr (:node-type 'cnode :metadata nil)
+  (%make-procedure-with-header-clone pr (:node-type 'cnode
+                                         :metadata nil)
     (cnode-from-node-recursive (procedure-root pr))))
 
 (defun make-enode-procedure (pr)
-  (%make-procedure-with-header-clone pr (:node-type 'enode)
+  (%make-procedure-with-header-clone pr (:node-type 'enode
+                                         :metadata '((components)
+                                                     (initialized)))
     (enode-from-node-recursive (procedure-root pr))))
 
 (defun make-expanded-dnode-procedure (pr call-enabled)
-  (%make-procedure-with-header-clone pr (:node-type 'dnode :metadata nil)
+  (%make-procedure-with-header-clone pr (:node-type 'dnode
+                                         :metadata nil)
     (funcall (if call-enabled
                  #'node-expand-all-call-enabled
                  #'node-expand-all)
@@ -98,3 +102,31 @@
   (with-open-file (out filepath :direction :output :if-exists if-exists)
     (with-generic-procedure-io-syntax ()
       (prin1 pr out))))
+
+(defun procedure-get-metadata-assoc (pr metadata)
+  (assoc metadata (header-metadata (procedure-header pr))))
+
+(defun procedure-push-missing-to-metadata (pr metadata values)
+  (let* ((metadata-assoc (procedure-get-metadata-assoc pr metadata))
+         (missing (loop for val in values
+                        unless (member val (cdr metadata-assoc)) collect val)))
+    (loop for val in missing do (push val (cdr metadata-assoc)))
+    missing))
+
+(defun validate-enode-procedure (pr)
+  (unless (eq 'enode (header-node-type (procedure-header pr)))
+    (error "Procedure node type is not ENODE!")))
+
+(defun enode-procedure-add-components (pr component-classes)
+  (validate-enode-procedure pr)
+  (with-bound-procedure-accessors ((root procedure-root)) pr
+    (enode-add-components-recursive
+     root
+     (procedure-push-missing-to-metadata pr 'components component-classes))))
+
+(defun enode-procedure-initialize-components (pr component-classes)
+  (validate-enode-procedure pr)
+  (with-bound-procedure-accessors ((root procedure-root)) pr
+    (enode-initialize-components-recursive
+     root
+     (procedure-push-missing-to-metadata pr 'initialized component-classes))))

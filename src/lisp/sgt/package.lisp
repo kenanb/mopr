@@ -179,11 +179,8 @@
    #:enode-children
    #:enode-parent
    #:enode-components
-   #:enode-from-node-recursive
    #:enode-find-component
-   #:enode-add-components-recursive
    #:enode-initialize-component
-   #:enode-initialize-components-recursive
 
    ;; PROCEDURE API
    #:make-procedure
@@ -203,5 +200,7 @@
    #:with-bound-procedure
    #:with-bound-procedure-slots
    #:with-bound-procedure-accessors
+   #:enode-procedure-add-components
+   #:enode-procedure-initialize-components
 
    ))
