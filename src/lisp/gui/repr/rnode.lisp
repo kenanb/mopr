@@ -55,6 +55,14 @@
     :initform nil
     :accessor rnode-rdatas)))
 
+(defmethod mopr-sgt:enode-procedure-init-component-unchecked (pr (cc (eql 'rnode)))
+  (mopr-gui/layout-shared:with-layout-settings
+      (call-next-method)))
+
+(defmethod mopr-sgt:enode-procedure-term-component-unchecked (pr (cc (eql 'rnode)))
+  (mopr-gui/layout-shared:with-layout-settings
+      (call-next-method)))
+
 ;;
 ;;; ENODE API
 ;;

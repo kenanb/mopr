@@ -203,6 +203,8 @@
    #:with-bound-procedure-accessors
    #:enode-procedure-create-components
    #:enode-procedure-delete-components
+   #:enode-procedure-init-component-unchecked
+   #:enode-procedure-term-component-unchecked
    #:enode-procedure-init-components
    #:enode-procedure-term-components
 

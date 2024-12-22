@@ -19,6 +19,8 @@
 
 (in-package :mopr-gui/repr)
 
+(defconstant +component-classes+ '(mopr-gui/repr-rnode:rnode))
+
 (defvar *procedure* nil)
 
 ;;
@@ -38,15 +40,11 @@
 (defun bind-repr (pr)
   (setf *procedure* (mopr-sgt:make-enode-procedure pr)))
 
-(defun init-repr (&aux (component-classes '(mopr-gui/repr-rnode:rnode)))
-  (mopr-sgt:enode-procedure-create-components *procedure* component-classes)
-  (mopr-gui/layout-shared:with-layout-settings
-    (mopr-sgt:enode-procedure-init-components *procedure* component-classes)))
+(defun init-repr ()
+  (mopr-sgt:enode-procedure-create-components *procedure* +component-classes+))
 
-(defun term-repr (&aux (component-classes '(mopr-gui/repr-rnode:rnode)))
-  (mopr-gui/layout-shared:with-layout-settings
-    (mopr-sgt:enode-procedure-term-components *procedure* component-classes))
-  (mopr-sgt:enode-procedure-delete-components *procedure* component-classes))
+(defun term-repr ()
+  (mopr-sgt:enode-procedure-delete-components *procedure* +component-classes+))
 
 ;;
 ;;; Trivial Vector Type Backed by a C Array

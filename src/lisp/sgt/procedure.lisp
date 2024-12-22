@@ -120,8 +120,7 @@
   (unless (eq 'enode (header-node-type (procedure-header pr)))
     (error "Procedure node type is not ENODE!")))
 
-(defun enode-procedure-create-components (pr component-classes)
-  (validate-enode-procedure pr)
+(defun enode-procedure-create-components-internal (pr component-classes)
   (with-bound-procedure-accessors ((root procedure-root)) pr
     (enode-create-components-recursive
      root
@@ -129,8 +128,7 @@
                                 #'set-difference
                                 #'union))))
 
-(defun enode-procedure-delete-components (pr component-classes)
-  (validate-enode-procedure pr)
+(defun enode-procedure-delete-components-internal (pr component-classes)
   (with-bound-procedure-accessors ((root procedure-root)) pr
     (enode-delete-components-recursive
      root
@@ -138,20 +136,40 @@
                                 #'intersection
                                 #'set-difference))))
 
+(defgeneric enode-procedure-init-component-unchecked (pr component-class)
+  (:documentation "Initialize the component bound to enode procedure.")
+  (:method (pr component-class)
+    (with-bound-procedure-accessors ((root procedure-root)) pr
+      (enode-init-components-recursive root (list component-class)))))
+
+(defgeneric enode-procedure-term-component-unchecked (pr component-class)
+  (:documentation "Terminate the component bound to enode procedure.")
+  (:method (pr component-class)
+    (with-bound-procedure-accessors ((root procedure-root)) pr
+      (enode-term-components-recursive root (list component-class)))))
+
 (defun enode-procedure-init-components (pr component-classes)
   (validate-enode-procedure pr)
-  (with-bound-procedure-accessors ((root procedure-root)) pr
-    (enode-init-components-recursive
-     root
-     (procedure-update-metadata pr 'initialized component-classes
-                                #'set-difference
-                                #'union))))
+  (loop for cc in (procedure-update-metadata pr 'initialized component-classes
+                                             #'set-difference
+                                             #'union)
+        do (enode-procedure-init-component-unchecked pr cc)))
 
 (defun enode-procedure-term-components (pr component-classes)
   (validate-enode-procedure pr)
-  (with-bound-procedure-accessors ((root procedure-root)) pr
-    (enode-term-components-recursive
-     root
-     (procedure-update-metadata pr 'initialized component-classes
-                                #'intersection
-                                #'set-difference))))
+  (loop for cc in (procedure-update-metadata pr 'initialized component-classes
+                                             #'intersection
+                                             #'set-difference)
+        do (enode-procedure-term-component-unchecked pr cc)))
+
+(defun enode-procedure-create-components (pr component-classes)
+  (validate-enode-procedure pr)
+
+  (enode-procedure-create-components-internal pr component-classes)
+  (enode-procedure-init-components pr component-classes))
+
+(defun enode-procedure-delete-components (pr component-classes)
+  (validate-enode-procedure pr)
+
+  (enode-procedure-term-components pr component-classes)
+  (enode-procedure-delete-components-internal pr component-classes))
