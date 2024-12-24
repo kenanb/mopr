@@ -12,6 +12,7 @@
    #:populate-command-from-rdata
    #:rdata
    #:rdata-ynode
+   #:frozen-rdata
    #:hidden-rdata
    #:root-container-rdata
    #:expr-container-rdata
@@ -71,10 +72,17 @@
                       :h (mopr-gui/layout-shared:layout-dimension y :height)))
 
 ;;
+;;; FROZEN-RDATA
+;;
+
+(defclass frozen-rdata (rdata)
+  ())
+
+;;
 ;;; HIDDEN-RDATA
 ;;
 
-(defclass hidden-rdata (rdata)
+(defclass hidden-rdata (frozen-rdata)
   ())
 
 (defmethod populate-command-from-rdata ((n hidden-rdata) c)
@@ -84,7 +92,7 @@
 ;;; ROOT-CONTAINER-RDATA
 ;;
 
-(defclass root-container-rdata (rdata)
+(defclass root-container-rdata (frozen-rdata)
   ())
 
 (defmethod initialize-instance :after ((node root-container-rdata) &key)
@@ -101,7 +109,7 @@
 ;;; EXPR-CONTAINER-RDATA
 ;;
 
-(defclass expr-container-rdata (rdata)
+(defclass expr-container-rdata (frozen-rdata)
   ())
 
 (defmethod initialize-instance :after ((node expr-container-rdata) &key)

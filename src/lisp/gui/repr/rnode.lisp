@@ -12,7 +12,7 @@
   (:export
 
    ;; Generic APIs
-   #:payload-get-rdata-options
+   #:payload-get-options
    #:find-enode-by-rnode-id
    #:populate-command-from-rnode
 
@@ -75,13 +75,13 @@
    (elt (rnode-rdatas rn)
         (enode-get-ynode-anchor-index (bnode-find-payload n)))))
 
-(defgeneric payload-get-rdata-options (payload id-sub)
-  (:documentation "Get the options available for the selected rdata of given node."))
+(defgeneric payload-get-options (payload id-sub)
+  (:documentation "Get the options available for the selected entity of given node."))
 
 (defmethod enode-get-ynode-anchor-index ((n enode))
   (error (format nil "ENODE type ~A doesn't support children!" (class-name (class-of n)))))
 
-(defmethod payload-get-rdata-options ((node enode) id-sub)
+(defmethod payload-get-options ((node enode) id-sub)
   nil)
 
 (defun find-enode-by-rnode-id (n id &aux (rn (enode-find-component n 'rnode)))
@@ -141,6 +141,12 @@
 ;;; GROUP-CONTAINER API
 ;;
 
+(defconstant +options-group-container+
+  '(("group expr-label-rdata")))
+
+(defmethod payload-get-options ((payload group-container) id-sub)
+  (nth id-sub +options-group-container+))
+
 (defmethod enode-init-component ((payload group-container) node (component rnode))
   (let* ((color mopr-gui/repr-def:+command-theme-expr-bg-9+)
          (ne (get-expr-rdatas color node "GROUP")))
@@ -149,14 +155,20 @@
 
 (defmethod enode-get-ynode-anchor-index ((payload group-container)) 2)
 
-;; TODO
-(defmethod payload-get-rdata-options ((payload group-container) id-sub)
-  (case id-sub
-    (1 (list "group expr-label-rdata"))))
-
 ;;
 ;;; VAR-DIRECTIVE API
 ;;
+
+(defconstant +options-var-directive+
+  '(("var expr-label-rdata")
+    ("var attr-label-rdata NAME")
+    ("var attr-input-rdata NAME")
+    ("var attr-label-rdata AUX FORM")
+    ("var attr-input-rdata AUX FORM")
+    ("var attr-input-rdata VAL FORM")))
+
+(defmethod payload-get-options ((payload var-directive) id-sub)
+  (nth id-sub +options-var-directive+))
 
 (defmethod enode-init-component ((payload var-directive) node (component rnode))
   (multiple-value-bind (val-form-param-text
@@ -176,19 +188,21 @@
       (setf (rnode-rdatas component)
             (nconc ne na0 na1 (list nar))))))
 
-;; TODO
-(defmethod payload-get-rdata-options ((payload var-directive) id-sub)
-  (case id-sub
-    (1 (list "var expr-label-rdata"))
-    (4 (list "var attr-label-rdata NAME"))
-    (5 (list "var attr-input-rdata NAME"))
-    (7 (list "var attr-label-rdata AUX FORM"))
-    (8 (list "var attr-input-rdata AUX FORM"))
-    (9 (list "var attr-input-rdata VAL FORM"))))
-
 ;;
 ;;; EACH-DIRECTIVE API
 ;;
+
+(defconstant +options-each-directive+
+  '(("each expr-label-rdata")
+    ("each attr-label-rdata NAME")
+    ("each attr-input-rdata NAME")
+    ("each attr-label-rdata KEY(S)")
+    ("each attr-input-rdata KEY(S)")
+    ("each attr-label-rdata VALUE(S)")
+    ("each attr-input-rdata VALUE(S)")))
+
+(defmethod payload-get-options ((payload each-directive) id-sub)
+  (nth id-sub +options-each-directive+))
 
 (defmethod enode-init-component ((payload each-directive) node (component rnode))
   (multiple-value-bind (vals-form-param-text
@@ -207,20 +221,25 @@
       (setf (rnode-rdatas component)
             (nconc ne na0 na1 na2)))))
 
-;; TODO
-(defmethod payload-get-rdata-options ((payload each-directive) id-sub)
-  (case id-sub
-    (1 (list "each expr-label-rdata"))
-    (4 (list "each attr-label-rdata NAME"))
-    (5 (list "each attr-input-rdata NAME"))
-    (7 (list "each attr-label-rdata KEY(S)"))
-    (8 (list "each attr-input-rdata KEY(S)"))
-    (10 (list "each attr-label-rdata VALUE(S)"))
-    (11 (list "each attr-input-rdata VALUE(S)"))))
-
 ;;
 ;;; IOTA-DIRECTIVE API
 ;;
+
+(defconstant +options-iota-directive+
+  '(("iota expr-label-rdata")
+    ("iota attr-label-rdata NAME")
+    ("iota attr-input-rdata NAME")
+    ("iota attr-label-rdata KEY")
+    ("iota attr-input-rdata KEY")
+    ("iota attr-label-rdata END")
+    ("iota attr-input-rdata END")
+    ("iota attr-label-rdata START")
+    ("iota attr-input-rdata START")
+    ("iota attr-label-rdata STEP")
+    ("iota attr-input-rdata STEP")))
+
+(defmethod payload-get-options ((payload iota-directive) id-sub)
+  (nth id-sub +options-iota-directive+))
 
 (defmethod enode-init-component ((payload iota-directive) node (component rnode))
   (let* ((color mopr-gui/repr-def:+command-theme-expr-bg-2+)
@@ -239,24 +258,18 @@
     (setf (rnode-rdatas component)
           (nconc ne na0 na1 na2 na3 na4))))
 
-;; TODO
-(defmethod payload-get-rdata-options ((payload iota-directive) id-sub)
-  (case id-sub
-    (1 (list "iota expr-label-rdata"))
-    (4 (list "iota attr-label-rdata NAME"))
-    (5 (list "iota attr-input-rdata NAME"))
-    (7 (list "iota attr-label-rdata KEY"))
-    (8 (list "iota attr-input-rdata KEY"))
-    (10 (list "iota attr-label-rdata END"))
-    (11 (list "iota attr-input-rdata END"))
-    (13 (list "iota attr-label-rdata START"))
-    (14 (list "iota attr-input-rdata START"))
-    (16 (list "iota attr-label-rdata STEP"))
-    (17 (list "iota attr-input-rdata STEP"))))
-
 ;;
 ;;; CALL-DIRECTIVE API
 ;;
+
+(defconstant +options-call-directive+
+  '(("call expr-label-rdata")
+    ("call attr-label-rdata AUX")
+    ("call attr-input-rdata AUX")
+    ("call attr-input-rdata BODY")))
+
+(defmethod payload-get-options ((payload call-directive) id-sub)
+  (nth id-sub +options-call-directive+))
 
 (defmethod enode-init-component ((payload call-directive) node (component rnode))
   (multiple-value-bind (body-form-param-text
@@ -274,17 +287,17 @@
       (setf (rnode-rdatas component)
             (nconc ne na0 (list nar))))))
 
-;; TODO
-(defmethod payload-get-rdata-options ((payload call-directive) id-sub)
-  (case id-sub
-    (1 (list "call expr-label-rdata"))
-    (4 (list "call attr-label-rdata AUX"))
-    (5 (list "call attr-input-rdata AUX"))
-    (6 (list "call attr-input-rdata BODY"))))
-
 ;;
 ;;; PRIM-TYPE-STATEMENT API
 ;;
+
+(defconstant +options-prim-type-statement+
+  '(("prim-type expr-label-rdata")
+    ("prim-type attr-label-rdata NAME")
+    ("prim-type attr-input-rdata NAME")))
+
+(defmethod payload-get-options ((payload prim-type-statement) id-sub)
+  (nth id-sub +options-prim-type-statement+))
 
 (defmethod enode-init-component ((payload prim-type-statement) node (component rnode))
   (let* ((color mopr-gui/repr-def:+command-theme-expr-bg-4+)
@@ -295,16 +308,24 @@
     (setf (rnode-rdatas component)
           (nconc ne na0))))
 
-;; TODO
-(defmethod payload-get-rdata-options ((payload prim-type-statement) id-sub)
-  (case id-sub
-    (1 (list "prim-type expr-label-rdata"))
-    (4 (list "prim-type attr-label-rdata NAME"))
-    (5 (list "prim-type attr-input-rdata NAME"))))
-
 ;;
 ;;; PRIM-ATTR-STATEMENT API
 ;;
+
+(defconstant +options-prim-attr-statement+
+  '(("prim-attr expr-label-rdata")
+    ("prim-attr attr-label-rdata NAME")
+    ("prim-attr attr-input-rdata NAME")
+    ("prim-attr attr-label-rdata META")
+    ("prim-attr attr-input-rdata META")
+    ("prim-attr attr-label-rdata CATEGORY")
+    ("prim-attr attr-input-rdata CATEGORY")
+    ("prim-attr attr-label-rdata TYPE")
+    ("prim-attr attr-input-rdata TYPE")
+    ("prim-attr attr-input-rdata BODY")))
+
+(defmethod payload-get-options ((payload prim-attr-statement) id-sub)
+  (nth id-sub +options-prim-attr-statement+))
 
 (defmethod enode-init-component ((payload prim-attr-statement) node (component rnode))
   (multiple-value-bind (body-form-param-text
@@ -328,23 +349,20 @@
       (setf (rnode-rdatas component)
             (nconc ne na0 na1 na2 na3 (list nar))))))
 
-;; TODO
-(defmethod payload-get-rdata-options ((payload prim-attr-statement) id-sub)
-  (case id-sub
-    (1 (list "prim-attr expr-label-rdata"))
-    (4 (list "prim-attr attr-label-rdata NAME"))
-    (5 (list "prim-attr attr-input-rdata NAME"))
-    (7 (list "prim-attr attr-label-rdata META"))
-    (8 (list "prim-attr attr-input-rdata META"))
-    (10 (list "prim-attr attr-label-rdata CATEGORY"))
-    (11 (list "prim-attr attr-input-rdata CATEGORY"))
-    (13 (list "prim-attr attr-label-rdata TYPE"))
-    (14 (list "prim-attr attr-input-rdata TYPE"))
-    (15 (list "prim-attr attr-input-rdata BODY"))))
-
 ;;
 ;;; PRIM-REL-STATEMENT API
 ;;
+
+(defconstant +options-prim-rel-statement+
+  '(("prim-rel expr-label-rdata")
+    ("prim-rel attr-label-rdata NAME")
+    ("prim-rel attr-input-rdata NAME")
+    ("prim-rel attr-label-rdata META")
+    ("prim-rel attr-input-rdata META")
+    ("prim-rel attr-input-rdata BODY")))
+
+(defmethod payload-get-options ((payload prim-rel-statement) id-sub)
+  (nth id-sub +options-prim-rel-statement+))
 
 (defmethod enode-init-component ((payload prim-rel-statement) node (component rnode))
   (multiple-value-bind (body-form-param-text
@@ -364,19 +382,17 @@
       (setf (rnode-rdatas component)
             (nconc ne na0 na1 (list nar))))))
 
-;; TODO
-(defmethod payload-get-rdata-options ((payload prim-rel-statement) id-sub)
-  (case id-sub
-    (1 (list "prim-rel expr-label-rdata"))
-    (4 (list "prim-rel attr-label-rdata NAME"))
-    (5 (list "prim-rel attr-input-rdata NAME"))
-    (7 (list "prim-rel attr-label-rdata META"))
-    (8 (list "prim-rel attr-input-rdata META"))
-    (9 (list "prim-rel attr-input-rdata BODY"))))
-
 ;;
 ;;; PRIM-NS-CONTAINER API
 ;;
+
+(defconstant +options-prim-ns-container+
+  '(("prim-ns expr-label-rdata")
+    ("prim-ns attr-label-rdata NAME")
+    ("prim-ns attr-input-rdata NAME")))
+
+(defmethod payload-get-options ((payload prim-ns-container) id-sub)
+  (nth id-sub +options-prim-ns-container+))
 
 (defmethod enode-init-component ((payload prim-ns-container) node (component rnode))
   (let* ((color mopr-gui/repr-def:+command-theme-expr-bg-9+)
@@ -387,18 +403,19 @@
     (setf (rnode-rdatas component)
           (nconc ne na0))))
 
-;; TODO
-(defmethod payload-get-rdata-options ((payload prim-ns-container) id-sub)
-  (case id-sub
-    (1 (list "prim-ns expr-label-rdata"))
-    (4 (list "prim-ns attr-label-rdata NAME"))
-    (5 (list "prim-ns attr-input-rdata NAME"))))
-
 (defmethod enode-get-ynode-anchor-index ((payload prim-ns-container)) 2)
 
 ;;
 ;;; PRIM-STATEMENT API
 ;;
+
+(defconstant +options-prim-statement+
+  '(("prim expr-label-rdata")
+    ("prim attr-label-rdata PATH")
+    ("prim attr-input-rdata PATH")))
+
+(defmethod payload-get-options ((payload prim-statement) id-sub)
+  (nth id-sub +options-prim-statement+))
 
 (defmethod enode-init-component ((payload prim-statement) node (component rnode))
   (let* ((color mopr-gui/repr-def:+command-theme-expr-bg-5+)
@@ -409,18 +426,18 @@
     (setf (rnode-rdatas component)
           (nconc ne na0))))
 
-;; TODO
-(defmethod payload-get-rdata-options ((payload prim-statement) id-sub)
-  (case id-sub
-    (1 (list "prim expr-label-rdata"))
-    (4 (list "prim attr-label-rdata PATH"))
-    (5 (list "prim attr-input-rdata PATH"))))
-
 (defmethod enode-get-ynode-anchor-index ((payload prim-statement)) 2)
 
 ;;
 ;;; TREE-STATEMENT API
 ;;
+
+(defconstant +options-tree-statement+
+  '(("tree expr-label-rdata")
+    ("tree attr-input-rdata BODY")))
+
+(defmethod payload-get-options ((payload tree-statement) id-sub)
+  (nth id-sub +options-tree-statement+))
 
 (defmethod enode-init-component ((payload tree-statement) node (component rnode))
   (multiple-value-bind (body-form-param-text
@@ -436,15 +453,16 @@
       (setf (rnode-rdatas component)
             (nconc ne (list nar))))))
 
-;; TODO
-(defmethod payload-get-rdata-options ((payload tree-statement) id-sub)
-  (case id-sub
-    (1 (list "tree expr-label-rdata"))
-    (3 (list "tree attr-input-rdata BODY"))))
-
 ;;
 ;;; META-STATEMENT API
 ;;
+
+(defconstant +options-meta-statement+
+  '(("meta expr-label-rdata")
+    ("meta attr-input-rdata BODY")))
+
+(defmethod payload-get-options ((payload meta-statement) id-sub)
+  (nth id-sub +options-meta-statement+))
 
 ;; TODO : Add support for metadata handling.
 (defmethod enode-init-component ((payload meta-statement) node (component rnode))
@@ -460,9 +478,3 @@
                                :h-co body-form-param-line-count)))
       (setf (rnode-rdatas component)
             (nconc ne (list nar))))))
-
-;; TODO
-(defmethod payload-get-rdata-options ((payload meta-statement) id-sub)
-  (case id-sub
-    (1 (list "meta expr-label-rdata"))
-    (3 (list "meta attr-input-rdata BODY"))))

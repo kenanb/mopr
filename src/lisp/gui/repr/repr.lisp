@@ -88,8 +88,9 @@
                                        (rn (mopr-sgt:enode-find-component
                                             n
                                             'mopr-gui/repr-rnode:rnode)))
-  (loop for rd in (mopr-gui/repr-rnode:rnode-rdatas rn)
-        for id-sub of-type (unsigned-byte 32) from 0
+  (loop with id-sub-last of-type (unsigned-byte 32) = 0
+        for rd in (mopr-gui/repr-rnode:rnode-rdatas rn)
+        for id-sub = (if (typep rd 'mopr-gui/repr-rdata:frozen-rdata) 0 (incf id-sub-last))
         unless (typep rd 'mopr-gui/repr-rdata:hidden-rdata)
           do (let ((cmd (cvec-get-incrementing-counter wcmds)))
                (mopr-gui/repr-rnode:populate-command-from-rnode rn cmd)
@@ -186,8 +187,9 @@
                                                                         :options (autowrap:ptr nil))))
 
 (defun root-enode-populate-command-options (root-enode cmd-options id id-sub)
+  (when (zerop id-sub) (error "Zero id-sub passed to root-enode-populate-command-options!"))
   (let* ((n (mopr-gui/repr-rnode:find-enode-by-rnode-id root-enode id))
-         (opts (mopr-gui/repr-rnode:payload-get-rdata-options (mopr-sgt:bnode-find-payload n) id-sub))
+         (opts (mopr-gui/repr-rnode:payload-get-options (mopr-sgt:bnode-find-payload n) (1- id-sub)))
          (nof-opts (length opts))
          (vopts (autowrap:alloc :pointer nof-opts)))
 
@@ -206,8 +208,10 @@
     (root-enode-populate-command-options root cmd-options id id-sub)))
 
 (defun root-enode-apply-command-option (root-enode id id-sub id-opt)
+  (when (zerop id-sub) (error "Zero id-sub passed to root-enode-apply-command-option!"))
+  (when (zerop id-opt) (error "Zero id-opt passed to root-enode-apply-command-option!"))
   (let* ((n (mopr-gui/repr-rnode:find-enode-by-rnode-id root-enode id))
-         (opts (mopr-gui/repr-rnode:payload-get-rdata-options (mopr-sgt:bnode-find-payload n) id-sub))
+         (opts (mopr-gui/repr-rnode:payload-get-options (mopr-sgt:bnode-find-payload n) (1- id-sub)))
          (idx (1- id-opt)))
     (format t "APPLIED OPTION: ~A~%" (nth idx opts))))
 
