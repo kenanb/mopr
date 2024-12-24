@@ -12,7 +12,6 @@
    #:populate-command-from-rdata
    #:rdata
    #:rdata-ynode
-   #:rdata-id
    #:hidden-rdata
    #:root-container-rdata
    #:expr-container-rdata
@@ -50,12 +49,7 @@
   (:documentation "Populate command to represent the behaviour of the given node."))
 
 (defclass rdata ()
-  ((id
-    :type (unsigned-byte 32)
-    :initarg :id
-    :initform 0
-    :reader rdata-id)
-   (ynode
+  ((ynode
     :type mopr-gui/yoga-def:node-ref
     :initform (mopr-gui/yoga-fun:node-new)
     :reader rdata-ynode)))
@@ -71,7 +65,6 @@
 (defmethod populate-command-from-rdata ((n rdata) c &aux (y (rdata-ynode n)))
   (multiple-set-c-ref c (mopr-gui/repr-def:combined-command :base)
                       :c-type (rdata-command-type n)
-                      :id-sub (rdata-id n)
                       :x (recursive-get-left y)
                       :y (recursive-get-top y)
                       :w (mopr-gui/layout-shared:layout-dimension y :width)

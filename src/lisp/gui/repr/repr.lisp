@@ -89,10 +89,13 @@
                                             n
                                             'mopr-gui/repr-rnode:rnode)))
   (loop for rd in (mopr-gui/repr-rnode:rnode-rdatas rn)
+        for id-sub of-type (unsigned-byte 32) from 0
         unless (typep rd 'mopr-gui/repr-rdata:hidden-rdata)
           do (let ((cmd (cvec-get-incrementing-counter wcmds)))
                (mopr-gui/repr-rnode:populate-command-from-rnode rn cmd)
-               (mopr-gui/repr-rdata:populate-command-from-rdata rd cmd)))
+               (mopr-gui/repr-rdata:populate-command-from-rdata rd cmd)
+               (multiple-set-c-ref cmd (mopr-gui/repr-def:combined-command :base)
+                                   :id-sub id-sub)))
   (loop for c across (mopr-sgt:enode-children n)
         do (%populate-commands-recursive c wcmds)))
 

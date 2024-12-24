@@ -94,31 +94,25 @@
 
 (defun get-expr-rdatas (color node label)
   (let* ((nec (make-instance 'mopr-gui/repr-rdata:expr-container-rdata
-                             :id 0
                              :yparent (enode-get-ynode-anchor (enode-parent node))))
          (nel (make-instance 'mopr-gui/repr-rdata:expr-label-rdata
-                             :id 1
                              :yparent (mopr-gui/repr-rdata:rdata-ynode nec)
                              :text label
                              :bg color))
          (ncc (make-instance 'mopr-gui/repr-rdata:content-container-rdata
-                             :id 2
                              :yparent (mopr-gui/repr-rdata:rdata-ynode nec))))
     (list nec nel ncc)))
 
-(defun get-attr-rdatas (color container id-offset label &rest input-args)
+(defun get-attr-rdatas (color container label &rest input-args)
   (let* ((nac (make-instance 'mopr-gui/repr-rdata:attr-container-rdata
-                             :id (+ id-offset 0)
                              :yparent (mopr-gui/repr-rdata:rdata-ynode container)))
          (nac-ynode (mopr-gui/repr-rdata:rdata-ynode nac))
          (nal (make-instance 'mopr-gui/repr-rdata:attr-label-rdata
-                             :id (+ id-offset 1)
                              :yparent nac-ynode
                              :text label
                              :bg color))
          (nai (apply #'make-instance
                      'mopr-gui/repr-rdata:attr-input-rdata
-                     :id (+ id-offset 2)
                      :yparent nac-ynode
                      input-args)))
     (list nac nal nai)))
@@ -128,8 +122,7 @@
 ;;
 
 (defmethod enode-init-component ((payload root-container) node (component rnode))
-  (let* ((nrc (make-instance 'mopr-gui/repr-rdata:root-container-rdata
-                             :id 0)))
+  (let* ((nrc (make-instance 'mopr-gui/repr-rdata:root-container-rdata)))
     (setf (rnode-rdatas component)
           (list nrc))))
 
@@ -172,12 +165,11 @@
     (let* ((color mopr-gui/repr-def:+command-theme-expr-bg-0+)
            (ne (get-expr-rdatas color node "VAR"))
            (ncc (third ne))
-           (na0 (get-attr-rdatas color ncc 3 "NAME"
+           (na0 (get-attr-rdatas color ncc "NAME"
                                  :text (format nil "~S" (var-directive-name-param payload))))
-           (na1 (get-attr-rdatas color ncc 6 "AUX"
+           (na1 (get-attr-rdatas color ncc "AUX"
                                  :text (format nil "~S" (var-directive-aux-form-param payload))))
            (nar (make-instance 'mopr-gui/repr-rdata:attr-input-rdata
-                               :id 9
                                :yparent (mopr-gui/repr-rdata:rdata-ynode ncc)
                                :text val-form-param-text
                                :h-co val-form-param-line-count)))
@@ -205,11 +197,11 @@
     (let* ((color mopr-gui/repr-def:+command-theme-expr-bg-1+)
            (ne (get-expr-rdatas color node "EACH"))
            (ncc (third ne))
-           (na0 (get-attr-rdatas color ncc 3 "NAME"
+           (na0 (get-attr-rdatas color ncc "NAME"
                                  :text (format nil "~S" (each-directive-name-param payload))))
-           (na1 (get-attr-rdatas color ncc 6 "KEY(S)"
+           (na1 (get-attr-rdatas color ncc "KEY(S)"
                                  :text (format nil "~S" (each-directive-keys-form-param payload))))
-           (na2 (get-attr-rdatas color ncc 9 "VALUE(S)"
+           (na2 (get-attr-rdatas color ncc "VALUE(S)"
                                  :text vals-form-param-text
                                  :h-co vals-form-param-line-count)))
       (setf (rnode-rdatas component)
@@ -234,15 +226,15 @@
   (let* ((color mopr-gui/repr-def:+command-theme-expr-bg-2+)
          (ne (get-expr-rdatas color node "IOTA"))
          (ncc (third ne))
-         (na0 (get-attr-rdatas color ncc 3 "NAME"
+         (na0 (get-attr-rdatas color ncc "NAME"
                                :text (format nil "~S" (iota-directive-name-param payload))))
-         (na1 (get-attr-rdatas color ncc 6 "KEY"
+         (na1 (get-attr-rdatas color ncc "KEY"
                                :text (format nil "~S" (iota-directive-key-param payload))))
-         (na2 (get-attr-rdatas color ncc 9 "END"
+         (na2 (get-attr-rdatas color ncc "END"
                                :text (format nil "~S" (iota-directive-end-param payload))))
-         (na3 (get-attr-rdatas color ncc 12 "START"
+         (na3 (get-attr-rdatas color ncc "START"
                                :text (format nil "~S" (iota-directive-start-param payload))))
-         (na4 (get-attr-rdatas color ncc 15 "STEP"
+         (na4 (get-attr-rdatas color ncc "STEP"
                                :text (format nil "~S" (iota-directive-step-param payload)))))
     (setf (rnode-rdatas component)
           (nconc ne na0 na1 na2 na3 na4))))
@@ -273,10 +265,9 @@
     (let* ((color mopr-gui/repr-def:+command-theme-expr-bg-3+)
            (ne (get-expr-rdatas color node "CALL"))
            (ncc (third ne))
-           (na0 (get-attr-rdatas color ncc 3 "AUX"
+           (na0 (get-attr-rdatas color ncc "AUX"
                                  :text (format nil "~S" (call-directive-aux-form-param payload))))
            (nar (make-instance 'mopr-gui/repr-rdata:attr-input-rdata
-                               :id 6
                                :yparent (mopr-gui/repr-rdata:rdata-ynode ncc)
                                :text body-form-param-text
                                :h-co body-form-param-line-count)))
@@ -299,7 +290,7 @@
   (let* ((color mopr-gui/repr-def:+command-theme-expr-bg-4+)
          (ne (get-expr-rdatas color node "TYPE"))
          (ncc (third ne))
-         (na0 (get-attr-rdatas color ncc 3 "NAME"
+         (na0 (get-attr-rdatas color ncc "NAME"
                                :text (format nil "~S" (prim-type-statement-name-param payload)))))
     (setf (rnode-rdatas component)
           (nconc ne na0))))
@@ -322,16 +313,15 @@
     (let* ((color mopr-gui/repr-def:+command-theme-expr-bg-8+)
            (ne (get-expr-rdatas color node "ATTR"))
            (ncc (third ne))
-           (na0 (get-attr-rdatas color ncc 3 "NAME"
+           (na0 (get-attr-rdatas color ncc "NAME"
                                  :text (format nil "~S" (prim-attr-statement-name-param payload))))
-           (na1 (get-attr-rdatas color ncc 6 "META"
+           (na1 (get-attr-rdatas color ncc "META"
                                  :text (format nil "~S" (prim-attr-statement-meta-form-param payload))))
-           (na2 (get-attr-rdatas color ncc 9 "CATEGORY"
+           (na2 (get-attr-rdatas color ncc "CATEGORY"
                                  :text (format nil "~S" (prim-attr-statement-category-param payload))))
-           (na3 (get-attr-rdatas color ncc 12 "TYPE"
+           (na3 (get-attr-rdatas color ncc "TYPE"
                                  :text (format nil "~S" (prim-attr-statement-type-param payload))))
            (nar (make-instance 'mopr-gui/repr-rdata:attr-input-rdata
-                               :id 15
                                :yparent (mopr-gui/repr-rdata:rdata-ynode ncc)
                                :text body-form-param-text
                                :h-co body-form-param-line-count)))
@@ -363,12 +353,11 @@
     (let* ((color mopr-gui/repr-def:+command-theme-expr-bg-8+)
            (ne (get-expr-rdatas color node "REL"))
            (ncc (third ne))
-           (na0 (get-attr-rdatas color ncc 3 "NAME"
+           (na0 (get-attr-rdatas color ncc "NAME"
                                  :text (format nil "~S" (prim-rel-statement-name-param payload))))
-           (na1 (get-attr-rdatas color ncc 6 "META"
+           (na1 (get-attr-rdatas color ncc "META"
                                  :text (format nil "~S" (prim-rel-statement-meta-form-param payload))))
            (nar (make-instance 'mopr-gui/repr-rdata:attr-input-rdata
-                               :id 9
                                :yparent (mopr-gui/repr-rdata:rdata-ynode ncc)
                                :text body-form-param-text
                                :h-co body-form-param-line-count)))
@@ -393,7 +382,7 @@
   (let* ((color mopr-gui/repr-def:+command-theme-expr-bg-9+)
          (ne (get-expr-rdatas color node "NS"))
          (ncc (third ne))
-         (na0 (get-attr-rdatas color ncc 3 "NAME"
+         (na0 (get-attr-rdatas color ncc "NAME"
                                :text (format nil "~S" (prim-ns-container-name-param payload)))))
     (setf (rnode-rdatas component)
           (nconc ne na0))))
@@ -415,7 +404,7 @@
   (let* ((color mopr-gui/repr-def:+command-theme-expr-bg-5+)
          (ne (get-expr-rdatas color node "PRIM"))
          (ncc (third ne))
-         (na0 (get-attr-rdatas color ncc 3 "PATH"
+         (na0 (get-attr-rdatas color ncc "PATH"
                                :text (format nil "~S" (prim-statement-path-form-param payload)))))
     (setf (rnode-rdatas component)
           (nconc ne na0))))
@@ -441,7 +430,6 @@
            (ne (get-expr-rdatas color node "TREE"))
            (ncc (third ne))
            (nar (make-instance 'mopr-gui/repr-rdata:attr-input-rdata
-                               :id 3
                                :yparent (mopr-gui/repr-rdata:rdata-ynode ncc)
                                :text body-form-param-text
                                :h-co body-form-param-line-count)))
@@ -467,7 +455,6 @@
            (ne (get-expr-rdatas color node "META"))
            (ncc (third ne))
            (nar (make-instance 'mopr-gui/repr-rdata:attr-input-rdata
-                               :id 3
                                :yparent (mopr-gui/repr-rdata:rdata-ynode ncc)
                                :text body-form-param-text
                                :h-co body-form-param-line-count)))
