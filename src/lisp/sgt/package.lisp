@@ -201,6 +201,8 @@
    #:with-bound-procedure
    #:with-bound-procedure-slots
    #:with-bound-procedure-accessors
+   #:enode-procedure-create-component-unchecked
+   #:enode-procedure-delete-component-unchecked
    #:enode-procedure-create-components
    #:enode-procedure-delete-components
    #:enode-procedure-init-component-unchecked

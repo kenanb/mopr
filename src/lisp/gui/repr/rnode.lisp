@@ -11,14 +11,8 @@
   (:use :cl)
   (:export
 
-   ;; Generic APIs
-   #:payload-get-options
-   #:find-enode-by-rnode-id
-   #:populate-command-from-rnode
-
    ;; RNODE API
    #:rnode
-   #:rnode-id
    #:rnode-rdatas
 
    ))
@@ -42,15 +36,8 @@
 ;;; ENODE and Generic Functions
 ;;
 
-;; Zero value is reserved for "no selection".
-(defvar *rnode-id-counter* 1)
-
 (defclass rnode ()
-  ((id
-    :type (unsigned-byte 32)
-    :initform (prog1 *rnode-id-counter* (incf *rnode-id-counter*))
-    :reader rnode-id)
-   (rdatas
+  ((rdatas
     :type list
     :initform nil
     :accessor rnode-rdatas)))
@@ -75,22 +62,8 @@
    (elt (rnode-rdatas rn)
         (enode-get-ynode-anchor-index (bnode-find-payload n)))))
 
-(defgeneric payload-get-options (payload id-sub)
-  (:documentation "Get the options available for the selected entity of given node."))
-
 (defmethod enode-get-ynode-anchor-index ((n enode))
   (error (format nil "ENODE type ~A doesn't support children!" (class-name (class-of n)))))
-
-(defmethod payload-get-options ((node enode) id-sub)
-  nil)
-
-(defun find-enode-by-rnode-id (n id &aux (rn (enode-find-component n 'rnode)))
-  (if (eql (rnode-id rn) id) n
-      (loop for c across (enode-children n) for x = (find-enode-by-rnode-id c id) if x return x)))
-
-(defun populate-command-from-rnode (rn c)
-  (multiple-set-c-ref c (mopr-gui/repr-def:combined-command :base)
-                      :id (rnode-id rn)))
 
 (defun get-expr-rdatas (color node label)
   (let* ((nec (make-instance 'mopr-gui/repr-rdata:expr-container-rdata
@@ -141,12 +114,6 @@
 ;;; GROUP-CONTAINER API
 ;;
 
-(defconstant +options-group-container+
-  '(("group expr-label-rdata")))
-
-(defmethod payload-get-options ((payload group-container) id-sub)
-  (nth id-sub +options-group-container+))
-
 (defmethod enode-init-component ((payload group-container) node (component rnode))
   (let* ((color mopr-gui/repr-def:+command-theme-expr-bg-9+)
          (ne (get-expr-rdatas color node "GROUP")))
@@ -158,17 +125,6 @@
 ;;
 ;;; VAR-DIRECTIVE API
 ;;
-
-(defconstant +options-var-directive+
-  '(("var expr-label-rdata")
-    ("var attr-label-rdata NAME")
-    ("var attr-input-rdata NAME")
-    ("var attr-label-rdata AUX FORM")
-    ("var attr-input-rdata AUX FORM")
-    ("var attr-input-rdata VAL FORM")))
-
-(defmethod payload-get-options ((payload var-directive) id-sub)
-  (nth id-sub +options-var-directive+))
 
 (defmethod enode-init-component ((payload var-directive) node (component rnode))
   (multiple-value-bind (val-form-param-text
@@ -192,18 +148,6 @@
 ;;; EACH-DIRECTIVE API
 ;;
 
-(defconstant +options-each-directive+
-  '(("each expr-label-rdata")
-    ("each attr-label-rdata NAME")
-    ("each attr-input-rdata NAME")
-    ("each attr-label-rdata KEY(S)")
-    ("each attr-input-rdata KEY(S)")
-    ("each attr-label-rdata VALUE(S)")
-    ("each attr-input-rdata VALUE(S)")))
-
-(defmethod payload-get-options ((payload each-directive) id-sub)
-  (nth id-sub +options-each-directive+))
-
 (defmethod enode-init-component ((payload each-directive) node (component rnode))
   (multiple-value-bind (vals-form-param-text
                         vals-form-param-line-count)
@@ -224,22 +168,6 @@
 ;;
 ;;; IOTA-DIRECTIVE API
 ;;
-
-(defconstant +options-iota-directive+
-  '(("iota expr-label-rdata")
-    ("iota attr-label-rdata NAME")
-    ("iota attr-input-rdata NAME")
-    ("iota attr-label-rdata KEY")
-    ("iota attr-input-rdata KEY")
-    ("iota attr-label-rdata END")
-    ("iota attr-input-rdata END")
-    ("iota attr-label-rdata START")
-    ("iota attr-input-rdata START")
-    ("iota attr-label-rdata STEP")
-    ("iota attr-input-rdata STEP")))
-
-(defmethod payload-get-options ((payload iota-directive) id-sub)
-  (nth id-sub +options-iota-directive+))
 
 (defmethod enode-init-component ((payload iota-directive) node (component rnode))
   (let* ((color mopr-gui/repr-def:+command-theme-expr-bg-2+)
@@ -262,15 +190,6 @@
 ;;; CALL-DIRECTIVE API
 ;;
 
-(defconstant +options-call-directive+
-  '(("call expr-label-rdata")
-    ("call attr-label-rdata AUX")
-    ("call attr-input-rdata AUX")
-    ("call attr-input-rdata BODY")))
-
-(defmethod payload-get-options ((payload call-directive) id-sub)
-  (nth id-sub +options-call-directive+))
-
 (defmethod enode-init-component ((payload call-directive) node (component rnode))
   (multiple-value-bind (body-form-param-text
                         body-form-param-line-count)
@@ -291,14 +210,6 @@
 ;;; PRIM-TYPE-STATEMENT API
 ;;
 
-(defconstant +options-prim-type-statement+
-  '(("prim-type expr-label-rdata")
-    ("prim-type attr-label-rdata NAME")
-    ("prim-type attr-input-rdata NAME")))
-
-(defmethod payload-get-options ((payload prim-type-statement) id-sub)
-  (nth id-sub +options-prim-type-statement+))
-
 (defmethod enode-init-component ((payload prim-type-statement) node (component rnode))
   (let* ((color mopr-gui/repr-def:+command-theme-expr-bg-4+)
          (ne (get-expr-rdatas color node "TYPE"))
@@ -311,21 +222,6 @@
 ;;
 ;;; PRIM-ATTR-STATEMENT API
 ;;
-
-(defconstant +options-prim-attr-statement+
-  '(("prim-attr expr-label-rdata")
-    ("prim-attr attr-label-rdata NAME")
-    ("prim-attr attr-input-rdata NAME")
-    ("prim-attr attr-label-rdata META")
-    ("prim-attr attr-input-rdata META")
-    ("prim-attr attr-label-rdata CATEGORY")
-    ("prim-attr attr-input-rdata CATEGORY")
-    ("prim-attr attr-label-rdata TYPE")
-    ("prim-attr attr-input-rdata TYPE")
-    ("prim-attr attr-input-rdata BODY")))
-
-(defmethod payload-get-options ((payload prim-attr-statement) id-sub)
-  (nth id-sub +options-prim-attr-statement+))
 
 (defmethod enode-init-component ((payload prim-attr-statement) node (component rnode))
   (multiple-value-bind (body-form-param-text
@@ -353,17 +249,6 @@
 ;;; PRIM-REL-STATEMENT API
 ;;
 
-(defconstant +options-prim-rel-statement+
-  '(("prim-rel expr-label-rdata")
-    ("prim-rel attr-label-rdata NAME")
-    ("prim-rel attr-input-rdata NAME")
-    ("prim-rel attr-label-rdata META")
-    ("prim-rel attr-input-rdata META")
-    ("prim-rel attr-input-rdata BODY")))
-
-(defmethod payload-get-options ((payload prim-rel-statement) id-sub)
-  (nth id-sub +options-prim-rel-statement+))
-
 (defmethod enode-init-component ((payload prim-rel-statement) node (component rnode))
   (multiple-value-bind (body-form-param-text
                         body-form-param-line-count)
@@ -386,14 +271,6 @@
 ;;; PRIM-NS-CONTAINER API
 ;;
 
-(defconstant +options-prim-ns-container+
-  '(("prim-ns expr-label-rdata")
-    ("prim-ns attr-label-rdata NAME")
-    ("prim-ns attr-input-rdata NAME")))
-
-(defmethod payload-get-options ((payload prim-ns-container) id-sub)
-  (nth id-sub +options-prim-ns-container+))
-
 (defmethod enode-init-component ((payload prim-ns-container) node (component rnode))
   (let* ((color mopr-gui/repr-def:+command-theme-expr-bg-9+)
          (ne (get-expr-rdatas color node "NS"))
@@ -409,14 +286,6 @@
 ;;; PRIM-STATEMENT API
 ;;
 
-(defconstant +options-prim-statement+
-  '(("prim expr-label-rdata")
-    ("prim attr-label-rdata PATH")
-    ("prim attr-input-rdata PATH")))
-
-(defmethod payload-get-options ((payload prim-statement) id-sub)
-  (nth id-sub +options-prim-statement+))
-
 (defmethod enode-init-component ((payload prim-statement) node (component rnode))
   (let* ((color mopr-gui/repr-def:+command-theme-expr-bg-5+)
          (ne (get-expr-rdatas color node "PRIM"))
@@ -431,13 +300,6 @@
 ;;
 ;;; TREE-STATEMENT API
 ;;
-
-(defconstant +options-tree-statement+
-  '(("tree expr-label-rdata")
-    ("tree attr-input-rdata BODY")))
-
-(defmethod payload-get-options ((payload tree-statement) id-sub)
-  (nth id-sub +options-tree-statement+))
 
 (defmethod enode-init-component ((payload tree-statement) node (component rnode))
   (multiple-value-bind (body-form-param-text
@@ -456,13 +318,6 @@
 ;;
 ;;; META-STATEMENT API
 ;;
-
-(defconstant +options-meta-statement+
-  '(("meta expr-label-rdata")
-    ("meta attr-input-rdata BODY")))
-
-(defmethod payload-get-options ((payload meta-statement) id-sub)
-  (nth id-sub +options-meta-statement+))
 
 ;; TODO : Add support for metadata handling.
 (defmethod enode-init-component ((payload meta-statement) node (component rnode))

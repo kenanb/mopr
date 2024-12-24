@@ -46,16 +46,18 @@
        (:file "bindings-repr"
         :depends-on ("package"))
        (:static-file "moprReprIncludes.h")))
+     (:file "identifier")
      (:file "shared")
      (:file "rdata"
       :depends-on ("shared" "ffi"))
      (:file "rnode"
       :depends-on ("shared" "rdata" "ffi"))
      (:file "repr"
-      :depends-on ("shared" "rdata" "rnode" "ffi"))))))
+      :depends-on ("identifier" "shared" "rdata" "rnode" "ffi"))))))
 
 (register-system-packages "mopr-gui"
-                          '(:mopr-gui/repr-def
+                          '(:mopr-gui/identifier
+                            :mopr-gui/repr-def
                             :mopr-gui/repr-ffi
                             :mopr-gui/repr-fun
                             :mopr-gui/repr-shared

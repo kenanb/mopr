@@ -19,7 +19,8 @@
 
 (in-package :mopr-gui/repr)
 
-(defconstant +component-classes+ '(mopr-gui/repr-rnode:rnode))
+(defconstant +component-classes+ '(mopr-gui/identifier:identifier
+                                   mopr-gui/repr-rnode:rnode))
 
 (defvar *procedure* nil)
 
@@ -85,6 +86,9 @@
 
 (defun %populate-commands-recursive (n wcmds
                                      &aux
+                                       (nid (mopr-sgt:enode-find-component
+                                             n
+                                             'mopr-gui/identifier:identifier))
                                        (rn (mopr-sgt:enode-find-component
                                             n
                                             'mopr-gui/repr-rnode:rnode)))
@@ -93,9 +97,9 @@
         for id-sub = (if (typep rd 'mopr-gui/repr-rdata:frozen-rdata) 0 (incf id-sub-last))
         unless (typep rd 'mopr-gui/repr-rdata:hidden-rdata)
           do (let ((cmd (cvec-get-incrementing-counter wcmds)))
-               (mopr-gui/repr-rnode:populate-command-from-rnode rn cmd)
                (mopr-gui/repr-rdata:populate-command-from-rdata rd cmd)
                (multiple-set-c-ref cmd (mopr-gui/repr-def:combined-command :base)
+                                   :id (mopr-gui/identifier:identifier-id nid)
                                    :id-sub id-sub)))
   (loop for c across (mopr-sgt:enode-children n)
         do (%populate-commands-recursive c wcmds)))
@@ -186,35 +190,29 @@
     (multiple-set-c-ref cmd-options (mopr-gui/repr-def:command-options) :nof-options 0
                                                                         :options (autowrap:ptr nil))))
 
-(defun root-enode-populate-command-options (root-enode cmd-options id id-sub)
-  (when (zerop id-sub) (error "Zero id-sub passed to root-enode-populate-command-options!"))
-  (let* ((n (mopr-gui/repr-rnode:find-enode-by-rnode-id root-enode id))
-         (opts (mopr-gui/repr-rnode:payload-get-options (mopr-sgt:bnode-find-payload n) (1- id-sub)))
-         (nof-opts (length opts))
-         (vopts (autowrap:alloc :pointer nof-opts)))
-
-    (loop for o in opts for i from 0
-          do (setf (autowrap:c-aref vopts i :pointer) (autowrap:alloc-string o)))
-
-    (multiple-set-c-ref cmd-options (mopr-gui/repr-def:command-options)
-                        :nof-options nof-opts
-                        :options (autowrap:ptr vopts))))
-
 (defun populate-command-options (cmd-options-ptr id id-sub
                                  &aux
                                    (cmd-options (autowrap:wrap-pointer
                                                  cmd-options-ptr 'mopr-gui/repr-def:command-options)))
+  (when (zerop id-sub) (error "Zero id-sub passed to root-enode-populate-command-options!"))
   (mopr-sgt:with-bound-procedure-accessors ((root mopr-sgt:procedure-root)) *procedure*
-    (root-enode-populate-command-options root cmd-options id id-sub)))
+    (let* ((n (mopr-gui/identifier:find-enode-by-id root id))
+           (opts (mopr-gui/identifier:payload-get-options (mopr-sgt:bnode-find-payload n) (1- id-sub)))
+           (nof-opts (length opts))
+           (vopts (autowrap:alloc :pointer nof-opts)))
 
-(defun root-enode-apply-command-option (root-enode id id-sub id-opt)
-  (when (zerop id-sub) (error "Zero id-sub passed to root-enode-apply-command-option!"))
-  (when (zerop id-opt) (error "Zero id-opt passed to root-enode-apply-command-option!"))
-  (let* ((n (mopr-gui/repr-rnode:find-enode-by-rnode-id root-enode id))
-         (opts (mopr-gui/repr-rnode:payload-get-options (mopr-sgt:bnode-find-payload n) (1- id-sub)))
-         (idx (1- id-opt)))
-    (format t "APPLIED OPTION: ~A~%" (nth idx opts))))
+      (loop for o in opts for i from 0
+            do (setf (autowrap:c-aref vopts i :pointer) (autowrap:alloc-string o)))
+
+      (multiple-set-c-ref cmd-options (mopr-gui/repr-def:command-options)
+                          :nof-options nof-opts
+                          :options (autowrap:ptr vopts)))))
 
 (defun apply-command-option (id id-sub id-opt)
+  (when (zerop id-sub) (error "Zero id-sub passed to root-enode-apply-command-option!"))
+  (when (zerop id-opt) (error "Zero id-opt passed to root-enode-apply-command-option!"))
   (mopr-sgt:with-bound-procedure-accessors ((root mopr-sgt:procedure-root)) *procedure*
-    (root-enode-apply-command-option root id id-sub id-opt)))
+    (let* ((n (mopr-gui/identifier:find-enode-by-id root id))
+           (opts (mopr-gui/identifier:payload-get-options (mopr-sgt:bnode-find-payload n) (1- id-sub)))
+           (idx (1- id-opt)))
+      (format t "APPLIED OPTION: ~A~%" (nth idx opts)))))
