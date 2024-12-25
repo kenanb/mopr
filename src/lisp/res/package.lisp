@@ -1,4 +1,7 @@
-;;;; package.lisp
+;;;; -*- Mode: LISP; Syntax: COMMON-LISP; Package: CL-USER -*-
+;;
+
+(in-package :cl-user)
 
 (defpackage :mopr-res
   (:use #:cl)

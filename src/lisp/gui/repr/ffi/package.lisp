@@ -1,4 +1,7 @@
-;;;; package.lisp
+;;;; -*- Mode: LISP; Syntax: COMMON-LISP; Package: CL-USER -*-
+;;
+
+(in-package :cl-user)
 
 (push :mopr-gui/repr-ffi *features*)
 

@@ -1,7 +1,7 @@
 ;;;; -*- Mode: LISP; Syntax: COMMON-LISP; Package: CL-USER -*-
 ;;
 
-(in-package :mopr-sgt/plug)
+(in-package #:mopr-sgt/plug)
 
 ;;;;;;;;;;
 ;;; Config
