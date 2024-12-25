@@ -19,7 +19,7 @@
 
 (in-package :mopr-gui/repr)
 
-(defconstant +component-classes+ '(mopr-gui/identifier:identifier
+(defconstant +component-classes+ '(mopr-msg/ctrl:node-identifier
                                    mopr-gui/repr-rnode:rnode))
 
 (defvar *procedure* nil)
@@ -84,23 +84,21 @@
 ;;; Top-Level API and Macros
 ;;
 
-(defun %populate-commands-recursive (n wcmds
-                                     &aux
-                                       (nid (mopr-sgt:enode-find-component
-                                             n
-                                             'mopr-gui/identifier:identifier))
-                                       (rn (mopr-sgt:enode-find-component
-                                            n
-                                            'mopr-gui/repr-rnode:rnode)))
-  (loop with id-sub-last of-type (unsigned-byte 32) = 0
-        for rd in (mopr-gui/repr-rnode:rnode-rdatas rn)
-        for id-sub = (if (typep rd 'mopr-gui/repr-rdata:frozen-rdata) 0 (incf id-sub-last))
-        unless (typep rd 'mopr-gui/repr-rdata:hidden-rdata)
-          do (let ((cmd (cvec-get-incrementing-counter wcmds)))
-               (mopr-gui/repr-rdata:populate-command-from-rdata rd cmd)
-               (multiple-set-c-ref cmd (mopr-gui/repr-def:combined-command :base)
-                                   :id (mopr-gui/identifier:identifier-id nid)
-                                   :id-sub id-sub)))
+(defun %populate-commands-recursive (n wcmds)
+  (let ((c-id (mopr-sgt:enode-find-component n 'mopr-msg/ctrl:node-identifier))
+        (c-rn (mopr-sgt:enode-find-component n 'mopr-gui/repr-rnode:rnode)))
+    ;; (unless c-id (error "Component missing: MOPR-MSG/CTRL:NODE-IDENTIFIER"))
+    ;; (unless c-rn (error "Component missing: MOPR-GUI/REPR-RNODE:RNODE"))
+    (loop with id = (mopr-msg/ctrl:node-identifier-id c-id)
+          with id-sub-last of-type (unsigned-byte 32) = 0
+          for rd in (mopr-gui/repr-rnode:rnode-rdatas c-rn)
+          for id-sub = (if (typep rd 'mopr-gui/repr-rdata:frozen-rdata) 0 (incf id-sub-last))
+          unless (typep rd 'mopr-gui/repr-rdata:hidden-rdata)
+            do (let ((cmd (cvec-get-incrementing-counter wcmds)))
+                 (mopr-gui/repr-rdata:populate-command-from-rdata rd cmd)
+                 (multiple-set-c-ref cmd (mopr-gui/repr-def:combined-command :base)
+                                     :id id
+                                     :id-sub id-sub))))
   (loop for c across (mopr-sgt:enode-children n)
         do (%populate-commands-recursive c wcmds)))
 
@@ -196,8 +194,8 @@
                                                  cmd-options-ptr 'mopr-gui/repr-def:command-options)))
   (when (zerop id-sub) (error "Zero id-sub passed to root-enode-populate-command-options!"))
   (mopr-sgt:with-bound-procedure-accessors ((root mopr-sgt:procedure-root)) *procedure*
-    (let* ((n (mopr-gui/identifier:find-enode-by-id root id))
-           (opts (mopr-gui/identifier:payload-get-options (mopr-sgt:bnode-find-payload n) (1- id-sub)))
+    (let* ((n (mopr-msg/ctrl:find-enode-by-id root id))
+           (opts (mopr-msg/ctrl:payload-get-options (mopr-sgt:bnode-find-payload n) (1- id-sub)))
            (nof-opts (length opts))
            (vopts (autowrap:alloc :pointer nof-opts)))
 
@@ -212,7 +210,7 @@
   (when (zerop id-sub) (error "Zero id-sub passed to root-enode-apply-command-option!"))
   (when (zerop id-opt) (error "Zero id-opt passed to root-enode-apply-command-option!"))
   (mopr-sgt:with-bound-procedure-accessors ((root mopr-sgt:procedure-root)) *procedure*
-    (let* ((n (mopr-gui/identifier:find-enode-by-id root id))
-           (opts (mopr-gui/identifier:payload-get-options (mopr-sgt:bnode-find-payload n) (1- id-sub)))
+    (let* ((n (mopr-msg/ctrl:find-enode-by-id root id))
+           (opts (mopr-msg/ctrl:payload-get-options (mopr-sgt:bnode-find-payload n) (1- id-sub)))
            (idx (1- id-opt)))
       (format t "APPLIED OPTION: ~A~%" (nth idx opts)))))

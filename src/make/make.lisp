@@ -23,6 +23,12 @@
 
 ;; (ql:quickload :float-features)
 
+;; (ql:quickload :bordeaux-threads)
+
+;; (ql:quickload :frugal-uuid)
+
+;; (ql:quickload :quri)
+
 ;; TODO : There is a recent ECL + IRONCLAD issue, causing ironclad:byte-array-to-hex-string
 ;;        to produce incorrect results: https://github.com/sharplispers/ironclad/issues/78
 ;;
@@ -35,6 +41,9 @@
 (asdf:oos 'asdf:load-op :cl-autowrap)
 (asdf:oos 'asdf:load-op :float-features)
 (asdf:oos 'asdf:load-op :ironclad/digest/sha1)
+(asdf:oos 'asdf:load-op :bordeaux-threads)
+(asdf:oos 'asdf:load-op :frugal-uuid)
+(asdf:oos 'asdf:load-op :quri)
 
 (asdf:make-build :mopr-user
                  :type :shared-library

@@ -3,7 +3,8 @@
 
 (in-package :cl-user)
 
-(defpackage :mopr-gui/identifier
+(defpackage :mopr-msg/ctrl
+
   (:use :mopr-sgt)
   (:use :cl)
   (:export
@@ -12,36 +13,36 @@
    #:payload-get-options
    #:find-enode-by-id
 
-   ;; IDENTIFIER API
-   #:identifier
-   #:identifier-id
+   ;; NODE-IDENTIFIER API
+   #:node-identifier
+   #:node-identifier-id
 
    ))
 
-(in-package :mopr-gui/identifier)
+(in-package :mopr-msg/ctrl)
 
-(defvar *identifier-id-counter*)
+(defvar *node-identifier-id-counter*)
 
-(defclass identifier ()
+(defclass node-identifier ()
   ((id
     :type (unsigned-byte 32)
     ;; Zero value is reserved for "no selection", so INITFORM will INCF.
-    :initform (incf *identifier-id-counter*)
-    :reader identifier-id)))
+    :initform (incf *node-identifier-id-counter*)
+    :reader node-identifier-id)))
 
-(defmethod enode-init-component ((payload payload) node (component identifier))
+(defmethod enode-init-component ((payload payload) node (component node-identifier))
   nil)
 
-(defmethod enode-term-component ((payload payload) node (component identifier))
+(defmethod enode-term-component ((payload payload) node (component node-identifier))
   nil)
 
-(defmethod mopr-sgt:enode-procedure-create-component-unchecked (pr (cc (eql 'identifier)))
+(defmethod mopr-sgt:enode-procedure-create-component-unchecked (pr (cc (eql 'node-identifier)))
   ;; Zero value is reserved for "no selection".
-  (let ((*identifier-id-counter* 0))
+  (let ((*node-identifier-id-counter* 0))
     (call-next-method)))
 
-(defun find-enode-by-id (n id &aux (rn (enode-find-component n 'identifier)))
-  (if (eql (identifier-id rn) id) n
+(defun find-enode-by-id (n id &aux (rn (enode-find-component n 'node-identifier)))
+  (if (eql (node-identifier-id rn) id) n
       (loop for c across (enode-children n) for x = (find-enode-by-id c id) if x return x)))
 
 (defgeneric payload-get-options (payload id-sub)
