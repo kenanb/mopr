@@ -32,20 +32,20 @@
    #:project-p
    #:project
    #:project-lock
-   #:project-location
+   #:project-path
 
    ;; WORKSHOP
 
    #:workshop
    #:workshop-uuid
-   #:workshop-location
+   #:workshop-path
    #:workshop-projects
    #:workshop-project-assignments
    #:workshop-set-lock-state-or-fail
    #:load-workshop-manifest
    ;; #:save-workshop-manifest
    ;; #:workshop-find-project-cons-by-uuid
-   ;; #:workshop-find-project-cons-by-location
+   ;; #:workshop-find-project-cons-by-path
    #:workshop-create-project
    #:workshop-acquire-project
    #:workshop-release-project

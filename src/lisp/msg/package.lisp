@@ -14,7 +14,7 @@
    #:ws-bound-p
 
    #:ws-uuid
-   #:ws-location
+   #:ws-path
    #:ws-projects
    #:ws-project-assignments
    #:ws-create-project
