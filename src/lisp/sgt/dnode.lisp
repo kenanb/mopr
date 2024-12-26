@@ -22,3 +22,7 @@ quantity of nodes is high when expanding animated procedures."
 
 (defmethod bnode-find-payload ((node dnode))
   (dnode-payload node))
+
+(defmethod bnode-payload-digest ((node dnode))
+  (subseq (payload-calculate-digest (dnode-payload node))
+          0 +digest-prefix-size+))

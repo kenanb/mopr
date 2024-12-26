@@ -24,6 +24,9 @@ well as more granular change tracking."
 (defmethod bnode-find-payload ((node cnode))
   (find-payload-in-bound-header (cnode-digest node)))
 
+(defmethod bnode-payload-digest ((node cnode))
+  (cnode-digest node))
+
 (defun cnode-from-node-recursive (inode &aux (onode (as-cnode (bnode-find-payload inode))))
   (loop for ch across (cnode-children inode)
         for ch-new = (cnode-from-node-recursive ch)

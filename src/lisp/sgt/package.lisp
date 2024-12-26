@@ -149,6 +149,8 @@
    #:bnode
    #:bnode-children
    #:bnode-find-payload
+   #:bnode-payload-digest
+   #:bnode-calculate-digest
    #:bnode-debug-print
 
    ;; COMPACT NODE API
@@ -200,6 +202,7 @@
    #:procedure
    #:procedure-header
    #:procedure-root
+   #:procedure-calculate-digest
    #:procedure-debug-print
    #:with-bound-procedure
    #:with-bound-procedure-slots

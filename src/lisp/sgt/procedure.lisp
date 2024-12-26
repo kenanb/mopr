@@ -57,6 +57,9 @@
     (setf root (read-from-usds-file filepath)))
   pr)
 
+(defun procedure-calculate-digest (pr)
+  (bnode-calculate-digest (procedure-root pr)))
+
 (defun procedure-debug-print (pr)
   (with-bound-procedure-accessors ((root procedure-root)) pr
     (bnode-debug-print root)))
