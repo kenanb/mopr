@@ -31,9 +31,9 @@
   (bt:with-lock-held (*workshop-lock*)
     (mopr-res:workshop-project-assignments *workshop*)))
 
-(defun ws-create-project (pdir-rel)
+(defun ws-create-project (pdir-rel &rest ctor-kwargs &key &allow-other-keys)
   (bt:with-lock-held (*workshop-lock*)
-    (mopr-res:workshop-create-project *workshop* pdir-rel)))
+    (apply #'mopr-res:workshop-create-project *workshop* pdir-rel ctor-kwargs)))
 
 (defun ws-acquire-project (lookup-type lookup-val session-id)
   (bt:with-lock-held (*workshop-lock*)

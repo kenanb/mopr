@@ -10,7 +10,9 @@ Base class of workshop content.
 "
   (created-time (get-universal-time)
    :type integer
-   :read-only t))
+   :read-only t)
+  (description ""
+   :type string))
 
 (defstruct (resource (:include entity))
   "RESOURCE

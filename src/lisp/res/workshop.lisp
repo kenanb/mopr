@@ -79,34 +79,12 @@ specific workshop. This will be (mostly) guaranteed at the SINGLETON level.
   (unless (file-exists-p (get-project-manifest-path ppath-full))
     (error "VALIDATE-PROJECT-PATH was given a directory that's missing a manifest.")))
 
-(defun get-project-full-path (wdesc pdesc)
-  (merge-pathnames* (descriptor-path pdesc)
-                    (descriptor-path wdesc)))
-
-(defun workshop-find-project-cons-by-proj (ws proj)
-  (rassoc proj (workshop-projects ws)))
-
-(defun workshop-find-project-cons-by-uuid (ws puuid)
-  (assoc puuid (workshop-projects ws)
-         :key #'descriptor-uuid
-         :test #'equal))
-
-(defun workshop-find-project-cons-by-path (ws ppath)
-  (assoc ppath (workshop-projects ws)
-         :key #'descriptor-path
-         :test #'equal))
-
-(defun workshop-find-project-cons (ws lookup-type lookup-val)
-  (case lookup-type
-    (:uuid (workshop-find-project-cons-by-uuid ws lookup-val))
-    (:path (workshop-find-project-cons-by-path ws (ensure-directory-pathname lookup-val)))
-    (otherwise (error "Unknown project lookup type!"))))
-
 (defun load-project-manifest-unchecked (ppath-full &aux (read-pkg (get-read-package)))
   (with-open-file (in (get-project-manifest-path ppath-full))
     (with-manifest-io-syntax (:read-pkg read-pkg) (read in nil))))
 
-(defun load-project-manifest (ppath-full)
+(defun load-project-manifest (wdesc pdesc
+                              &aux (ppath-full (rchain-descriptor-paths (list pdesc wdesc))))
   (validate-project-path ppath-full)
   (load-project-manifest-unchecked ppath-full))
 
@@ -116,21 +94,64 @@ specific workshop. This will be (mostly) guaranteed at the SINGLETON level.
                        :if-exists :supersede)
     (with-manifest-io-syntax (:read-pkg read-pkg) (pprint proj out))))
 
-(defun save-project-manifest (ppath-full proj)
+(defun save-project-manifest (wdesc pdesc proj
+                              &aux (ppath-full (rchain-descriptor-paths (list pdesc wdesc))))
   (validate-project-path ppath-full)
   (save-project-manifest-unchecked ppath-full proj))
 
-(defun workshop-create-project (ws pdir-rel)
+(defun project-create-resource (wdesc pdesc proj rfile-rel
+                                &rest ctor-kwargs &key &allow-other-keys)
+  (unless (relative-pathname-p rfile-rel)
+    (error "PROJECT-CREATE-RESOURCE requires a relative directory!"))
+  (validate-project-path (rchain-descriptor-paths (list pdesc wdesc)))
+  (let* ((rdesc (make-descriptor-for-file rfile-rel))
+         (rpath-full (rchain-descriptor-paths (list rdesc pdesc wdesc)
+                                              :file-expected-p t))
+         (res (apply #'make-resource ctor-kwargs)))
+    (when (descriptor-alist-assoc-by-path (project-resources proj)
+                                          (descriptor-path rdesc))
+      (error "This resource path was already registered!"))
+    (ensure-all-directories-exist (list rpath-full))
+    (setf (project-resources proj) (acons rdesc res (project-resources proj)))
+    (save-project-manifest wdesc pdesc proj)
+    (car (project-resources proj))))
+
+(defun project-get-resource (proj lookup-type lookup-val)
+  (let ((sanitized-val (case lookup-type
+                         (:path (or (file-pathname-p lookup-val)
+                                    (error "Bad input for resource query!")))
+                         (otherwise lookup-val))))
+    (descriptor-alist-assoc (project-resources proj) lookup-type sanitized-val)))
+
+(defun workshop-create-project (ws pdir-rel
+                                &rest ctor-kwargs &key &allow-other-keys)
+  "WORKSHOP-CREATE-PROJECT
+
+Utility function to setup a new project in workshop, at given workshop-relative
+directory (or relative directory namestring).
+
+NOTES:
+
+The PDIR-REL is treated as if it denotes a directory, even if it was
+missing the '/' suffix.
+
+This call won't try to acquire (the lock for) the project it is populating,
+from the workshop.  It is a utility function that is expected to be called
+very rarely. But since it doesn't lock, it also does NOT return a PROJECT
+instance. If needed, the caller should acquire the project using
+WORKSHOP-ACQUIRE-PROJECT once this call succeeds.
+"
   (unless (relative-pathname-p pdir-rel)
     (error "WORKSHOP-CREATE-PROJECT requires a relative directory!"))
   (with-accessors ((wdesc workshop-descriptor)
                    (wprojects workshop-projects)) ws
     (validate-workshop-path (descriptor-path wdesc))
     (let* ((pdesc (make-descriptor-for-directory pdir-rel))
-           (ppath-full (get-project-full-path wdesc pdesc))
-           (proj (make-project)))
-      (when (workshop-find-project-cons-by-path ws (descriptor-path pdesc))
-        (error "This path was already registered!"))
+           (ppath-full (rchain-descriptor-paths (list pdesc wdesc)))
+           (proj (apply #'make-project ctor-kwargs)))
+      (when (descriptor-alist-assoc-by-path (workshop-projects ws)
+                                            (descriptor-path pdesc))
+        (error "This project path was already registered!"))
       (ensure-all-directories-exist (list ppath-full))
       (save-project-manifest-unchecked ppath-full proj)
       (setf wprojects (acons pdesc proj wprojects))
@@ -138,7 +159,10 @@ specific workshop. This will be (mostly) guaranteed at the SINGLETON level.
       nil)))
 
 (defun workshop-acquire-project (ws lookup-type lookup-val session-id)
-  (let ((pcons (workshop-find-project-cons ws lookup-type lookup-val)))
+  (let* ((sanitized-val (case lookup-type
+                          (:path (ensure-directory-pathname lookup-val))
+                          (otherwise lookup-val)))
+         (pcons (descriptor-alist-assoc (workshop-projects ws) lookup-type sanitized-val)))
     (unless pcons (error "Attempted to acquire unknown project!"))
     (let* ((pdesc (car pcons))
            (puuid (descriptor-uuid pdesc))
@@ -151,7 +175,10 @@ specific workshop. This will be (mostly) guaranteed at the SINGLETON level.
             (setf (gethash puuid (workshop-project-assignments ws)) session-id))))))
 
 (defun workshop-release-project (ws lookup-type lookup-val session-id)
-  (let ((pcons (workshop-find-project-cons ws lookup-type lookup-val)))
+  (let* ((sanitized-val (case lookup-type
+                          (:path (ensure-directory-pathname lookup-val))
+                          (otherwise lookup-val)))
+         (pcons (descriptor-alist-assoc (workshop-projects ws) lookup-type sanitized-val)))
     (unless pcons (error "Attempted to release unknown project!"))
     (let* ((pdesc (car pcons))
            (puuid (descriptor-uuid pdesc))
@@ -208,8 +235,7 @@ specific workshop. This will be (mostly) guaranteed at the SINGLETON level.
            (wdesc (make-descriptor :uuid wuuid :path wpath))
            (wprojects (mapcar (lambda (pdesc)
                                 (cons pdesc
-                                      (load-project-manifest
-                                       (get-project-full-path wdesc pdesc))))
+                                      (load-project-manifest wdesc pdesc)))
                               (getf manifest :projects))))
       (make-instance 'workshop :descriptor wdesc :projects wprojects))))
 
