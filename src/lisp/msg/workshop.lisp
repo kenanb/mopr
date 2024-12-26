@@ -7,7 +7,7 @@
 
 (defvar *workshop-lock* (bt:make-lock))
 
-(defun acquire-ws (directory &aux (ws (mopr-res:load-workshop-manifest directory)))
+(defun acquire-ws (wdir-abs &aux (ws (mopr-res:load-workshop-manifest wdir-abs)))
   (prog1 nil
     (mopr-res:workshop-set-lock-state-or-fail ws :acquired)
     (setf *workshop* ws)))
@@ -34,9 +34,9 @@
   (bt:with-lock-held (*workshop-lock*)
     (mopr-res:workshop-project-assignments *workshop*)))
 
-(defun ws-create-project (rel-project-directory)
+(defun ws-create-project (pdir-rel)
   (bt:with-lock-held (*workshop-lock*)
-    (mopr-res:workshop-create-project *workshop* rel-project-directory)))
+    (mopr-res:workshop-create-project *workshop* pdir-rel)))
 
 (defun ws-acquire-project (lookup-type lookup-val session-id)
   (bt:with-lock-held (*workshop-lock*)
