@@ -44,9 +44,21 @@ specific workshop. This will be (mostly) guaranteed at the SINGLETON level.
 
 ;; Utility
 
+(defconstant +workshop-manifest-filename+ "_mopr_workshop.lisp")
+
+(defconstant +workshop-lockfile-filename+ "_mopr_workshop.lock")
+
+(defun get-workshop-manifest-path (wpath)
+  (merge-pathnames* +workshop-manifest-filename+ wpath))
+
+(defun get-workshop-lockfile-path (wpath)
+  (merge-pathnames* +workshop-lockfile-filename+ wpath))
+
 (defun validate-workshop-path (wpath)
   (unless (directory-exists-p wpath)
     (error "VALIDATE-WORKSHOP-PATH was given a non-existent directory."))
+  (unless (file-exists-p (get-workshop-lockfile-path wpath))
+    (error "VALIDATE-WORKSHOP-PATH was given a directory that's missing a lockfile."))
   (unless (file-exists-p (get-workshop-manifest-path wpath))
     (error "VALIDATE-WORKSHOP-PATH was given a directory that's missing a manifest.")))
 
@@ -107,32 +119,29 @@ specific workshop. This will be (mostly) guaranteed at the SINGLETON level.
 ;; WARNING: This is a very rudimentary lockfile approach.
 ;; It doesn't implement a reliable lock, just a simple one.
 
-(defconstant +workshop-lockfile-filename+ "_mopr_workshop.lock")
-
-(defconstant +workshop-lockfile-acquired+ "MOPR_WORKSHOP_LOCK_ACQUIRED")
-(defconstant +workshop-lockfile-released+ "MOPR_WORKSHOP_LOCK_RELEASED")
-
-(defun get-workshop-lockfile-path (wpath)
-  (merge-pathnames* +workshop-lockfile-filename+ wpath))
+(defconstant +workshop-lockfile-acquired-string+ "MOPR_WORKSHOP_LOCK_ACQUIRED")
+(defconstant +workshop-lockfile-released-string+ "MOPR_WORKSHOP_LOCK_RELEASED")
 
 (defun workshop-get-lockfile-state-unchecked (ws)
   (let* ((wpath (workshop-path ws))
-         (lockfile (get-workshop-lockfile-path wpath))
-         (lock-state-string (with-safe-io-syntax () (read-file-string lockfile))))
+         (lockfile-path (get-workshop-lockfile-path wpath))
+         (lock-state-string (with-safe-io-syntax () (read-file-string lockfile-path))))
     (cond
-      ((string= +workshop-lockfile-acquired+ lock-state-string) :acquired)
-      ((string= +workshop-lockfile-released+ lock-state-string) :released)
+      ((string= +workshop-lockfile-acquired-string+ lock-state-string) :acquired)
+      ((string= +workshop-lockfile-released-string+ lock-state-string) :released)
       (t (error "Unexpected lockfile state value found!")))))
 
 (defun workshop-set-lockfile-state-unchecked (ws state)
   (let* ((wpath (workshop-path ws))
-         (lockfile (get-workshop-lockfile-path wpath))
+         (lockfile-path (get-workshop-lockfile-path wpath))
          (state-string
            (case state
-             (:acquired +workshop-lockfile-acquired+)
-             (:released +workshop-lockfile-released+)
+             (:acquired +workshop-lockfile-acquired-string+)
+             (:released +workshop-lockfile-released-string+)
              (t (error "Unexpected lockfile state value requested!")))))
-    (with-open-file (out lockfile :direction :output :if-exists :supersede)
+    (with-open-file (out lockfile-path
+                         :direction :output
+                         :if-exists :supersede)
       (with-safe-io-syntax () (princ state-string out))))
   state)
 
@@ -144,20 +153,12 @@ specific workshop. This will be (mostly) guaranteed at the SINGLETON level.
 
 ;; Manifest Handling
 
-(defconstant +workshop-manifest-filename+ "_mopr_workshop.lisp")
-
-(defun get-workshop-manifest-path (wpath)
-  (merge-pathnames* +workshop-manifest-filename+ wpath))
-
 (defun get-read-package ()
   (or (find-package "MOPR-USER")
       (error "Cannot find MOPR-USER package.~%")))
 
-(defun load-workshop-manifest-unchecked (wpath
-                                         &aux
-                                           (manifest (get-workshop-manifest-path wpath))
-                                           (read-pkg (get-read-package)))
-  (with-open-file (in manifest)
+(defun load-workshop-manifest-unchecked (wpath &aux (read-pkg (get-read-package)))
+  (with-open-file (in (get-workshop-manifest-path wpath))
     (with-safe-io-syntax (:package read-pkg)
       (apply #'make-instance 'workshop :path wpath (read in nil)))))
 
@@ -167,12 +168,10 @@ specific workshop. This will be (mostly) guaranteed at the SINGLETON level.
   (validate-workshop-path wpath)
   (load-workshop-manifest-unchecked wpath))
 
-(defun save-workshop-manifest-unchecked (ws
-                                         &aux
-                                           (wpath (workshop-path ws))
-                                           (manifest (get-workshop-manifest-path wpath)))
-  (with-open-file (out manifest :direction :output
-                                :if-exists :supersede)
+(defun save-workshop-manifest-unchecked (ws &aux (wpath (workshop-path ws)))
+  (with-open-file (out (get-workshop-manifest-path wpath)
+                       :direction :output
+                       :if-exists :supersede)
     (with-safe-io-syntax ()
       (prin1 (list
               :projects (workshop-projects ws)
