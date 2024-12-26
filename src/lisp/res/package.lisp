@@ -31,8 +31,14 @@
    #:make-project
    #:project-p
    #:project
-   #:project-lock
-   #:project-path
+   #:project-resources
+
+   ;; DESCRIPTOR
+   #:make-descriptor
+   #:descriptor-p
+   #:descriptor
+   #:descriptor-uuid
+   #:descriptor-path
 
    ;; WORKSHOP
 

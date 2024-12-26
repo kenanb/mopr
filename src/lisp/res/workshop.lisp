@@ -3,6 +3,18 @@
 
 (in-package #:mopr-res)
 
+(defstruct descriptor
+  "DESCRIPTOR
+
+A descriptor represents the means to unambiguously refer to a resource grouping.
+"
+  (uuid (error "DESCRIPTOR cannot be initialized without a uuid!")
+   :type (simple-base-string 36)
+   :read-only t)
+  (path (error "DESCRIPTOR cannot be initialized without a path!")
+   :type pathname
+   :read-only t))
+
 (defclass workshop ()
   ((uuid
     :type (simple-base-string 36)
@@ -15,7 +27,8 @@
     :initarg :projects
     :initform nil
     :accessor workshop-projects
-    :documentation "An alist of project-uuid to PROJECT mappings.")
+    :documentation "An alist of project DESCRIPTOR to PROJECT mappings.
+Descriptor path is a workshop-relative path of the project directory.")
    (path
     :type pathname
     :initarg :path
@@ -64,14 +77,18 @@ specific workshop. This will be (mostly) guaranteed at the SINGLETON level.
 
 ;; Projects
 
+(defun workshop-find-project-cons-by-proj (ws proj)
+  (rassoc proj (workshop-projects ws)))
+
 (defun workshop-find-project-cons-by-uuid (ws puuid)
   (assoc puuid (workshop-projects ws)
+         :key #'descriptor-uuid
          :test #'equal))
 
 (defun workshop-find-project-cons-by-path (ws ppath)
-  (rassoc ppath (workshop-projects ws)
-          :key #'project-path
-          :test #'equal))
+  (assoc ppath (workshop-projects ws)
+         :key #'descriptor-path
+         :test #'equal))
 
 (defun workshop-find-project-cons (ws lookup-type lookup-val)
   (case lookup-type
@@ -85,34 +102,42 @@ specific workshop. This will be (mostly) guaranteed at the SINGLETON level.
   (with-accessors ((wpath workshop-path)
                    (wprojects workshop-projects)) ws
     (validate-workshop-path wpath)
-    (let* ((uuid (frugal-uuid:to-string (frugal-uuid:make-v7)))
-           (proj (make-project
-                  :path (ensure-directory-pathname pdir-rel)))
-           (ppath-full (merge-pathnames* (project-path proj) wpath)))
-      (when (workshop-find-project-cons-by-path ws (project-path proj))
+    (let* ((pdesc (make-descriptor
+                   :uuid (frugal-uuid:to-string (frugal-uuid:make-v7))
+                   :path (ensure-directory-pathname pdir-rel)))
+           (ppath-full (merge-pathnames* (descriptor-path pdesc) wpath)))
+      (when (workshop-find-project-cons-by-path ws (descriptor-path pdesc))
         (error "This path was already registered!"))
       (ensure-all-directories-exist (list ppath-full))
-      (setf wprojects (acons uuid proj wprojects))
+      ;; TODO : Add support for the actual project description.
+      (setf wprojects (acons pdesc nil wprojects))
       (save-workshop-manifest-unchecked ws)
       nil)))
 
 (defun workshop-acquire-project (ws lookup-type lookup-val session-id)
-  (let* ((pcons (workshop-find-project-cons ws lookup-type lookup-val))
-         (puuid (car pcons))
-         (existing (gethash puuid (workshop-project-assignments ws))))
-    (unless puuid (error "Attempted to acquire unknown project!"))
-    (if existing nil
-        (prog1 pcons
-          (setf (gethash puuid (workshop-project-assignments ws)) session-id)))))
+  (let ((pcons (workshop-find-project-cons ws lookup-type lookup-val)))
+    (unless pcons (error "Attempted to acquire unknown project!"))
+    (let* ((pdesc (car pcons))
+           (puuid (descriptor-uuid pdesc))
+           (current-id (gethash puuid (workshop-project-assignments ws))))
+      (if current-id
+          (if (equal current-id session-id)
+              (error "Attempted to acquire project already acquired by this session!")
+              nil)
+          (prog1 pcons
+            (setf (gethash puuid (workshop-project-assignments ws)) session-id))))))
 
 (defun workshop-release-project (ws lookup-type lookup-val session-id)
-  (let* ((puuid (car (workshop-find-project-cons ws lookup-type lookup-val)))
-         (existing (gethash puuid (workshop-project-assignments ws))))
-    (unless puuid (error "Attempted to release unknown project!"))
-    (unless existing (error "Attempted to release project that was not acquired!"))
-    (if (equal existing session-id)
-        (remhash puuid (workshop-project-assignments ws))
-        (error "Attempted to release project acquired by another session!"))))
+  (let ((pcons (workshop-find-project-cons ws lookup-type lookup-val)))
+    (unless pcons (error "Attempted to release unknown project!"))
+    (let* ((pdesc (car pcons))
+           (puuid (descriptor-uuid pdesc))
+           (current-id (gethash puuid (workshop-project-assignments ws))))
+      (if current-id
+          (if (equal current-id session-id)
+              (remhash puuid (workshop-project-assignments ws))
+              (error "Attempted to release project acquired by another session!"))
+          (error "Attempted to release project that was not acquired!")))))
 
 ;; Lockfile Handling
 
@@ -157,10 +182,24 @@ specific workshop. This will be (mostly) guaranteed at the SINGLETON level.
   (or (find-package "MOPR-USER")
       (error "Cannot find MOPR-USER package.~%")))
 
+(defmacro with-manifest-io-syntax ((&key read-pkg) &body body)
+  `(with-standard-io-syntax
+     (let ((*package* ,read-pkg)
+           (*read-default-float-format* 'double-float)
+           (*print-readably* t)
+           (*read-eval* nil))
+       ,@body)))
+
 (defun load-workshop-manifest-unchecked (wpath &aux (read-pkg (get-read-package)))
   (with-open-file (in (get-workshop-manifest-path wpath))
-    (with-safe-io-syntax (:package read-pkg)
-      (apply #'make-instance 'workshop :path wpath (read in nil)))))
+    (let* ((manifest (with-manifest-io-syntax (:read-pkg read-pkg) (read in nil)))
+           (wuuid (getf manifest :uuid))
+           ;; TODO : Add support for the actual project description.
+           (wprojects (mapcar #'list (getf manifest :projects))))
+      (make-instance 'workshop
+                     :path wpath
+                     :uuid wuuid
+                     :projects wprojects))))
 
 (defun load-workshop-manifest (directory
                                &aux
@@ -168,14 +207,15 @@ specific workshop. This will be (mostly) guaranteed at the SINGLETON level.
   (validate-workshop-path wpath)
   (load-workshop-manifest-unchecked wpath))
 
-(defun save-workshop-manifest-unchecked (ws &aux (wpath (workshop-path ws)))
+(defun save-workshop-manifest-unchecked (ws &aux (wpath (workshop-path ws))
+                                              (read-pkg (get-read-package)))
   (with-open-file (out (get-workshop-manifest-path wpath)
                        :direction :output
                        :if-exists :supersede)
-    (with-safe-io-syntax ()
-      (prin1 (list
-              :projects (workshop-projects ws)
-              :uuid (workshop-uuid ws)) out))))
+    (with-manifest-io-syntax (:read-pkg read-pkg)
+      (pprint (list
+               :projects (mapcar #'car (workshop-projects ws))
+               :uuid (workshop-uuid ws)) out))))
 
 (defun save-workshop-manifest (ws &aux (wpath (workshop-path ws)))
   (validate-workshop-path wpath)

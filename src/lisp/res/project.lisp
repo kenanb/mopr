@@ -12,9 +12,6 @@ media.
 At any time, a single client connected to the server (the server currently
 assumed to be holding the lock to the workshop) is assumed to be working on a
 specific project. This is expected to be tracked by the WORKSHOP instance.
-
-PATH: Workshop-relative path of the project directory.
 "
-  (path (error "PROJECT cannot be initialized without a path!")
-   :type pathname
-   :read-only t))
+  (resources nil
+   :type list))
