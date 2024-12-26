@@ -3,10 +3,19 @@
 
 (in-package #:mopr-res)
 
-(defstruct descriptor
+(defstruct (descriptor
+            (:constructor)
+            (:constructor make-descriptor-for-directory
+                (directory &aux
+                             (uuid (frugal-uuid:to-string (frugal-uuid:make-v7)))
+                             (path (ensure-directory-pathname directory)))))
   "DESCRIPTOR
 
 A descriptor represents the means to unambiguously refer to a resource grouping.
+
+Every grouping that has an associated descriptor will be associated with a
+UUIDv7 at creation-time, so that the underlying directory can be moved while
+maintaining stable addressing by the application.
 "
   (uuid (error "DESCRIPTOR cannot be initialized without a uuid!")
    :type (simple-base-string 36)
@@ -16,12 +25,12 @@ A descriptor represents the means to unambiguously refer to a resource grouping.
    :read-only t))
 
 (defclass workshop ()
-  ((uuid
-    :type (simple-base-string 36)
-    :initarg :uuid
-    :initform (error "WORKSHOP cannot be initialized without a uuid!")
-    :reader workshop-uuid
-    :documentation "...")
+  ((descriptor
+    :type descriptor
+    :initarg :descriptor
+    :initform (error "WORKSHOP cannot be initialized without a descriptor!")
+    :reader workshop-descriptor
+    :documentation "Descriptor path is the absolute path of the workshop directory.")
    (projects
     :type list
     :initarg :projects
@@ -29,12 +38,6 @@ A descriptor represents the means to unambiguously refer to a resource grouping.
     :accessor workshop-projects
     :documentation "An alist of project DESCRIPTOR to PROJECT mappings.
 Descriptor path is a workshop-relative path of the project directory.")
-   (path
-    :type pathname
-    :initarg :path
-    :initform (error "WORKSHOP cannot be initialized without a path!")
-    :reader workshop-path
-    :documentation "Absolute path of the workshop directory.")
    (project-assignments
     :type hash-table
     :initform (make-hash-table :test 'equal)
@@ -45,9 +48,6 @@ Descriptor path is a workshop-relative path of the project directory.")
 
 A workshop is mainly an abstraction over a filesystem directory that is a
 container of projects.
-
-Every workshop will be associated with a UUIDv7 at creation-time, so that the
-underlying directory can be moved while maintaining stable addressing.
 
 During startup, server process will be pointed at the workshop directory.
 
@@ -99,13 +99,12 @@ specific workshop. This will be (mostly) guaranteed at the SINGLETON level.
 (defun workshop-create-project (ws pdir-rel)
   (unless (relative-pathname-p pdir-rel)
     (error "WORKSHOP-CREATE-PROJECT requires a relative directory!"))
-  (with-accessors ((wpath workshop-path)
+  (with-accessors ((wdesc workshop-descriptor)
                    (wprojects workshop-projects)) ws
-    (validate-workshop-path wpath)
-    (let* ((pdesc (make-descriptor
-                   :uuid (frugal-uuid:to-string (frugal-uuid:make-v7))
-                   :path (ensure-directory-pathname pdir-rel)))
-           (ppath-full (merge-pathnames* (descriptor-path pdesc) wpath)))
+    (validate-workshop-path (descriptor-path wdesc))
+    (let* ((pdesc (make-descriptor-for-directory pdir-rel))
+           (ppath-full (merge-pathnames* (descriptor-path pdesc)
+                                         (descriptor-path wdesc))))
       (when (workshop-find-project-cons-by-path ws (descriptor-path pdesc))
         (error "This path was already registered!"))
       (ensure-all-directories-exist (list ppath-full))
@@ -148,7 +147,7 @@ specific workshop. This will be (mostly) guaranteed at the SINGLETON level.
 (defconstant +workshop-lockfile-released-string+ "MOPR_WORKSHOP_LOCK_RELEASED")
 
 (defun workshop-get-lockfile-state-unchecked (ws)
-  (let* ((wpath (workshop-path ws))
+  (let* ((wpath (descriptor-path (workshop-descriptor ws)))
          (lockfile-path (get-workshop-lockfile-path wpath))
          (lock-state-string (with-safe-io-syntax () (read-file-string lockfile-path))))
     (cond
@@ -157,7 +156,7 @@ specific workshop. This will be (mostly) guaranteed at the SINGLETON level.
       (t (error "Unexpected lockfile state value found!")))))
 
 (defun workshop-set-lockfile-state-unchecked (ws state)
-  (let* ((wpath (workshop-path ws))
+  (let* ((wpath (descriptor-path (workshop-descriptor ws)))
          (lockfile-path (get-workshop-lockfile-path wpath))
          (state-string
            (case state
@@ -171,7 +170,7 @@ specific workshop. This will be (mostly) guaranteed at the SINGLETON level.
   state)
 
 (defun workshop-set-lock-state-or-fail (ws requested)
-  (validate-workshop-path (workshop-path ws))
+  (validate-workshop-path (descriptor-path (workshop-descriptor ws)))
   (when (eql requested (workshop-get-lockfile-state-unchecked ws))
     (error "Attempted to set the value to existing lockfile value!"))
   (workshop-set-lockfile-state-unchecked ws requested))
@@ -194,31 +193,28 @@ specific workshop. This will be (mostly) guaranteed at the SINGLETON level.
   (with-open-file (in (get-workshop-manifest-path wpath))
     (let* ((manifest (with-manifest-io-syntax (:read-pkg read-pkg) (read in nil)))
            (wuuid (getf manifest :uuid))
+           (wdesc (make-descriptor :uuid wuuid :path wpath))
            ;; TODO : Add support for the actual project description.
            (wprojects (mapcar #'list (getf manifest :projects))))
-      (make-instance 'workshop
-                     :path wpath
-                     :uuid wuuid
-                     :projects wprojects))))
+      (make-instance 'workshop :descriptor wdesc :projects wprojects))))
 
 (defun load-workshop-manifest (directory
-                               &aux
-                                 (wpath (ensure-directory-pathname directory)))
+                               &aux (wpath (ensure-directory-pathname directory)))
   (validate-workshop-path wpath)
   (load-workshop-manifest-unchecked wpath))
 
-(defun save-workshop-manifest-unchecked (ws &aux (wpath (workshop-path ws))
+(defun save-workshop-manifest-unchecked (ws &aux (wdesc (workshop-descriptor ws))
                                               (read-pkg (get-read-package)))
-  (with-open-file (out (get-workshop-manifest-path wpath)
+  (with-open-file (out (get-workshop-manifest-path (descriptor-path wdesc))
                        :direction :output
                        :if-exists :supersede)
     (with-manifest-io-syntax (:read-pkg read-pkg)
       (pprint (list
                :projects (mapcar #'car (workshop-projects ws))
-               :uuid (workshop-uuid ws)) out))))
+               :uuid (descriptor-uuid (workshop-descriptor ws))) out))))
 
-(defun save-workshop-manifest (ws &aux (wpath (workshop-path ws)))
-  (validate-workshop-path wpath)
+(defun save-workshop-manifest (ws)
+  (validate-workshop-path (descriptor-path (workshop-descriptor ws)))
   (save-workshop-manifest-unchecked ws))
 
 ;; Workshop Setup
@@ -249,16 +245,13 @@ This call doesn't create the workshop directory itself, because:
 "
   (unless (absolute-pathname-p wdir-abs)
     (error "MAKE-WORKSHOP requires an absolute directory!"))
-  (let ((ws
-          (make-instance 'workshop
-                         :uuid (frugal-uuid:to-string (frugal-uuid:make-v7))
-                         :path (ensure-directory-pathname wdir-abs))))
-    (with-accessors ((wpath workshop-path)) ws
-
-      (unless (directory-exists-p wpath)
-        (error "SETUP-WORKSHOP requires the workshop directory to already exist."))
-      (when (or (subdirectories wpath) (directory-files wpath))
-        (error "SETUP-WORKSHOP requires the workshop directory to be initially empty."))
-      (save-workshop-manifest-unchecked ws)
-      (workshop-set-lockfile-state-unchecked ws :released)))
+  (let* ((wdesc (make-descriptor-for-directory wdir-abs))
+         (ws (make-instance 'workshop :descriptor wdesc))
+         (wpath (descriptor-path wdesc)))
+    (unless (directory-exists-p wpath)
+      (error "SETUP-WORKSHOP requires the workshop directory to already exist."))
+    (when (or (subdirectories wpath) (directory-files wpath))
+      (error "SETUP-WORKSHOP requires the workshop directory to be initially empty."))
+    (save-workshop-manifest-unchecked ws)
+    (workshop-set-lockfile-state-unchecked ws :released))
   nil)

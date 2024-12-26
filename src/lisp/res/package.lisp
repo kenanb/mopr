@@ -43,8 +43,7 @@
    ;; WORKSHOP
 
    #:workshop
-   #:workshop-uuid
-   #:workshop-path
+   #:workshop-descriptor
    #:workshop-projects
    #:workshop-project-assignments
    #:workshop-set-lock-state-or-fail

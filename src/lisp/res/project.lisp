@@ -6,7 +6,8 @@
 (defstruct project
   "PROJECT
 
-A project represents a combination of procedures, scene description and other
+A project is mainly an abstraction over a filesystem directory that is a
+container of resources. Resources can be procedures, scene description and other
 media.
 
 At any time, a single client connected to the server (the server currently

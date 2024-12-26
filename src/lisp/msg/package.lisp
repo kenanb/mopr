@@ -13,8 +13,7 @@
    #:release-ws
    #:ws-bound-p
 
-   #:ws-uuid
-   #:ws-path
+   #:ws-descriptor
    #:ws-projects
    #:ws-project-assignments
    #:ws-create-project

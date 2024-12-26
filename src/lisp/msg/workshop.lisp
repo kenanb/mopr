@@ -20,11 +20,8 @@
 (defun ws-bound-p ()
   (if *workshop* t nil))
 
-(defun ws-uuid ()
-  (mopr-res:workshop-uuid *workshop*))
-
-(defun ws-path ()
-  (mopr-res:workshop-path *workshop*))
+(defun ws-descriptor ()
+  (mopr-res:workshop-descriptor *workshop*))
 
 (defun ws-projects ()
   (bt:with-lock-held (*workshop-lock*)
