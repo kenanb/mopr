@@ -75,7 +75,34 @@ specific workshop. This will be (mostly) guaranteed at the SINGLETON level.
   (unless (file-exists-p (get-workshop-manifest-path wpath))
     (error "VALIDATE-WORKSHOP-PATH was given a directory that's missing a manifest.")))
 
+(defun get-read-package ()
+  (or (find-package "MOPR-USER")
+      (error "Cannot find MOPR-USER package.~%")))
+
+(defmacro with-manifest-io-syntax ((&key read-pkg) &body body)
+  `(with-standard-io-syntax
+     (let ((*package* ,read-pkg)
+           (*read-default-float-format* 'double-float)
+           (*print-readably* t)
+           (*read-eval* nil))
+       ,@body)))
+
 ;; Projects
+
+(defconstant +project-manifest-filename+ "_mopr_project.lisp")
+
+(defun get-project-manifest-path (ppath-full)
+  (merge-pathnames* +project-manifest-filename+ ppath-full))
+
+(defun validate-project-path (ppath-full)
+  (unless (directory-exists-p ppath-full)
+    (error "VALIDATE-PROJECT-PATH was given a non-existent directory."))
+  (unless (file-exists-p (get-project-manifest-path ppath-full))
+    (error "VALIDATE-PROJECT-PATH was given a directory that's missing a manifest.")))
+
+(defun get-project-full-path (wdesc pdesc)
+  (merge-pathnames* (descriptor-path pdesc)
+                    (descriptor-path wdesc)))
 
 (defun workshop-find-project-cons-by-proj (ws proj)
   (rassoc proj (workshop-projects ws)))
@@ -96,6 +123,24 @@ specific workshop. This will be (mostly) guaranteed at the SINGLETON level.
     (:path (workshop-find-project-cons-by-path ws (ensure-directory-pathname lookup-val)))
     (otherwise (error "Unknown project lookup type!"))))
 
+(defun load-project-manifest-unchecked (ppath-full &aux (read-pkg (get-read-package)))
+  (with-open-file (in (get-project-manifest-path ppath-full))
+    (with-manifest-io-syntax (:read-pkg read-pkg) (read in nil))))
+
+(defun load-project-manifest (ppath-full)
+  (validate-project-path ppath-full)
+  (load-project-manifest-unchecked ppath-full))
+
+(defun save-project-manifest-unchecked (ppath-full proj &aux (read-pkg (get-read-package)))
+  (with-open-file (out (get-project-manifest-path ppath-full)
+                       :direction :output
+                       :if-exists :supersede)
+    (with-manifest-io-syntax (:read-pkg read-pkg) (pprint proj out))))
+
+(defun save-project-manifest (ppath-full proj)
+  (validate-project-path ppath-full)
+  (save-project-manifest-unchecked ppath-full proj))
+
 (defun workshop-create-project (ws pdir-rel)
   (unless (relative-pathname-p pdir-rel)
     (error "WORKSHOP-CREATE-PROJECT requires a relative directory!"))
@@ -103,13 +148,13 @@ specific workshop. This will be (mostly) guaranteed at the SINGLETON level.
                    (wprojects workshop-projects)) ws
     (validate-workshop-path (descriptor-path wdesc))
     (let* ((pdesc (make-descriptor-for-directory pdir-rel))
-           (ppath-full (merge-pathnames* (descriptor-path pdesc)
-                                         (descriptor-path wdesc))))
+           (ppath-full (get-project-full-path wdesc pdesc))
+           (proj (make-project)))
       (when (workshop-find-project-cons-by-path ws (descriptor-path pdesc))
         (error "This path was already registered!"))
       (ensure-all-directories-exist (list ppath-full))
-      ;; TODO : Add support for the actual project description.
-      (setf wprojects (acons pdesc nil wprojects))
+      (save-project-manifest-unchecked ppath-full proj)
+      (setf wprojects (acons pdesc proj wprojects))
       (save-workshop-manifest-unchecked ws)
       nil)))
 
@@ -177,25 +222,16 @@ specific workshop. This will be (mostly) guaranteed at the SINGLETON level.
 
 ;; Manifest Handling
 
-(defun get-read-package ()
-  (or (find-package "MOPR-USER")
-      (error "Cannot find MOPR-USER package.~%")))
-
-(defmacro with-manifest-io-syntax ((&key read-pkg) &body body)
-  `(with-standard-io-syntax
-     (let ((*package* ,read-pkg)
-           (*read-default-float-format* 'double-float)
-           (*print-readably* t)
-           (*read-eval* nil))
-       ,@body)))
-
 (defun load-workshop-manifest-unchecked (wpath &aux (read-pkg (get-read-package)))
   (with-open-file (in (get-workshop-manifest-path wpath))
     (let* ((manifest (with-manifest-io-syntax (:read-pkg read-pkg) (read in nil)))
            (wuuid (getf manifest :uuid))
            (wdesc (make-descriptor :uuid wuuid :path wpath))
-           ;; TODO : Add support for the actual project description.
-           (wprojects (mapcar #'list (getf manifest :projects))))
+           (wprojects (mapcar (lambda (pdesc)
+                                (cons pdesc
+                                      (load-project-manifest
+                                       (get-project-full-path wdesc pdesc))))
+                              (getf manifest :projects))))
       (make-instance 'workshop :descriptor wdesc :projects wprojects))))
 
 (defun load-workshop-manifest (directory
