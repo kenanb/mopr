@@ -13,7 +13,7 @@
    #:release-ws
    #:ws-bound-p
 
-   #:ws-id
+   #:ws-uuid
    #:ws-location
    #:ws-projects
    #:ws-project-assignments

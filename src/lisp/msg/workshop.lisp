@@ -20,8 +20,8 @@
 (defun ws-bound-p ()
   (if *workshop* t nil))
 
-(defun ws-id ()
-  (mopr-res:workshop-id *workshop*))
+(defun ws-uuid ()
+  (mopr-res:workshop-uuid *workshop*))
 
 (defun ws-location ()
   (mopr-res:workshop-location *workshop*))

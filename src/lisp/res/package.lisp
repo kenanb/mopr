@@ -37,14 +37,14 @@
    ;; WORKSHOP
 
    #:workshop
-   #:workshop-id
+   #:workshop-uuid
    #:workshop-location
    #:workshop-projects
    #:workshop-project-assignments
    #:workshop-set-lock-state-or-fail
    #:load-workshop-manifest
    ;; #:save-workshop-manifest
-   ;; #:workshop-find-project-cons-by-id
+   ;; #:workshop-find-project-cons-by-uuid
    ;; #:workshop-find-project-cons-by-location
    #:workshop-create-project
    #:workshop-acquire-project

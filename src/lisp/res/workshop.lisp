@@ -4,18 +4,18 @@
 (in-package #:mopr-res)
 
 (defclass workshop ()
-  ((id
+  ((uuid
     :type (simple-base-string 36)
-    :initarg :id
-    :initform (error "WORKSHOP cannot be initialized without an id!")
-    :reader workshop-id
+    :initarg :uuid
+    :initform (error "WORKSHOP cannot be initialized without a uuid!")
+    :reader workshop-uuid
     :documentation "...")
    (projects
     :type list
     :initarg :projects
     :initform nil
     :accessor workshop-projects
-    :documentation "An alist of project-id to PROJECT mappings.")
+    :documentation "An alist of project-uuid to PROJECT mappings.")
    (location
     :type pathname
     :initarg :location
@@ -26,7 +26,7 @@
     :type hash-table
     :initform (make-hash-table :test 'equal)
     :accessor workshop-project-assignments
-    :documentation "An alist of project ID to the ID of client
+    :documentation "An alist of project UUID to the ID of client
 (currently assigned to project) mappings."))
   (:documentation "WORKSHOP
 
@@ -52,8 +52,8 @@ specific workshop. This will be (mostly) guaranteed at the SINGLETON level.
 
 ;; Projects
 
-(defun workshop-find-project-cons-by-id (ws proj-id)
-  (assoc proj-id (workshop-projects)
+(defun workshop-find-project-cons-by-uuid (ws proj-uuid)
+  (assoc proj-uuid (workshop-projects)
          :test #'equal))
 
 (defun workshop-find-project-cons-by-location (ws proj-location)
@@ -63,7 +63,7 @@ specific workshop. This will be (mostly) guaranteed at the SINGLETON level.
 
 (defun workshop-find-project-cons (ws lookup-type lookup-val)
   (case lookup-type
-    (:id (workshop-find-project-cons-by-id ws lookup-val))
+    (:uuid (workshop-find-project-cons-by-uuid ws lookup-val))
     (:location (workshop-find-project-cons-by-location
                 ws
                 (ensure-directory-pathname lookup-val)))
@@ -75,33 +75,33 @@ specific workshop. This will be (mostly) guaranteed at the SINGLETON level.
   (with-accessors ((location workshop-location)
                    (projects workshop-projects)) ws
     (validate-workshop-location location)
-    (let* ((id (frugal-uuid:to-string (frugal-uuid:make-v7)))
+    (let* ((uuid (frugal-uuid:to-string (frugal-uuid:make-v7)))
            (proj (make-project
                   :location (ensure-directory-pathname rel-project-directory)))
            (proj-full-path (merge-pathnames* (project-location proj) location)))
       (when (workshop-find-project-cons-by-location ws (project-location proj))
         (error "This path was already registered!"))
       (ensure-all-directories-exist (list proj-full-path))
-      (setf projects (acons id proj projects))
+      (setf projects (acons uuid proj projects))
       (save-workshop-manifest-unchecked ws)
       nil)))
 
 (defun workshop-acquire-project (ws lookup-type lookup-val session-id)
   (let* ((proj-cons (workshop-find-project-cons ws lookup-type lookup-val))
-         (proj-id (car proj-cons))
-         (existing (gethash proj-id (workshop-project-assignments ws))))
-    (unless proj-id (error "Attempted to acquire unknown project!"))
+         (proj-uuid (car proj-cons))
+         (existing (gethash proj-uuid (workshop-project-assignments ws))))
+    (unless proj-uuid (error "Attempted to acquire unknown project!"))
     (if existing nil
         (prog1 proj-cons
-          (setf (gethash proj-id (workshop-project-assignments ws)) session-id)))))
+          (setf (gethash proj-uuid (workshop-project-assignments ws)) session-id)))))
 
 (defun workshop-release-project (ws lookup-type lookup-val session-id)
-  (let* ((proj-id (car (workshop-find-project-cons ws lookup-type lookup-val)))
-         (existing (gethash proj-id (workshop-project-assignments ws))))
-    (unless proj-id (error "Attempted to release unknown project!"))
+  (let* ((proj-uuid (car (workshop-find-project-cons ws lookup-type lookup-val)))
+         (existing (gethash proj-uuid (workshop-project-assignments ws))))
+    (unless proj-uuid (error "Attempted to release unknown project!"))
     (unless existing (error "Attempted to release project that was not acquired!"))
     (if (equal existing session-id)
-        (remhash proj-id (workshop-project-assignments ws))
+        (remhash proj-uuid (workshop-project-assignments ws))
         (error "Attempted to release project acquired by another session!"))))
 
 ;; Lockfile Handling
@@ -178,7 +178,7 @@ specific workshop. This will be (mostly) guaranteed at the SINGLETON level.
     (with-safe-io-syntax ()
       (prin1 (list
               :projects (workshop-projects ws)
-              :id (workshop-id ws)) out))))
+              :uuid (workshop-uuid ws)) out))))
 
 (defun save-workshop-manifest (ws &aux (location (workshop-location ws)))
   (validate-workshop-location location)
@@ -214,7 +214,7 @@ This call doesn't create the workshop directory itself, because:
     (error "MAKE-WORKSHOP requires an absolute directory!"))
   (let ((ws
           (make-instance 'workshop
-                         :id (frugal-uuid:to-string (frugal-uuid:make-v7))
+                         :uuid (frugal-uuid:to-string (frugal-uuid:make-v7))
                          :location (ensure-directory-pathname directory))))
     (with-accessors ((location workshop-location)) ws
 
