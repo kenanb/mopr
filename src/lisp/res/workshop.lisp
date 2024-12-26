@@ -114,7 +114,7 @@ specific workshop. This will be (mostly) guaranteed at the SINGLETON level.
     (ensure-all-directories-exist (list rpath-full))
     (setf (project-resources proj) (acons rdesc res (project-resources proj)))
     (save-project-manifest wdesc pdesc proj)
-    (car (project-resources proj))))
+    (descriptor-uuid rdesc)))
 
 (defun project-get-resource (proj lookup-type lookup-val)
   (let ((sanitized-val (case lookup-type
@@ -156,7 +156,7 @@ WORKSHOP-ACQUIRE-PROJECT once this call succeeds.
       (save-project-manifest-unchecked ppath-full proj)
       (setf wprojects (acons pdesc proj wprojects))
       (save-workshop-manifest-unchecked ws)
-      nil)))
+      (descriptor-uuid pdesc))))
 
 (defun workshop-acquire-project (ws lookup-type lookup-val session-id)
   (let* ((sanitized-val (case lookup-type
@@ -294,5 +294,5 @@ This call doesn't create the workshop directory itself, because:
     (when (or (subdirectories wpath) (directory-files wpath))
       (error "SETUP-WORKSHOP requires the workshop directory to be initially empty."))
     (save-workshop-manifest-unchecked ws)
-    (workshop-set-lockfile-state-unchecked ws :released))
-  nil)
+    (workshop-set-lockfile-state-unchecked ws :released)
+    (descriptor-uuid wdesc)))
