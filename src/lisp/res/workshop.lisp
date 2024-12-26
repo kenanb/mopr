@@ -53,7 +53,7 @@ specific workshop. This will be (mostly) guaranteed at the SINGLETON level.
 ;; Projects
 
 (defun workshop-find-project-cons-by-uuid (ws puuid)
-  (assoc puuid (workshop-projects)
+  (assoc puuid (workshop-projects ws)
          :test #'equal))
 
 (defun workshop-find-project-cons-by-path (ws ppath)
