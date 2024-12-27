@@ -21,10 +21,10 @@
    #:rchain-descriptor-uuids
 
    ;; DESC-ALIST
-   #:descriptor-alist-assoc
+   #:desc-alist-assoc
 
    ;; Below are only exposed to use in DESCRIPTOR extensions.
-   #:%descriptor-alist-assoc-by-data
-   #:%descriptor-alist-assoc-by-uuid
+   #:%desc-alist-assoc-by-data
+   #:%desc-alist-assoc-by-uuid
 
    ))

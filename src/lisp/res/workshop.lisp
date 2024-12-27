@@ -108,8 +108,8 @@ specific workshop. This will be (mostly) guaranteed at the SINGLETON level.
          (rpath-full (rchain-pndescriptor-paths (list rdesc pdesc wdesc)
                                                 :file-expected-p t))
          (res (apply #'make-resource ctor-kwargs)))
-    (when (pndescriptor-alist-assoc (project-resources proj)
-                                    :path (pndescriptor-path rdesc))
+    (when (pndesc-alist-assoc (project-resources proj)
+                              :path (pndescriptor-path rdesc))
       (error "This resource path was already registered!"))
     (ensure-all-directories-exist (list rpath-full))
     (setf (project-resources proj) (acons rdesc res (project-resources proj)))
@@ -121,7 +121,7 @@ specific workshop. This will be (mostly) guaranteed at the SINGLETON level.
                          (:path (or (file-pathname-p lookup-val)
                                     (error "Bad input for resource query!")))
                          (otherwise lookup-val))))
-    (pndescriptor-alist-assoc (project-resources proj) lookup-type sanitized-val)))
+    (pndesc-alist-assoc (project-resources proj) lookup-type sanitized-val)))
 
 (defun workshop-create-project (ws pdir-rel
                                 &rest ctor-kwargs &key &allow-other-keys)
@@ -149,8 +149,8 @@ WORKSHOP-ACQUIRE-PROJECT once this call succeeds.
     (let* ((pdesc (make-pndescriptor-for-directory :project pdir-rel))
            (ppath-full (rchain-pndescriptor-paths (list pdesc wdesc)))
            (proj (apply #'make-project ctor-kwargs)))
-      (when (pndescriptor-alist-assoc (workshop-projects ws)
-                                      :path (pndescriptor-path pdesc))
+      (when (pndesc-alist-assoc (workshop-projects ws)
+                                :path (pndescriptor-path pdesc))
         (error "This project path was already registered!"))
       (ensure-all-directories-exist (list ppath-full))
       (save-project-manifest-unchecked ppath-full proj)
@@ -162,7 +162,7 @@ WORKSHOP-ACQUIRE-PROJECT once this call succeeds.
   (let* ((sanitized-val (case lookup-type
                           (:path (ensure-directory-pathname lookup-val))
                           (otherwise lookup-val)))
-         (pcons (pndescriptor-alist-assoc (workshop-projects ws) lookup-type sanitized-val)))
+         (pcons (pndesc-alist-assoc (workshop-projects ws) lookup-type sanitized-val)))
     (unless pcons (error "Attempted to acquire unknown project!"))
     (let* ((pdesc (car pcons))
            (puuid (pndescriptor-uuid pdesc))
@@ -178,7 +178,7 @@ WORKSHOP-ACQUIRE-PROJECT once this call succeeds.
   (let* ((sanitized-val (case lookup-type
                           (:path (ensure-directory-pathname lookup-val))
                           (otherwise lookup-val)))
-         (pcons (pndescriptor-alist-assoc (workshop-projects ws) lookup-type sanitized-val)))
+         (pcons (pndesc-alist-assoc (workshop-projects ws) lookup-type sanitized-val)))
     (unless pcons (error "Attempted to release unknown project!"))
     (let* ((pdesc (car pcons))
            (puuid (pndescriptor-uuid pdesc))
