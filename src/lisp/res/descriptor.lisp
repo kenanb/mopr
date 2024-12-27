@@ -7,7 +7,7 @@
             (:include mopr-uri:descriptor)
             (:constructor)
             (:constructor make-new-pndescriptor
-                (path &aux (uuid (mopr-uri:new-uuid path)))))
+                (role path &aux (uuid (mopr-uri:new-uuid path)))))
   "PATHNAME DESCRIPTOR
 
 A pndescriptor represents the means to unambiguously refer to a resource or
@@ -19,17 +19,19 @@ can be moved while maintaining stable addressing by the client application. But
 it will be possible to configure the UUID version to enable deterministic
 addressing. TODO: Implement setting.
 "
-  (path (error "DESCRIPTOR cannot be initialized without a path!")
+  (path (error "PNDESCRIPTOR cannot be initialized without a path!")
    :type pathname
    :read-only t))
 
-(defun make-pndescriptor-for-file (file)
+(defun make-pndescriptor-for-file (role file)
   (make-new-pndescriptor
+   role
    (or (file-pathname-p file)
        (error "File descriptor requested for non-file path!"))))
 
-(defun make-pndescriptor-for-directory (directory)
+(defun make-pndescriptor-for-directory (role directory)
   (make-new-pndescriptor
+   role
    (ensure-directory-pathname directory)))
 
 (defun %descriptor-alist-assoc-by-path (desc-alist val)

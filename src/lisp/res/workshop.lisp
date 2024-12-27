@@ -104,7 +104,7 @@ specific workshop. This will be (mostly) guaranteed at the SINGLETON level.
   (unless (relative-pathname-p rfile-rel)
     (error "PROJECT-CREATE-RESOURCE requires a relative directory!"))
   (validate-project-path (rchain-pndescriptor-paths (list pdesc wdesc)))
-  (let* ((rdesc (make-pndescriptor-for-file rfile-rel))
+  (let* ((rdesc (make-pndescriptor-for-file :resource rfile-rel))
          (rpath-full (rchain-pndescriptor-paths (list rdesc pdesc wdesc)
                                                 :file-expected-p t))
          (res (apply #'make-resource ctor-kwargs)))
@@ -146,7 +146,7 @@ WORKSHOP-ACQUIRE-PROJECT once this call succeeds.
   (with-accessors ((wdesc workshop-descriptor)
                    (wprojects workshop-projects)) ws
     (validate-workshop-path (pndescriptor-path wdesc))
-    (let* ((pdesc (make-pndescriptor-for-directory pdir-rel))
+    (let* ((pdesc (make-pndescriptor-for-directory :project pdir-rel))
            (ppath-full (rchain-pndescriptor-paths (list pdesc wdesc)))
            (proj (apply #'make-project ctor-kwargs)))
       (when (pndescriptor-alist-assoc (workshop-projects ws)
@@ -232,7 +232,7 @@ WORKSHOP-ACQUIRE-PROJECT once this call succeeds.
   (with-open-file (in (get-workshop-manifest-path wpath))
     (let* ((manifest (with-manifest-io-syntax (:read-pkg read-pkg) (read in nil)))
            (wuuid (getf manifest :uuid))
-           (wdesc (make-pndescriptor :uuid wuuid :path wpath))
+           (wdesc (make-pndescriptor :role :workshop :uuid wuuid :path wpath))
            (wprojects (mapcar (lambda (pdesc)
                                 (cons pdesc
                                       (load-project-manifest wdesc pdesc)))
@@ -286,7 +286,7 @@ This call doesn't create the workshop directory itself, because:
 "
   (unless (absolute-pathname-p wdir-abs)
     (error "MAKE-WORKSHOP requires an absolute directory!"))
-  (let* ((wdesc (make-pndescriptor-for-directory wdir-abs))
+  (let* ((wdesc (make-pndescriptor-for-directory :workshop wdir-abs))
          (ws (make-instance 'workshop :descriptor wdesc))
          (wpath (pndescriptor-path wdesc)))
     (unless (directory-exists-p wpath)

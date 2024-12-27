@@ -13,6 +13,7 @@
    #:make-new-descriptor
    #:descriptor-p
    #:descriptor
+   #:descriptor-role
    #:descriptor-uuid
 
    #:rchain-descriptor-uuids
