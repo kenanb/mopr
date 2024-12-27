@@ -5,7 +5,7 @@
 
 (defclass workshop ()
   ((descriptor
-    :type mopr-uri:descriptor
+    :type pndescriptor
     :initarg :descriptor
     :initform (error "WORKSHOP cannot be initialized without a descriptor!")
     :reader workshop-descriptor
@@ -84,7 +84,7 @@ specific workshop. This will be (mostly) guaranteed at the SINGLETON level.
     (with-manifest-io-syntax (:read-pkg read-pkg) (read in nil))))
 
 (defun load-project-manifest (wdesc pdesc
-                              &aux (ppath-full (rchain-descriptor-paths (list pdesc wdesc))))
+                              &aux (ppath-full (rchain-pndescriptor-paths (list pdesc wdesc))))
   (validate-project-path ppath-full)
   (load-project-manifest-unchecked ppath-full))
 
@@ -95,7 +95,7 @@ specific workshop. This will be (mostly) guaranteed at the SINGLETON level.
     (with-manifest-io-syntax (:read-pkg read-pkg) (pprint proj out))))
 
 (defun save-project-manifest (wdesc pdesc proj
-                              &aux (ppath-full (rchain-descriptor-paths (list pdesc wdesc))))
+                              &aux (ppath-full (rchain-pndescriptor-paths (list pdesc wdesc))))
   (validate-project-path ppath-full)
   (save-project-manifest-unchecked ppath-full proj))
 
@@ -103,25 +103,25 @@ specific workshop. This will be (mostly) guaranteed at the SINGLETON level.
                                 &rest ctor-kwargs &key &allow-other-keys)
   (unless (relative-pathname-p rfile-rel)
     (error "PROJECT-CREATE-RESOURCE requires a relative directory!"))
-  (validate-project-path (rchain-descriptor-paths (list pdesc wdesc)))
-  (let* ((rdesc (make-descriptor-for-file rfile-rel))
-         (rpath-full (rchain-descriptor-paths (list rdesc pdesc wdesc)
-                                              :file-expected-p t))
+  (validate-project-path (rchain-pndescriptor-paths (list pdesc wdesc)))
+  (let* ((rdesc (make-pndescriptor-for-file rfile-rel))
+         (rpath-full (rchain-pndescriptor-paths (list rdesc pdesc wdesc)
+                                                :file-expected-p t))
          (res (apply #'make-resource ctor-kwargs)))
-    (when (mopr-uri:descriptor-alist-assoc-by-path (project-resources proj)
-                                                   (mopr-uri:descriptor-path rdesc))
+    (when (pndescriptor-alist-assoc (project-resources proj)
+                                    :path (pndescriptor-path rdesc))
       (error "This resource path was already registered!"))
     (ensure-all-directories-exist (list rpath-full))
     (setf (project-resources proj) (acons rdesc res (project-resources proj)))
     (save-project-manifest wdesc pdesc proj)
-    (mopr-uri:descriptor-uuid rdesc)))
+    (pndescriptor-uuid rdesc)))
 
 (defun project-get-resource (proj lookup-type lookup-val)
   (let ((sanitized-val (case lookup-type
                          (:path (or (file-pathname-p lookup-val)
                                     (error "Bad input for resource query!")))
                          (otherwise lookup-val))))
-    (mopr-uri:descriptor-alist-assoc (project-resources proj) lookup-type sanitized-val)))
+    (pndescriptor-alist-assoc (project-resources proj) lookup-type sanitized-val)))
 
 (defun workshop-create-project (ws pdir-rel
                                 &rest ctor-kwargs &key &allow-other-keys)
@@ -145,27 +145,27 @@ WORKSHOP-ACQUIRE-PROJECT once this call succeeds.
     (error "WORKSHOP-CREATE-PROJECT requires a relative directory!"))
   (with-accessors ((wdesc workshop-descriptor)
                    (wprojects workshop-projects)) ws
-    (validate-workshop-path (mopr-uri:descriptor-path wdesc))
-    (let* ((pdesc (make-descriptor-for-directory pdir-rel))
-           (ppath-full (rchain-descriptor-paths (list pdesc wdesc)))
+    (validate-workshop-path (pndescriptor-path wdesc))
+    (let* ((pdesc (make-pndescriptor-for-directory pdir-rel))
+           (ppath-full (rchain-pndescriptor-paths (list pdesc wdesc)))
            (proj (apply #'make-project ctor-kwargs)))
-      (when (mopr-uri:descriptor-alist-assoc-by-path (workshop-projects ws)
-                                                     (mopr-uri:descriptor-path pdesc))
+      (when (pndescriptor-alist-assoc (workshop-projects ws)
+                                      :path (pndescriptor-path pdesc))
         (error "This project path was already registered!"))
       (ensure-all-directories-exist (list ppath-full))
       (save-project-manifest-unchecked ppath-full proj)
       (setf wprojects (acons pdesc proj wprojects))
       (save-workshop-manifest-unchecked ws)
-      (mopr-uri:descriptor-uuid pdesc))))
+      (pndescriptor-uuid pdesc))))
 
 (defun workshop-acquire-project (ws lookup-type lookup-val session-id)
   (let* ((sanitized-val (case lookup-type
                           (:path (ensure-directory-pathname lookup-val))
                           (otherwise lookup-val)))
-         (pcons (mopr-uri:descriptor-alist-assoc (workshop-projects ws) lookup-type sanitized-val)))
+         (pcons (pndescriptor-alist-assoc (workshop-projects ws) lookup-type sanitized-val)))
     (unless pcons (error "Attempted to acquire unknown project!"))
     (let* ((pdesc (car pcons))
-           (puuid (mopr-uri:descriptor-uuid pdesc))
+           (puuid (pndescriptor-uuid pdesc))
            (current-id (gethash puuid (workshop-project-assignments ws))))
       (if current-id
           (if (equal current-id session-id)
@@ -178,10 +178,10 @@ WORKSHOP-ACQUIRE-PROJECT once this call succeeds.
   (let* ((sanitized-val (case lookup-type
                           (:path (ensure-directory-pathname lookup-val))
                           (otherwise lookup-val)))
-         (pcons (mopr-uri:descriptor-alist-assoc (workshop-projects ws) lookup-type sanitized-val)))
+         (pcons (pndescriptor-alist-assoc (workshop-projects ws) lookup-type sanitized-val)))
     (unless pcons (error "Attempted to release unknown project!"))
     (let* ((pdesc (car pcons))
-           (puuid (mopr-uri:descriptor-uuid pdesc))
+           (puuid (pndescriptor-uuid pdesc))
            (current-id (gethash puuid (workshop-project-assignments ws))))
       (if current-id
           (if (equal current-id session-id)
@@ -198,7 +198,7 @@ WORKSHOP-ACQUIRE-PROJECT once this call succeeds.
 (defconstant +workshop-lockfile-released-string+ "MOPR_WORKSHOP_LOCK_RELEASED")
 
 (defun workshop-get-lockfile-state-unchecked (ws)
-  (let* ((wpath (mopr-uri:descriptor-path (workshop-descriptor ws)))
+  (let* ((wpath (pndescriptor-path (workshop-descriptor ws)))
          (lockfile-path (get-workshop-lockfile-path wpath))
          (lock-state-string (with-safe-io-syntax () (read-file-string lockfile-path))))
     (cond
@@ -207,7 +207,7 @@ WORKSHOP-ACQUIRE-PROJECT once this call succeeds.
       (t (error "Unexpected lockfile state value found!")))))
 
 (defun workshop-set-lockfile-state-unchecked (ws state)
-  (let* ((wpath (mopr-uri:descriptor-path (workshop-descriptor ws)))
+  (let* ((wpath (pndescriptor-path (workshop-descriptor ws)))
          (lockfile-path (get-workshop-lockfile-path wpath))
          (state-string
            (case state
@@ -221,7 +221,7 @@ WORKSHOP-ACQUIRE-PROJECT once this call succeeds.
   state)
 
 (defun workshop-set-lock-state-or-fail (ws requested)
-  (validate-workshop-path (mopr-uri:descriptor-path (workshop-descriptor ws)))
+  (validate-workshop-path (pndescriptor-path (workshop-descriptor ws)))
   (when (eql requested (workshop-get-lockfile-state-unchecked ws))
     (error "Attempted to set the value to existing lockfile value!"))
   (workshop-set-lockfile-state-unchecked ws requested))
@@ -232,7 +232,7 @@ WORKSHOP-ACQUIRE-PROJECT once this call succeeds.
   (with-open-file (in (get-workshop-manifest-path wpath))
     (let* ((manifest (with-manifest-io-syntax (:read-pkg read-pkg) (read in nil)))
            (wuuid (getf manifest :uuid))
-           (wdesc (mopr-uri:make-descriptor :uuid wuuid :path wpath))
+           (wdesc (make-pndescriptor :uuid wuuid :path wpath))
            (wprojects (mapcar (lambda (pdesc)
                                 (cons pdesc
                                       (load-project-manifest wdesc pdesc)))
@@ -246,16 +246,16 @@ WORKSHOP-ACQUIRE-PROJECT once this call succeeds.
 
 (defun save-workshop-manifest-unchecked (ws &aux (wdesc (workshop-descriptor ws))
                                               (read-pkg (get-read-package)))
-  (with-open-file (out (get-workshop-manifest-path (mopr-uri:descriptor-path wdesc))
+  (with-open-file (out (get-workshop-manifest-path (pndescriptor-path wdesc))
                        :direction :output
                        :if-exists :supersede)
     (with-manifest-io-syntax (:read-pkg read-pkg)
       (pprint (list
                :projects (mapcar #'car (workshop-projects ws))
-               :uuid (mopr-uri:descriptor-uuid (workshop-descriptor ws))) out))))
+               :uuid (pndescriptor-uuid (workshop-descriptor ws))) out))))
 
 (defun save-workshop-manifest (ws)
-  (validate-workshop-path (mopr-uri:descriptor-path (workshop-descriptor ws)))
+  (validate-workshop-path (pndescriptor-path (workshop-descriptor ws)))
   (save-workshop-manifest-unchecked ws))
 
 ;; Workshop Setup
@@ -286,13 +286,13 @@ This call doesn't create the workshop directory itself, because:
 "
   (unless (absolute-pathname-p wdir-abs)
     (error "MAKE-WORKSHOP requires an absolute directory!"))
-  (let* ((wdesc (make-descriptor-for-directory wdir-abs))
+  (let* ((wdesc (make-pndescriptor-for-directory wdir-abs))
          (ws (make-instance 'workshop :descriptor wdesc))
-         (wpath (mopr-uri:descriptor-path wdesc)))
+         (wpath (pndescriptor-path wdesc)))
     (unless (directory-exists-p wpath)
       (error "SETUP-WORKSHOP requires the workshop directory to already exist."))
     (when (or (subdirectories wpath) (directory-files wpath))
       (error "SETUP-WORKSHOP requires the workshop directory to be initially empty."))
     (save-workshop-manifest-unchecked ws)
     (workshop-set-lockfile-state-unchecked ws :released)
-    (mopr-uri:descriptor-uuid wdesc)))
+    (pndescriptor-uuid wdesc)))

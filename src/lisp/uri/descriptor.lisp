@@ -3,24 +3,23 @@
 
 (in-package #:mopr-uri)
 
+(defun new-uuid (data)
+  (declare (ignore data))
+  (frugal-uuid:to-string (frugal-uuid:make-v7)))
+
 (defstruct (descriptor
             (:constructor)
-            (:constructor make-descriptor-for-path
-                (path &aux (uuid (frugal-uuid:to-string (frugal-uuid:make-v7))))))
+            (:constructor make-new-descriptor (data &aux (uuid (new-uuid data)))))
   "DESCRIPTOR
 
 A descriptor represents the means to unambiguously refer to a resource or
-resource grouping.
+resource grouping, as well as storing the role of the resource. TODO: Add ROLE.
 
-Every entity that has an associated descriptor will be associated with a UUIDv7
-at creation-time, so that the underlying content can be moved while maintaining
-stable addressing by the client application.
+Any content that has an associated descriptor will be associated with a UUID
+at creation-time. The UUID version used depends on the nature of resource.
 "
   (uuid (error "DESCRIPTOR cannot be initialized without a uuid!")
    :type (simple-base-string 36)
-   :read-only t)
-  (path (error "DESCRIPTOR cannot be initialized without a path!")
-   :type pathname
    :read-only t))
 
 (defun rchain-descriptor-uuids (descriptors)
@@ -33,23 +32,17 @@ correspondingly, will generate '0/1/2'.
 "
   (format nil "~{~A~^/~}" (reverse (mapcar #'descriptor-uuid descriptors))))
 
-(defun descriptor-alist-assoc-by-data (desc-alist val)
+(defun %descriptor-alist-assoc-by-data (desc-alist val)
   (rassoc val desc-alist))
 
-(defun descriptor-alist-assoc-by-uuid (desc-alist val)
+(defun %descriptor-alist-assoc-by-uuid (desc-alist val)
   (assoc val desc-alist
          :key #'descriptor-uuid
          :test #'equal))
 
-(defun descriptor-alist-assoc-by-path (desc-alist val)
-  (assoc val desc-alist
-         :key #'descriptor-path
-         :test #'equal))
-
 (defun descriptor-alist-assoc (desc-alist lookup-type lookup-val)
   (let ((lookup-fn (case lookup-type
-                     (:data #'descriptor-alist-assoc-by-data)
-                     (:uuid #'descriptor-alist-assoc-by-uuid)
-                     (:path #'descriptor-alist-assoc-by-path)
+                     (:data #'%descriptor-alist-assoc-by-data)
+                     (:uuid #'%descriptor-alist-assoc-by-uuid)
                      (otherwise (error "Unknown DESCRIPTOR-ALIST lookup type!")))))
     (funcall lookup-fn desc-alist lookup-val)))

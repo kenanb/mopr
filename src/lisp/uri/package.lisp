@@ -10,17 +10,19 @@
 
    ;; DESCRIPTOR
    #:make-descriptor
-   #:make-descriptor-for-path
+   #:make-new-descriptor
    #:descriptor-p
    #:descriptor
    #:descriptor-uuid
-   #:descriptor-path
 
    #:rchain-descriptor-uuids
 
-   #:descriptor-alist-assoc-by-data
-   #:descriptor-alist-assoc-by-uuid
-   #:descriptor-alist-assoc-by-path
+   #:new-uuid
+
    #:descriptor-alist-assoc
+
+   ;; Below are only exposed to use in DESCRIPTOR extensions.
+   #:%descriptor-alist-assoc-by-data
+   #:%descriptor-alist-assoc-by-uuid
 
    ))
