@@ -9,6 +9,7 @@
   (:export
 
    ;; DESCRIPTOR
+   #:new-uuid
    #:make-descriptor
    #:make-new-descriptor
    #:descriptor-p
@@ -16,10 +17,10 @@
    #:descriptor-role
    #:descriptor-uuid
 
+   ;; DESC-STACK
    #:rchain-descriptor-uuids
 
-   #:new-uuid
-
+   ;; DESC-ALIST
    #:descriptor-alist-assoc
 
    ;; Below are only exposed to use in DESCRIPTOR extensions.

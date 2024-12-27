@@ -18,4 +18,8 @@ mainly in Lisp. UNTESTED. DO NOT USE!"
   :components
   ((:file "package")
    (:file "descriptor"
-    :depends-on ("package"))))
+    :depends-on ("package"))
+   (:file "desc-alist"
+    :depends-on ("package" "descriptor"))
+   (:file "desc-stack"
+    :depends-on ("package" "descriptor"))))

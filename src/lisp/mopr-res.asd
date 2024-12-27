@@ -17,9 +17,11 @@ mainly in Lisp. UNTESTED. DO NOT USE!"
 
   :components
   ((:file "package")
-   (:file "descriptor"
-    :depends-on ("package"))
    (:file "entity"
     :depends-on ("package"))
+   (:file "pndescriptor"
+    :depends-on ("package"))
    (:file "workshop"
-    :depends-on ("package" "descriptor" "entity"))))
+    :depends-on ("package"
+                 "entity"
+                 "pndescriptor"))))
