@@ -34,13 +34,6 @@
    #:project
    #:project-resources
 
-   ;; DESCRIPTOR
-   #:make-descriptor
-   #:descriptor-p
-   #:descriptor
-   #:descriptor-uuid
-   #:descriptor-path
-
    ;; WORKSHOP
 
    #:workshop

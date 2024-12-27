@@ -10,8 +10,8 @@
 mainly in Lisp. UNTESTED. DO NOT USE!"
 
   :depends-on
-  (#:uiop
-   #:frugal-uuid)
+  (#:mopr-uri
+   #:uiop)
 
   :pathname "res"
 
