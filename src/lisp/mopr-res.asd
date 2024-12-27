@@ -21,7 +21,13 @@ mainly in Lisp. UNTESTED. DO NOT USE!"
     :depends-on ("package"))
    (:file "pndescriptor"
     :depends-on ("package"))
+   (:file "pndesc-alist"
+    :depends-on ("package" "pndescriptor"))
+   (:file "pndesc-stack"
+    :depends-on ("package" "pndescriptor"))
    (:file "workshop"
     :depends-on ("package"
                  "entity"
-                 "pndescriptor"))))
+                 "pndescriptor"
+                 "pndesc-alist"
+                 "pndesc-stack"))))
