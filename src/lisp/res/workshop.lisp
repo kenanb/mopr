@@ -257,7 +257,7 @@ WORKSHOP-ACQUIRE-PROJECT once this call succeeds.
     (with-manifest-io-syntax (:read-pkg read-pkg)
       (pprint (list
                :projects (mapcar #'car (workshop-projects ws))
-               :uuid (pndescriptor-uuid (workshop-descriptor ws))) out))))
+               :uuid (pndescriptor-uuid wdesc)) out))))
 
 (defun save-workshop-manifest (ws)
   (validate-workshop-path (pndescriptor-path (workshop-descriptor ws)))

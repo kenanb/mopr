@@ -11,7 +11,7 @@
 (defun pndesc-alist-assoc (desc-alist lookup-type lookup-val)
   (let ((lookup-fn (case lookup-type
                      (:desc #'%desc-alist-assoc-by-desc)
-                     (:data #'%desc-alist-assoc-by-data)
+                     (:info #'%desc-alist-assoc-by-info)
                      (:uuid #'%desc-alist-assoc-by-uuid)
                      (:path #'%desc-alist-assoc-by-path)
                      (otherwise (error "Unknown PNDESC-ALIST lookup type!")))))
