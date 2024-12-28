@@ -42,10 +42,9 @@
 
    ;; WORKSHOP
 
-   #:workshop
-   #:workshop-descriptor
-   #:workshop-projects
-   #:workshop-project-assignments
+   #:workshop-info
+   #:workshop-info-projects
+   #:workshop-info-sessions
    #:workshop-set-lock-state-or-fail
    #:load-workshop-manifest
    ;; #:save-workshop-manifest

@@ -15,7 +15,7 @@
 
    #:ws-descriptor
    #:ws-projects
-   #:ws-project-assignments
+   #:ws-sessions
    #:ws-create-project
    #:ws-acquire-project
    #:ws-release-project

@@ -3,27 +3,21 @@
 
 (in-package #:mopr-res)
 
-(defclass workshop ()
-  ((descriptor
-    :type pndescriptor
-    :initarg :descriptor
-    :initform (error "WORKSHOP cannot be initialized without a descriptor!")
-    :reader workshop-descriptor
-    :documentation "Descriptor path is the absolute path of the workshop directory.")
-   (projects
+(defclass workshop-info ()
+  ((projects
     :type list
     :initarg :projects
     :initform nil
-    :accessor workshop-projects
+    :accessor workshop-info-projects
     :documentation "An alist of project DESCRIPTOR to PROJECT mappings.
 Descriptor path is a workshop-relative path of the project directory.")
-   (project-assignments
+   (sessions
     :type hash-table
     :initform (make-hash-table :test 'equal)
-    :accessor workshop-project-assignments
+    :accessor workshop-info-sessions
     :documentation "An alist of project UUID to the ID of client
 (currently assigned to project) mappings."))
-  (:documentation "WORKSHOP
+  (:documentation "WORKSHOP-INFO
 
 A workshop is mainly an abstraction over a filesystem directory that is a
 container of projects.
@@ -103,18 +97,18 @@ specific workshop. This will be (mostly) guaranteed at the SINGLETON level.
                                 &rest ctor-kwargs &key &allow-other-keys)
   (unless (relative-pathname-p rfile-rel)
     (error "PROJECT-CREATE-RESOURCE requires a relative directory!"))
-  (validate-project-path (desc-chain-as-path pchain))
-  (let* ((rdesc (make-pndescriptor-for-file :resource rfile-rel))
-         (rchain (mopr-uri:conc-desc-chains pchain (mopr-uri:make-desc-chain rdesc)))
-         (rpath-full (desc-chain-as-path rchain :file-expected-p t))
-         (res (apply #'make-resource ctor-kwargs)))
-    (when (pndesc-alist-assoc (project-resources proj)
-                              :path (pndescriptor-path rdesc))
-      (error "This resource path was already registered!"))
-    (ensure-all-directories-exist (list rpath-full))
-    (setf (project-resources proj) (acons rdesc res (project-resources proj)))
-    (save-project-manifest pchain proj)
-    (pndescriptor-uuid rdesc)))
+  (with-accessors ((presources project-resources)) proj
+    (validate-project-path (desc-chain-as-path pchain))
+    (let* ((rdesc (make-pndescriptor-for-file :resource rfile-rel))
+           (rchain (mopr-uri:conc-desc-chains pchain (mopr-uri:make-desc-chain rdesc)))
+           (rpath-full (desc-chain-as-path rchain :file-expected-p t))
+           (res (apply #'make-resource ctor-kwargs)))
+      (when (pndesc-alist-assoc presources :path (pndescriptor-path rdesc))
+        (error "This resource path was already registered!"))
+      (ensure-all-directories-exist (list rpath-full))
+      (setf presources (acons rdesc res presources))
+      (save-project-manifest pchain proj)
+      (pndescriptor-uuid rdesc))))
 
 (defun project-get-resource (proj lookup-type lookup-val)
   (let ((sanitized-val (case lookup-type
@@ -123,8 +117,9 @@ specific workshop. This will be (mostly) guaranteed at the SINGLETON level.
                          (otherwise lookup-val))))
     (pndesc-alist-assoc (project-resources proj) lookup-type sanitized-val)))
 
-(defun workshop-create-project (ws pdir-rel
-                                &rest ctor-kwargs &key &allow-other-keys)
+(defun workshop-create-project (wcons pdir-rel
+                                &rest ctor-kwargs &key &allow-other-keys
+                                &aux (wdesc (car wcons)) (winfo (cdr wcons)))
   "WORKSHOP-CREATE-PROJECT
 
 Utility function to setup a new project in workshop, at given workshop-relative
@@ -143,50 +138,50 @@ WORKSHOP-ACQUIRE-PROJECT once this call succeeds.
 "
   (unless (relative-pathname-p pdir-rel)
     (error "WORKSHOP-CREATE-PROJECT requires a relative directory!"))
-  (with-accessors ((wdesc workshop-descriptor)
-                   (wprojects workshop-projects)) ws
+  (with-accessors ((wprojects workshop-info-projects)) winfo
     (validate-workshop-path (pndescriptor-path wdesc))
     (let* ((pdesc (make-pndescriptor-for-directory :project pdir-rel))
            (pchain (mopr-uri:make-desc-chain wdesc pdesc))
            (ppath-full (desc-chain-as-path pchain))
            (proj (apply #'make-project ctor-kwargs)))
-      (when (pndesc-alist-assoc (workshop-projects ws)
-                                :path (pndescriptor-path pdesc))
+      (when (pndesc-alist-assoc wprojects :path (pndescriptor-path pdesc))
         (error "This project path was already registered!"))
       (ensure-all-directories-exist (list ppath-full))
       (save-project-manifest-unchecked ppath-full proj)
       (setf wprojects (acons pdesc proj wprojects))
-      (save-workshop-manifest-unchecked ws)
+      (save-workshop-manifest-unchecked wcons)
       (pndescriptor-uuid pdesc))))
 
-(defun workshop-acquire-project (ws lookup-type lookup-val session-id)
+(defun workshop-acquire-project (wcons lookup-type lookup-val session-id
+                                 &aux (winfo (cdr wcons)))
   (let* ((sanitized-val (case lookup-type
                           (:path (ensure-directory-pathname lookup-val))
                           (otherwise lookup-val)))
-         (pcons (pndesc-alist-assoc (workshop-projects ws) lookup-type sanitized-val)))
+         (pcons (pndesc-alist-assoc (workshop-info-projects winfo) lookup-type sanitized-val)))
     (unless pcons (error "Attempted to acquire unknown project!"))
     (let* ((pdesc (car pcons))
            (puuid (pndescriptor-uuid pdesc))
-           (current-id (gethash puuid (workshop-project-assignments ws))))
+           (current-id (gethash puuid (workshop-info-sessions winfo))))
       (if current-id
           (if (equal current-id session-id)
               (error "Attempted to acquire project already acquired by this session!")
               nil)
           (prog1 pcons
-            (setf (gethash puuid (workshop-project-assignments ws)) session-id))))))
+            (setf (gethash puuid (workshop-info-sessions winfo)) session-id))))))
 
-(defun workshop-release-project (ws lookup-type lookup-val session-id)
+(defun workshop-release-project (wcons lookup-type lookup-val session-id
+                                 &aux (winfo (cdr wcons)))
   (let* ((sanitized-val (case lookup-type
                           (:path (ensure-directory-pathname lookup-val))
                           (otherwise lookup-val)))
-         (pcons (pndesc-alist-assoc (workshop-projects ws) lookup-type sanitized-val)))
+         (pcons (pndesc-alist-assoc (workshop-info-projects winfo) lookup-type sanitized-val)))
     (unless pcons (error "Attempted to release unknown project!"))
     (let* ((pdesc (car pcons))
            (puuid (pndescriptor-uuid pdesc))
-           (current-id (gethash puuid (workshop-project-assignments ws))))
+           (current-id (gethash puuid (workshop-info-sessions winfo))))
       (if current-id
           (if (equal current-id session-id)
-              (remhash puuid (workshop-project-assignments ws))
+              (remhash puuid (workshop-info-sessions winfo))
               (error "Attempted to release project acquired by another session!"))
           (error "Attempted to release project that was not acquired!")))))
 
@@ -198,8 +193,8 @@ WORKSHOP-ACQUIRE-PROJECT once this call succeeds.
 (defconstant +workshop-lockfile-acquired-string+ "MOPR_WORKSHOP_LOCK_ACQUIRED")
 (defconstant +workshop-lockfile-released-string+ "MOPR_WORKSHOP_LOCK_RELEASED")
 
-(defun workshop-get-lockfile-state-unchecked (ws)
-  (let* ((wpath (pndescriptor-path (workshop-descriptor ws)))
+(defun workshop-get-lockfile-state-unchecked (wcons &aux (wdesc (car wcons)))
+  (let* ((wpath (pndescriptor-path wdesc))
          (lockfile-path (get-workshop-lockfile-path wpath))
          (lock-state-string (with-safe-io-syntax () (read-file-string lockfile-path))))
     (cond
@@ -207,8 +202,8 @@ WORKSHOP-ACQUIRE-PROJECT once this call succeeds.
       ((string= +workshop-lockfile-released-string+ lock-state-string) :released)
       (t (error "Unexpected lockfile state value found!")))))
 
-(defun workshop-set-lockfile-state-unchecked (ws state)
-  (let* ((wpath (pndescriptor-path (workshop-descriptor ws)))
+(defun workshop-set-lockfile-state-unchecked (wcons state &aux (wdesc (car wcons)))
+  (let* ((wpath (pndescriptor-path wdesc))
          (lockfile-path (get-workshop-lockfile-path wpath))
          (state-string
            (case state
@@ -221,11 +216,11 @@ WORKSHOP-ACQUIRE-PROJECT once this call succeeds.
       (with-safe-io-syntax () (princ state-string out))))
   state)
 
-(defun workshop-set-lock-state-or-fail (ws requested)
-  (validate-workshop-path (pndescriptor-path (workshop-descriptor ws)))
-  (when (eql requested (workshop-get-lockfile-state-unchecked ws))
+(defun workshop-set-lock-state-or-fail (wcons requested &aux (wdesc (car wcons)))
+  (validate-workshop-path (pndescriptor-path wdesc))
+  (when (eql requested (workshop-get-lockfile-state-unchecked wcons))
     (error "Attempted to set the value to existing lockfile value!"))
-  (workshop-set-lockfile-state-unchecked ws requested))
+  (workshop-set-lockfile-state-unchecked wcons requested))
 
 ;; Manifest Handling
 
@@ -242,26 +237,26 @@ WORKSHOP-ACQUIRE-PROJECT once this call succeeds.
            (pdesc-list (getf manifest :projects))
            (wdesc (make-pndescriptor :role :workshop :uuid wuuid :path wpath))
            (wprojects (load-project-manifest-list-unchecked wdesc pdesc-list)))
-      (make-instance 'workshop :descriptor wdesc :projects wprojects))))
+      (cons wdesc (make-instance 'workshop-info :projects wprojects)))))
 
 (defun load-workshop-manifest (directory
                                &aux (wpath (ensure-directory-pathname directory)))
   (validate-workshop-path wpath)
   (load-workshop-manifest-unchecked wpath))
 
-(defun save-workshop-manifest-unchecked (ws &aux (wdesc (workshop-descriptor ws))
-                                              (read-pkg (get-read-package)))
+(defun save-workshop-manifest-unchecked (wcons &aux (read-pkg (get-read-package))
+                                                 (wdesc (car wcons)) (winfo (cdr wcons)))
   (with-open-file (out (get-workshop-manifest-path (pndescriptor-path wdesc))
                        :direction :output
                        :if-exists :supersede)
     (with-manifest-io-syntax (:read-pkg read-pkg)
       (pprint (list
-               :projects (mapcar #'car (workshop-projects ws))
+               :projects (mapcar #'car (workshop-info-projects winfo))
                :uuid (pndescriptor-uuid wdesc)) out))))
 
-(defun save-workshop-manifest (ws)
-  (validate-workshop-path (pndescriptor-path (workshop-descriptor ws)))
-  (save-workshop-manifest-unchecked ws))
+(defun save-workshop-manifest (wcons &aux (wdesc (car wcons)))
+  (validate-workshop-path (pndescriptor-path wdesc))
+  (save-workshop-manifest-unchecked wcons))
 
 ;; Workshop Setup
 
@@ -292,12 +287,12 @@ This call doesn't create the workshop directory itself, because:
   (unless (absolute-pathname-p wdir-abs)
     (error "MAKE-WORKSHOP requires an absolute directory!"))
   (let* ((wdesc (make-pndescriptor-for-directory :workshop wdir-abs))
-         (ws (make-instance 'workshop :descriptor wdesc))
+         (wcons (cons wdesc (make-instance 'workshop-info)))
          (wpath (pndescriptor-path wdesc)))
     (unless (directory-exists-p wpath)
       (error "SETUP-WORKSHOP requires the workshop directory to already exist."))
     (when (or (subdirectories wpath) (directory-files wpath))
       (error "SETUP-WORKSHOP requires the workshop directory to be initially empty."))
-    (save-workshop-manifest-unchecked ws)
-    (workshop-set-lockfile-state-unchecked ws :released)
+    (save-workshop-manifest-unchecked wcons)
+    (workshop-set-lockfile-state-unchecked wcons :released)
     (pndescriptor-uuid wdesc)))
