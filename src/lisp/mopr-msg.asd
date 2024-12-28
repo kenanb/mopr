@@ -12,6 +12,7 @@ mainly in Lisp. UNTESTED. DO NOT USE!"
   :depends-on
   (#:mopr-res
    #:mopr-sgt
+   #:mopr-uri
    #:bordeaux-threads)
 
   :pathname "msg"

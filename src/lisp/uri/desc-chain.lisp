@@ -14,6 +14,11 @@ e.g URI paths.
 "
   (contents nil :type list))
 
+(defun conc-desc-chains (&rest chains &aux (new-chain (make-desc-chain)))
+  (prog1 new-chain
+    (setf (desc-chain-contents new-chain)
+          (apply #'concatenate 'list (mapcar #'desc-chain-contents chains)))))
+
 (defun desc-chain-as-uuid (chain)
   "DESC-CHAIN-AS-UUID
 

@@ -83,9 +83,8 @@ specific workshop. This will be (mostly) guaranteed at the SINGLETON level.
   (with-open-file (in (get-project-manifest-path ppath-full))
     (with-manifest-io-syntax (:read-pkg read-pkg) (read in nil))))
 
-(defun load-project-manifest (wdesc pdesc
-                              &aux (ppath-full (desc-chain-as-path
-                                                (mopr-uri:make-desc-chain wdesc pdesc))))
+(defun load-project-manifest (pchain
+                              &aux (ppath-full (desc-chain-as-path pchain)))
   (validate-project-path ppath-full)
   (load-project-manifest-unchecked ppath-full))
 
@@ -95,27 +94,26 @@ specific workshop. This will be (mostly) guaranteed at the SINGLETON level.
                        :if-exists :supersede)
     (with-manifest-io-syntax (:read-pkg read-pkg) (pprint proj out))))
 
-(defun save-project-manifest (wdesc pdesc proj
-                              &aux (ppath-full (desc-chain-as-path
-                                                (mopr-uri:make-desc-chain wdesc pdesc))))
+(defun save-project-manifest (pchain proj
+                              &aux (ppath-full (desc-chain-as-path pchain)))
   (validate-project-path ppath-full)
   (save-project-manifest-unchecked ppath-full proj))
 
-(defun project-create-resource (wdesc pdesc proj rfile-rel
+(defun project-create-resource (proj pchain rfile-rel
                                 &rest ctor-kwargs &key &allow-other-keys)
   (unless (relative-pathname-p rfile-rel)
     (error "PROJECT-CREATE-RESOURCE requires a relative directory!"))
-  (validate-project-path (desc-chain-as-path (mopr-uri:make-desc-chain wdesc pdesc)))
+  (validate-project-path (desc-chain-as-path pchain))
   (let* ((rdesc (make-pndescriptor-for-file :resource rfile-rel))
-         (rpath-full (desc-chain-as-path (mopr-uri:make-desc-chain wdesc pdesc rdesc)
-                                         :file-expected-p t))
+         (rchain (mopr-uri:conc-desc-chains pchain (mopr-uri:make-desc-chain rdesc)))
+         (rpath-full (desc-chain-as-path rchain :file-expected-p t))
          (res (apply #'make-resource ctor-kwargs)))
     (when (pndesc-alist-assoc (project-resources proj)
                               :path (pndescriptor-path rdesc))
       (error "This resource path was already registered!"))
     (ensure-all-directories-exist (list rpath-full))
     (setf (project-resources proj) (acons rdesc res (project-resources proj)))
-    (save-project-manifest wdesc pdesc proj)
+    (save-project-manifest pchain proj)
     (pndescriptor-uuid rdesc)))
 
 (defun project-get-resource (proj lookup-type lookup-val)
@@ -149,7 +147,8 @@ WORKSHOP-ACQUIRE-PROJECT once this call succeeds.
                    (wprojects workshop-projects)) ws
     (validate-workshop-path (pndescriptor-path wdesc))
     (let* ((pdesc (make-pndescriptor-for-directory :project pdir-rel))
-           (ppath-full (desc-chain-as-path (mopr-uri:make-desc-chain wdesc pdesc)))
+           (pchain (mopr-uri:make-desc-chain wdesc pdesc))
+           (ppath-full (desc-chain-as-path pchain))
            (proj (apply #'make-project ctor-kwargs)))
       (when (pndesc-alist-assoc (workshop-projects ws)
                                 :path (pndescriptor-path pdesc))
@@ -230,15 +229,19 @@ WORKSHOP-ACQUIRE-PROJECT once this call succeeds.
 
 ;; Manifest Handling
 
+(defun load-project-manifest-list-unchecked (wdesc pdesc-list)
+  (flet ((load-pmanifest (pdesc)
+           (cons pdesc (load-project-manifest
+                        (mopr-uri:make-desc-chain wdesc pdesc)))))
+    (mapcar #'load-pmanifest pdesc-list)))
+
 (defun load-workshop-manifest-unchecked (wpath &aux (read-pkg (get-read-package)))
   (with-open-file (in (get-workshop-manifest-path wpath))
     (let* ((manifest (with-manifest-io-syntax (:read-pkg read-pkg) (read in nil)))
            (wuuid (getf manifest :uuid))
+           (pdesc-list (getf manifest :projects))
            (wdesc (make-pndescriptor :role :workshop :uuid wuuid :path wpath))
-           (wprojects (mapcar (lambda (pdesc)
-                                (cons pdesc
-                                      (load-project-manifest wdesc pdesc)))
-                              (getf manifest :projects))))
+           (wprojects (load-project-manifest-list-unchecked wdesc pdesc-list)))
       (make-instance 'workshop :descriptor wdesc :projects wprojects))))
 
 (defun load-workshop-manifest (directory

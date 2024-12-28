@@ -28,6 +28,7 @@
                 #:parse-unix-namestring)
 
   (:import-from :mopr-uri
+                #:%desc-alist-assoc-by-desc
                 #:%desc-alist-assoc-by-data
                 #:%desc-alist-assoc-by-uuid)
 

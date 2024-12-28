@@ -22,12 +22,14 @@
    #:desc-chain-p
    #:desc-chain
    #:desc-chain-contents
+   #:conc-desc-chains
    #:desc-chain-as-uuid
 
    ;; DESC-ALIST
    #:desc-alist-assoc
 
    ;; Below are only exposed to use in DESCRIPTOR extensions.
+   #:%desc-alist-assoc-by-desc
    #:%desc-alist-assoc-by-data
    #:%desc-alist-assoc-by-uuid
 
