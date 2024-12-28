@@ -3,8 +3,8 @@
 
 (in-package #:mopr-res)
 
-(defstruct entity
-  "ENTITY
+(defstruct entity-info
+  "ENTITY-INFO
 
 Base class of workshop content.
 "
@@ -14,8 +14,8 @@ Base class of workshop content.
   (description ""
    :type string))
 
-(defstruct (resource (:include entity))
-  "RESOURCE
+(defstruct (resource-info (:include entity-info))
+  "RESOURCE-INFO
 
 A resource is mainly an abstraction over a file. Resources can be procedures,
 scene description and other media.
@@ -23,8 +23,8 @@ scene description and other media.
   (content-type :source
    :type keyword))
 
-(defstruct (project (:include entity))
-  "PROJECT
+(defstruct (project-info (:include entity-info))
+  "PROJECT-INFO
 
 A project is mainly an abstraction over a filesystem directory that is a
 container of resources.

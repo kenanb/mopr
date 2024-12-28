@@ -9,7 +9,7 @@
     :initarg :projects
     :initform nil
     :accessor workshop-info-projects
-    :documentation "An alist of project DESCRIPTOR to PROJECT mappings.
+    :documentation "An alist of project DESCRIPTOR to PROJECT-INFO mappings.
 Descriptor path is a workshop-relative path of the project directory.")
    (sessions
     :type hash-table
@@ -82,40 +82,40 @@ specific workshop. This will be (mostly) guaranteed at the SINGLETON level.
   (validate-project-path ppath-full)
   (load-project-manifest-unchecked ppath-full))
 
-(defun save-project-manifest-unchecked (ppath-full proj &aux (read-pkg (get-read-package)))
+(defun save-project-manifest-unchecked (ppath-full pinfo &aux (read-pkg (get-read-package)))
   (with-open-file (out (get-project-manifest-path ppath-full)
                        :direction :output
                        :if-exists :supersede)
-    (with-manifest-io-syntax (:read-pkg read-pkg) (pprint proj out))))
+    (with-manifest-io-syntax (:read-pkg read-pkg) (pprint pinfo out))))
 
-(defun save-project-manifest (pchain proj
+(defun save-project-manifest (pchain pinfo
                               &aux (ppath-full (desc-chain-as-path pchain)))
   (validate-project-path ppath-full)
-  (save-project-manifest-unchecked ppath-full proj))
+  (save-project-manifest-unchecked ppath-full pinfo))
 
-(defun project-create-resource (proj pchain rfile-rel
+(defun project-create-resource (pchain pinfo rfile-rel
                                 &rest ctor-kwargs &key &allow-other-keys)
   (unless (relative-pathname-p rfile-rel)
     (error "PROJECT-CREATE-RESOURCE requires a relative directory!"))
-  (with-accessors ((presources project-resources)) proj
+  (with-accessors ((presources project-info-resources)) pinfo
     (validate-project-path (desc-chain-as-path pchain))
     (let* ((rdesc (make-pndescriptor-for-file :resource rfile-rel))
            (rchain (mopr-uri:conc-desc-chains pchain (mopr-uri:make-desc-chain rdesc)))
            (rpath-full (desc-chain-as-path rchain :file-expected-p t))
-           (res (apply #'make-resource ctor-kwargs)))
+           (rinfo (apply #'make-resource-info ctor-kwargs)))
       (when (pndesc-alist-assoc presources :path (pndescriptor-path rdesc))
         (error "This resource path was already registered!"))
       (ensure-all-directories-exist (list rpath-full))
-      (setf presources (acons rdesc res presources))
-      (save-project-manifest pchain proj)
+      (setf presources (acons rdesc rinfo presources))
+      (save-project-manifest pchain pinfo)
       (pndescriptor-uuid rdesc))))
 
-(defun project-get-resource (proj lookup-type lookup-val)
+(defun project-get-resource (pinfo lookup-type lookup-val)
   (let ((sanitized-val (case lookup-type
                          (:path (or (file-pathname-p lookup-val)
                                     (error "Bad input for resource query!")))
                          (otherwise lookup-val))))
-    (pndesc-alist-assoc (project-resources proj) lookup-type sanitized-val)))
+    (pndesc-alist-assoc (project-info-resources pinfo) lookup-type sanitized-val)))
 
 (defun workshop-create-project (wcons pdir-rel
                                 &rest ctor-kwargs &key &allow-other-keys
@@ -132,9 +132,9 @@ missing the '/' suffix.
 
 This call won't try to acquire (the lock for) the project it is populating,
 from the workshop.  It is a utility function that is expected to be called
-very rarely. But since it doesn't lock, it also does NOT return a PROJECT
-instance. If needed, the caller should acquire the project using
-WORKSHOP-ACQUIRE-PROJECT once this call succeeds.
+very rarely. But since it doesn't lock, it also does NOT return a
+PROJECT-INFO instance. If needed, the caller should acquire the project
+using WORKSHOP-ACQUIRE-PROJECT once this call succeeds.
 "
   (unless (relative-pathname-p pdir-rel)
     (error "WORKSHOP-CREATE-PROJECT requires a relative directory!"))
@@ -143,12 +143,12 @@ WORKSHOP-ACQUIRE-PROJECT once this call succeeds.
     (let* ((pdesc (make-pndescriptor-for-directory :project pdir-rel))
            (pchain (mopr-uri:make-desc-chain wdesc pdesc))
            (ppath-full (desc-chain-as-path pchain))
-           (proj (apply #'make-project ctor-kwargs)))
+           (pinfo (apply #'make-project-info ctor-kwargs)))
       (when (pndesc-alist-assoc wprojects :path (pndescriptor-path pdesc))
         (error "This project path was already registered!"))
       (ensure-all-directories-exist (list ppath-full))
-      (save-project-manifest-unchecked ppath-full proj)
-      (setf wprojects (acons pdesc proj wprojects))
+      (save-project-manifest-unchecked ppath-full pinfo)
+      (setf wprojects (acons pdesc pinfo wprojects))
       (save-workshop-manifest-unchecked wcons)
       (pndescriptor-uuid pdesc))))
 
@@ -239,8 +239,8 @@ WORKSHOP-ACQUIRE-PROJECT once this call succeeds.
            (wprojects (load-project-manifest-list-unchecked wdesc pdesc-list)))
       (cons wdesc (make-instance 'workshop-info :projects wprojects)))))
 
-(defun load-workshop-manifest (directory
-                               &aux (wpath (ensure-directory-pathname directory)))
+(defun load-workshop-manifest (wdir-abs
+                               &aux (wpath (ensure-directory-pathname wdir-abs)))
   (validate-workshop-path wpath)
   (load-workshop-manifest-unchecked wpath))
 
