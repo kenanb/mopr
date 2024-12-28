@@ -17,8 +17,12 @@
    #:descriptor-role
    #:descriptor-uuid
 
-   ;; DESC-STACK
-   #:rchain-descriptor-uuids
+   ;; DESC-CHAIN
+   #:make-desc-chain
+   #:desc-chain-p
+   #:desc-chain
+   #:desc-chain-contents
+   #:desc-chain-as-uuid
 
    ;; DESC-ALIST
    #:desc-alist-assoc

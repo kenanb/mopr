@@ -21,5 +21,5 @@ mainly in Lisp. UNTESTED. DO NOT USE!"
     :depends-on ("package"))
    (:file "desc-alist"
     :depends-on ("package" "descriptor"))
-   (:file "desc-stack"
+   (:file "desc-chain"
     :depends-on ("package" "descriptor"))))

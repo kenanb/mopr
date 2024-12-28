@@ -23,11 +23,11 @@ mainly in Lisp. UNTESTED. DO NOT USE!"
     :depends-on ("package"))
    (:file "pndesc-alist"
     :depends-on ("package" "pndescriptor"))
-   (:file "pndesc-stack"
+   (:file "pndesc-chain"
     :depends-on ("package" "pndescriptor"))
    (:file "workshop"
     :depends-on ("package"
                  "entity"
                  "pndescriptor"
                  "pndesc-alist"
-                 "pndesc-stack"))))
+                 "pndesc-chain"))))

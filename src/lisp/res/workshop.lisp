@@ -84,7 +84,8 @@ specific workshop. This will be (mostly) guaranteed at the SINGLETON level.
     (with-manifest-io-syntax (:read-pkg read-pkg) (read in nil))))
 
 (defun load-project-manifest (wdesc pdesc
-                              &aux (ppath-full (rchain-pndescriptor-paths (list pdesc wdesc))))
+                              &aux (ppath-full (desc-chain-as-path
+                                                (mopr-uri:make-desc-chain wdesc pdesc))))
   (validate-project-path ppath-full)
   (load-project-manifest-unchecked ppath-full))
 
@@ -95,7 +96,8 @@ specific workshop. This will be (mostly) guaranteed at the SINGLETON level.
     (with-manifest-io-syntax (:read-pkg read-pkg) (pprint proj out))))
 
 (defun save-project-manifest (wdesc pdesc proj
-                              &aux (ppath-full (rchain-pndescriptor-paths (list pdesc wdesc))))
+                              &aux (ppath-full (desc-chain-as-path
+                                                (mopr-uri:make-desc-chain wdesc pdesc))))
   (validate-project-path ppath-full)
   (save-project-manifest-unchecked ppath-full proj))
 
@@ -103,10 +105,10 @@ specific workshop. This will be (mostly) guaranteed at the SINGLETON level.
                                 &rest ctor-kwargs &key &allow-other-keys)
   (unless (relative-pathname-p rfile-rel)
     (error "PROJECT-CREATE-RESOURCE requires a relative directory!"))
-  (validate-project-path (rchain-pndescriptor-paths (list pdesc wdesc)))
+  (validate-project-path (desc-chain-as-path (mopr-uri:make-desc-chain wdesc pdesc)))
   (let* ((rdesc (make-pndescriptor-for-file :resource rfile-rel))
-         (rpath-full (rchain-pndescriptor-paths (list rdesc pdesc wdesc)
-                                                :file-expected-p t))
+         (rpath-full (desc-chain-as-path (mopr-uri:make-desc-chain wdesc pdesc rdesc)
+                                         :file-expected-p t))
          (res (apply #'make-resource ctor-kwargs)))
     (when (pndesc-alist-assoc (project-resources proj)
                               :path (pndescriptor-path rdesc))
@@ -147,7 +149,7 @@ WORKSHOP-ACQUIRE-PROJECT once this call succeeds.
                    (wprojects workshop-projects)) ws
     (validate-workshop-path (pndescriptor-path wdesc))
     (let* ((pdesc (make-pndescriptor-for-directory :project pdir-rel))
-           (ppath-full (rchain-pndescriptor-paths (list pdesc wdesc)))
+           (ppath-full (desc-chain-as-path (mopr-uri:make-desc-chain wdesc pdesc)))
            (proj (apply #'make-project ctor-kwargs)))
       (when (pndesc-alist-assoc (workshop-projects ws)
                                 :path (pndescriptor-path pdesc))
