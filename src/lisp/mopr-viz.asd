@@ -15,7 +15,7 @@
    #:cl-autowrap
    #:cl-plus-c)
 
-  :pathname "gui"
+  :pathname "viz"
 
   :components
   ((:module #:layout
