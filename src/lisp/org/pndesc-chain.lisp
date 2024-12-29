@@ -1,7 +1,7 @@
 ;;;; -*- Mode: LISP; Syntax: COMMON-LISP; Package: CL-USER -*-
 ;;
 
-(in-package #:mopr-res)
+(in-package #:mopr-org)
 
 ;; See: MOPR-URI:DESC-CHAIN. Besides participating in URIs, PNDESCRIPTOR is also
 ;; used to refer to filesystem paths.

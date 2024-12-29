@@ -1,7 +1,7 @@
 ;;;; -*- Mode: LISP; Syntax: COMMON-LISP; Package: ASDF-USER -*-
 ;;
 
-(defsystem #:mopr-res
+(defsystem #:mopr-org
   :version "0.0.1"
   :author "Kenan Bölükbaşı"
   :license "BSD-3-Clause"
@@ -13,7 +13,7 @@ mainly in Lisp. UNTESTED. DO NOT USE!"
   (#:mopr-uri
    #:uiop)
 
-  :pathname "res"
+  :pathname "org"
 
   :components
   ((:file "package")

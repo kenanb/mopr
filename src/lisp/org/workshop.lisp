@@ -1,7 +1,7 @@
 ;;;; -*- Mode: LISP; Syntax: COMMON-LISP; Package: CL-USER -*-
 ;;
 
-(in-package #:mopr-res)
+(in-package #:mopr-org)
 
 (defclass workshop-info ()
   ((projects

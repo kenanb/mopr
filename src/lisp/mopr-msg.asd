@@ -10,7 +10,7 @@
 mainly in Lisp. UNTESTED. DO NOT USE!"
 
   :depends-on
-  (#:mopr-res
+  (#:mopr-org
    #:mopr-sgt
    #:mopr-uri
    #:bordeaux-threads)

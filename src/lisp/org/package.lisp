@@ -3,7 +3,7 @@
 
 (in-package :cl-user)
 
-(defpackage :mopr-res
+(defpackage :mopr-org
   (:use #:cl)
   (:import-from :uiop/stream
                 #:read-file-string
