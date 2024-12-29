@@ -1,7 +1,7 @@
 ;;;; -*- Mode: LISP; Syntax: COMMON-LISP; Package: ASDF-USER -*-
 ;;
 
-(defsystem #:mopr-gui
+(defsystem #:mopr-viz
   :version "0.0.1"
   :author "Kenan Bölükbaşı"
   :license "BSD-3-Clause"
@@ -55,12 +55,12 @@
      (:file "repr"
       :depends-on ("shared" "rdata" "rnode" "ffi"))))))
 
-(register-system-packages "mopr-gui"
-                          '(:mopr-gui/repr-def
-                            :mopr-gui/repr-ffi
-                            :mopr-gui/repr-fun
-                            :mopr-gui/repr-shared
-                            :mopr-gui/repr-testing
-                            :mopr-gui/repr-rdata
-                            :mopr-gui/repr-rnode
-                            :mopr-gui/repr))
+(register-system-packages "mopr-viz"
+                          '(:mopr-viz/repr-def
+                            :mopr-viz/repr-ffi
+                            :mopr-viz/repr-fun
+                            :mopr-viz/repr-shared
+                            :mopr-viz/repr-testing
+                            :mopr-viz/repr-rdata
+                            :mopr-viz/repr-rnode
+                            :mopr-viz/repr))

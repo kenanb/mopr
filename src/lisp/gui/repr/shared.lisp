@@ -3,12 +3,12 @@
 
 (in-package :cl-user)
 
-(defpackage :mopr-gui/repr-shared
+(defpackage :mopr-viz/repr-shared
   (:use :cl)
   (:export
    #:multiple-set-c-ref))
 
-(in-package :mopr-gui/repr-shared)
+(in-package :mopr-viz/repr-shared)
 
 (defmacro multiple-set-c-ref (obj accessor &rest key-value-plist)
   `(progn

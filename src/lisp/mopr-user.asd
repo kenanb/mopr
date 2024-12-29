@@ -18,7 +18,7 @@
   (#:mopr-usd
    #:mopr-sgt
    #:mopr-exe
-   #:mopr-gui
+   #:mopr-viz
    ;; ENABLED PLUGIN LIST:
    ;;
    ;; Begin

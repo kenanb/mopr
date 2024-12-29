@@ -25,7 +25,7 @@ unsigned int
     cl_object rootNode_l =
      cl_funcall( 4, symFnRead_l, hLayer_l, strFileName_l, callEnabled ? ECL_T : ECL_NIL );
 
-    cl_object symFnBind_l = getSymbol( "MOPR-GUI/REPR", "BIND-REPR" );
+    cl_object symFnBind_l = getSymbol( "MOPR-VIZ/REPR", "BIND-REPR" );
 
     cl_funcall( 2, symFnBind_l, rootNode_l );
 
@@ -35,7 +35,7 @@ unsigned int
 unsigned int
  Client_ECL_initRepr( )
 {
-    cl_object symFn_l = getSymbol( "MOPR-GUI/REPR", "INIT-REPR" );
+    cl_object symFn_l = getSymbol( "MOPR-VIZ/REPR", "INIT-REPR" );
 
     cl_funcall( 1, symFn_l );
     return 0;
@@ -44,7 +44,7 @@ unsigned int
 unsigned int
  Client_ECL_termRepr( )
 {
-    cl_object symFn_l = getSymbol( "MOPR-GUI/REPR", "TERM-REPR" );
+    cl_object symFn_l = getSymbol( "MOPR-VIZ/REPR", "TERM-REPR" );
 
     cl_funcall( 1, symFn_l );
     return 0;
@@ -53,7 +53,7 @@ unsigned int
 unsigned int
  Client_ECL_populateCommandQueue( CommandQueue * queue )
 {
-    cl_object symFn_l = getSymbol( "MOPR-GUI/REPR", "POPULATE-COMMAND-QUEUE" );
+    cl_object symFn_l = getSymbol( "MOPR-VIZ/REPR", "POPULATE-COMMAND-QUEUE" );
 
     cl_object hQueue_l = ecl_make_pointer( queue );
 
@@ -64,7 +64,7 @@ unsigned int
 unsigned int
  Client_ECL_destructCommandQueue( CommandQueue * queue )
 {
-    cl_object symFn_l = getSymbol( "MOPR-GUI/REPR", "DESTRUCT-COMMAND-QUEUE" );
+    cl_object symFn_l = getSymbol( "MOPR-VIZ/REPR", "DESTRUCT-COMMAND-QUEUE" );
 
     cl_object hQueue_l = ecl_make_pointer( queue );
 
@@ -77,7 +77,7 @@ unsigned int
                                     unsigned int id,
                                     unsigned int idSub )
 {
-    cl_object symFn_l = getSymbol( "MOPR-GUI/REPR", "POPULATE-COMMAND-OPTIONS" );
+    cl_object symFn_l = getSymbol( "MOPR-VIZ/REPR", "POPULATE-COMMAND-OPTIONS" );
 
     cl_object id_l = ecl_make_unsigned_integer( id );
     cl_object idSub_l = ecl_make_unsigned_integer( idSub );
@@ -90,7 +90,7 @@ unsigned int
 unsigned int
  Client_ECL_destructCommandOptions( CommandOptions * options )
 {
-    cl_object symFn_l = getSymbol( "MOPR-GUI/REPR", "DESTRUCT-COMMAND-OPTIONS" );
+    cl_object symFn_l = getSymbol( "MOPR-VIZ/REPR", "DESTRUCT-COMMAND-OPTIONS" );
 
     cl_object hOptions_l = ecl_make_pointer( options );
 
@@ -101,7 +101,7 @@ unsigned int
 unsigned int
  Client_ECL_applyOption( unsigned int id, unsigned int idSub, unsigned int idOpt )
 {
-    cl_object symFn_l = getSymbol( "MOPR-GUI/REPR", "APPLY-COMMAND-OPTION" );
+    cl_object symFn_l = getSymbol( "MOPR-VIZ/REPR", "APPLY-COMMAND-OPTION" );
 
     cl_object id_l = ecl_make_unsigned_integer( id );
     cl_object idSub_l = ecl_make_unsigned_integer( idSub );

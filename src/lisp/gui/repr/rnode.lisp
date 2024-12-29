@@ -3,10 +3,10 @@
 
 (in-package :cl-user)
 
-(defpackage :mopr-gui/repr-rnode
-  (:import-from :mopr-gui/repr-shared
+(defpackage :mopr-viz/repr-rnode
+  (:import-from :mopr-viz/repr-shared
                 #:multiple-set-c-ref)
-  (:import-from :mopr-gui/repr-rdata)
+  (:import-from :mopr-viz/repr-rdata)
   (:use :mopr-sgt)
   (:use :cl)
   (:export
@@ -17,7 +17,7 @@
 
    ))
 
-(in-package :mopr-gui/repr-rnode)
+(in-package :mopr-viz/repr-rnode)
 
 (defvar *fill-column* 70)
 
@@ -43,11 +43,11 @@
     :accessor rnode-rdatas)))
 
 (defmethod mopr-sgt:enode-procedure-init-component-unchecked (pr (cc (eql 'rnode)))
-  (mopr-gui/layout-shared:with-layout-settings
+  (mopr-viz/layout-shared:with-layout-settings
       (call-next-method)))
 
 (defmethod mopr-sgt:enode-procedure-term-component-unchecked (pr (cc (eql 'rnode)))
-  (mopr-gui/layout-shared:with-layout-settings
+  (mopr-viz/layout-shared:with-layout-settings
       (call-next-method)))
 
 ;;
@@ -58,7 +58,7 @@
   (:documentation "Get the index of ynode that should contain child ynodes."))
 
 (defun enode-get-ynode-anchor (n &aux (rn (enode-find-component n 'rnode)))
-  (mopr-gui/repr-rdata:rdata-ynode
+  (mopr-viz/repr-rdata:rdata-ynode
    (elt (rnode-rdatas rn)
         (enode-get-ynode-anchor-index (bnode-find-payload n)))))
 
@@ -66,26 +66,26 @@
   (error (format nil "ENODE type ~A doesn't support children!" (class-name (class-of n)))))
 
 (defun get-expr-rdatas (color node label)
-  (let* ((nec (make-instance 'mopr-gui/repr-rdata:expr-container-rdata
+  (let* ((nec (make-instance 'mopr-viz/repr-rdata:expr-container-rdata
                              :yparent (enode-get-ynode-anchor (enode-parent node))))
-         (nel (make-instance 'mopr-gui/repr-rdata:expr-label-rdata
-                             :yparent (mopr-gui/repr-rdata:rdata-ynode nec)
+         (nel (make-instance 'mopr-viz/repr-rdata:expr-label-rdata
+                             :yparent (mopr-viz/repr-rdata:rdata-ynode nec)
                              :text label
                              :bg color))
-         (ncc (make-instance 'mopr-gui/repr-rdata:content-container-rdata
-                             :yparent (mopr-gui/repr-rdata:rdata-ynode nec))))
+         (ncc (make-instance 'mopr-viz/repr-rdata:content-container-rdata
+                             :yparent (mopr-viz/repr-rdata:rdata-ynode nec))))
     (list nec nel ncc)))
 
 (defun get-attr-rdatas (color container label &rest input-args)
-  (let* ((nac (make-instance 'mopr-gui/repr-rdata:attr-container-rdata
-                             :yparent (mopr-gui/repr-rdata:rdata-ynode container)))
-         (nac-ynode (mopr-gui/repr-rdata:rdata-ynode nac))
-         (nal (make-instance 'mopr-gui/repr-rdata:attr-label-rdata
+  (let* ((nac (make-instance 'mopr-viz/repr-rdata:attr-container-rdata
+                             :yparent (mopr-viz/repr-rdata:rdata-ynode container)))
+         (nac-ynode (mopr-viz/repr-rdata:rdata-ynode nac))
+         (nal (make-instance 'mopr-viz/repr-rdata:attr-label-rdata
                              :yparent nac-ynode
                              :text label
                              :bg color))
          (nai (apply #'make-instance
-                     'mopr-gui/repr-rdata:attr-input-rdata
+                     'mopr-viz/repr-rdata:attr-input-rdata
                      :yparent nac-ynode
                      input-args)))
     (list nac nal nai)))
@@ -95,7 +95,7 @@
 ;;
 
 (defmethod enode-init-component ((payload root-container) node (component rnode))
-  (let* ((nrc (make-instance 'mopr-gui/repr-rdata:root-container-rdata)))
+  (let* ((nrc (make-instance 'mopr-viz/repr-rdata:root-container-rdata)))
     (setf (rnode-rdatas component)
           (list nrc))))
 
@@ -105,17 +105,17 @@
   nil)
 
 (defmethod enode-term-component ((payload root-container) node (component rnode))
-  (let* ((rn (mopr-sgt:enode-find-component node 'mopr-gui/repr-rnode:rnode))
-         (rd (mopr-gui/repr-rnode:rnode-rdatas rn))
-         (yn (mopr-gui/repr-rdata:rdata-ynode (car rd))))
-    (mopr-gui/yoga-fun:node-free-recursive yn)))
+  (let* ((rn (mopr-sgt:enode-find-component node 'mopr-viz/repr-rnode:rnode))
+         (rd (mopr-viz/repr-rnode:rnode-rdatas rn))
+         (yn (mopr-viz/repr-rdata:rdata-ynode (car rd))))
+    (mopr-viz/yoga-fun:node-free-recursive yn)))
 
 ;;
 ;;; GROUP-CONTAINER API
 ;;
 
 (defmethod enode-init-component ((payload group-container) node (component rnode))
-  (let* ((color mopr-gui/repr-def:+command-theme-expr-bg-9+)
+  (let* ((color mopr-viz/repr-def:+command-theme-expr-bg-9+)
          (ne (get-expr-rdatas color node "GROUP")))
     (setf (rnode-rdatas component)
           (nconc ne))))
@@ -130,15 +130,15 @@
   (multiple-value-bind (val-form-param-text
                         val-form-param-line-count)
       (format-form (var-directive-val-form-param payload) *fill-column*)
-    (let* ((color mopr-gui/repr-def:+command-theme-expr-bg-0+)
+    (let* ((color mopr-viz/repr-def:+command-theme-expr-bg-0+)
            (ne (get-expr-rdatas color node "VAR"))
            (ncc (third ne))
            (na0 (get-attr-rdatas color ncc "NAME"
                                  :text (format nil "~S" (var-directive-name-param payload))))
            (na1 (get-attr-rdatas color ncc "AUX"
                                  :text (format nil "~S" (var-directive-aux-form-param payload))))
-           (nar (make-instance 'mopr-gui/repr-rdata:attr-input-rdata
-                               :yparent (mopr-gui/repr-rdata:rdata-ynode ncc)
+           (nar (make-instance 'mopr-viz/repr-rdata:attr-input-rdata
+                               :yparent (mopr-viz/repr-rdata:rdata-ynode ncc)
                                :text val-form-param-text
                                :h-co val-form-param-line-count)))
       (setf (rnode-rdatas component)
@@ -152,7 +152,7 @@
   (multiple-value-bind (vals-form-param-text
                         vals-form-param-line-count)
       (format-form (each-directive-vals-form-param payload) *fill-column*)
-    (let* ((color mopr-gui/repr-def:+command-theme-expr-bg-1+)
+    (let* ((color mopr-viz/repr-def:+command-theme-expr-bg-1+)
            (ne (get-expr-rdatas color node "EACH"))
            (ncc (third ne))
            (na0 (get-attr-rdatas color ncc "NAME"
@@ -170,7 +170,7 @@
 ;;
 
 (defmethod enode-init-component ((payload iota-directive) node (component rnode))
-  (let* ((color mopr-gui/repr-def:+command-theme-expr-bg-2+)
+  (let* ((color mopr-viz/repr-def:+command-theme-expr-bg-2+)
          (ne (get-expr-rdatas color node "IOTA"))
          (ncc (third ne))
          (na0 (get-attr-rdatas color ncc "NAME"
@@ -194,13 +194,13 @@
   (multiple-value-bind (body-form-param-text
                         body-form-param-line-count)
       (format-form (call-directive-body-form-param payload) *fill-column*)
-    (let* ((color mopr-gui/repr-def:+command-theme-expr-bg-3+)
+    (let* ((color mopr-viz/repr-def:+command-theme-expr-bg-3+)
            (ne (get-expr-rdatas color node "CALL"))
            (ncc (third ne))
            (na0 (get-attr-rdatas color ncc "AUX"
                                  :text (format nil "~S" (call-directive-aux-form-param payload))))
-           (nar (make-instance 'mopr-gui/repr-rdata:attr-input-rdata
-                               :yparent (mopr-gui/repr-rdata:rdata-ynode ncc)
+           (nar (make-instance 'mopr-viz/repr-rdata:attr-input-rdata
+                               :yparent (mopr-viz/repr-rdata:rdata-ynode ncc)
                                :text body-form-param-text
                                :h-co body-form-param-line-count)))
       (setf (rnode-rdatas component)
@@ -211,7 +211,7 @@
 ;;
 
 (defmethod enode-init-component ((payload prim-type-statement) node (component rnode))
-  (let* ((color mopr-gui/repr-def:+command-theme-expr-bg-4+)
+  (let* ((color mopr-viz/repr-def:+command-theme-expr-bg-4+)
          (ne (get-expr-rdatas color node "TYPE"))
          (ncc (third ne))
          (na0 (get-attr-rdatas color ncc "NAME"
@@ -227,7 +227,7 @@
   (multiple-value-bind (body-form-param-text
                         body-form-param-line-count)
       (format-form (prim-attr-statement-body-form-param payload) *fill-column*)
-    (let* ((color mopr-gui/repr-def:+command-theme-expr-bg-8+)
+    (let* ((color mopr-viz/repr-def:+command-theme-expr-bg-8+)
            (ne (get-expr-rdatas color node "ATTR"))
            (ncc (third ne))
            (na0 (get-attr-rdatas color ncc "NAME"
@@ -238,8 +238,8 @@
                                  :text (format nil "~S" (prim-attr-statement-category-param payload))))
            (na3 (get-attr-rdatas color ncc "TYPE"
                                  :text (format nil "~S" (prim-attr-statement-type-param payload))))
-           (nar (make-instance 'mopr-gui/repr-rdata:attr-input-rdata
-                               :yparent (mopr-gui/repr-rdata:rdata-ynode ncc)
+           (nar (make-instance 'mopr-viz/repr-rdata:attr-input-rdata
+                               :yparent (mopr-viz/repr-rdata:rdata-ynode ncc)
                                :text body-form-param-text
                                :h-co body-form-param-line-count)))
       (setf (rnode-rdatas component)
@@ -253,15 +253,15 @@
   (multiple-value-bind (body-form-param-text
                         body-form-param-line-count)
       (format-form (prim-rel-statement-body-form-param payload) *fill-column*)
-    (let* ((color mopr-gui/repr-def:+command-theme-expr-bg-8+)
+    (let* ((color mopr-viz/repr-def:+command-theme-expr-bg-8+)
            (ne (get-expr-rdatas color node "REL"))
            (ncc (third ne))
            (na0 (get-attr-rdatas color ncc "NAME"
                                  :text (format nil "~S" (prim-rel-statement-name-param payload))))
            (na1 (get-attr-rdatas color ncc "META"
                                  :text (format nil "~S" (prim-rel-statement-meta-form-param payload))))
-           (nar (make-instance 'mopr-gui/repr-rdata:attr-input-rdata
-                               :yparent (mopr-gui/repr-rdata:rdata-ynode ncc)
+           (nar (make-instance 'mopr-viz/repr-rdata:attr-input-rdata
+                               :yparent (mopr-viz/repr-rdata:rdata-ynode ncc)
                                :text body-form-param-text
                                :h-co body-form-param-line-count)))
       (setf (rnode-rdatas component)
@@ -272,7 +272,7 @@
 ;;
 
 (defmethod enode-init-component ((payload prim-ns-container) node (component rnode))
-  (let* ((color mopr-gui/repr-def:+command-theme-expr-bg-9+)
+  (let* ((color mopr-viz/repr-def:+command-theme-expr-bg-9+)
          (ne (get-expr-rdatas color node "NS"))
          (ncc (third ne))
          (na0 (get-attr-rdatas color ncc "NAME"
@@ -287,7 +287,7 @@
 ;;
 
 (defmethod enode-init-component ((payload prim-statement) node (component rnode))
-  (let* ((color mopr-gui/repr-def:+command-theme-expr-bg-5+)
+  (let* ((color mopr-viz/repr-def:+command-theme-expr-bg-5+)
          (ne (get-expr-rdatas color node "PRIM"))
          (ncc (third ne))
          (na0 (get-attr-rdatas color ncc "PATH"
@@ -305,11 +305,11 @@
   (multiple-value-bind (body-form-param-text
                         body-form-param-line-count)
       (format-form (tree-statement-body-form-param payload) *fill-column*)
-    (let* ((color mopr-gui/repr-def:+command-theme-expr-bg-6+)
+    (let* ((color mopr-viz/repr-def:+command-theme-expr-bg-6+)
            (ne (get-expr-rdatas color node "TREE"))
            (ncc (third ne))
-           (nar (make-instance 'mopr-gui/repr-rdata:attr-input-rdata
-                               :yparent (mopr-gui/repr-rdata:rdata-ynode ncc)
+           (nar (make-instance 'mopr-viz/repr-rdata:attr-input-rdata
+                               :yparent (mopr-viz/repr-rdata:rdata-ynode ncc)
                                :text body-form-param-text
                                :h-co body-form-param-line-count)))
       (setf (rnode-rdatas component)
@@ -324,11 +324,11 @@
   (multiple-value-bind (body-form-param-text
                         body-form-param-line-count)
       (format-form (meta-statement-body-form-param payload) *fill-column*)
-    (let* ((color mopr-gui/repr-def:+command-theme-expr-bg-7+)
+    (let* ((color mopr-viz/repr-def:+command-theme-expr-bg-7+)
            (ne (get-expr-rdatas color node "META"))
            (ncc (third ne))
-           (nar (make-instance 'mopr-gui/repr-rdata:attr-input-rdata
-                               :yparent (mopr-gui/repr-rdata:rdata-ynode ncc)
+           (nar (make-instance 'mopr-viz/repr-rdata:attr-input-rdata
+                               :yparent (mopr-viz/repr-rdata:rdata-ynode ncc)
                                :text body-form-param-text
                                :h-co body-form-param-line-count)))
       (setf (rnode-rdatas component)

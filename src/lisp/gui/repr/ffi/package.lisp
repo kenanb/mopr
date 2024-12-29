@@ -3,14 +3,14 @@
 
 (in-package :cl-user)
 
-(push :mopr-gui/repr-ffi *features*)
+(push :mopr-viz/repr-ffi *features*)
 
-(defpackage #:mopr-gui/repr-ffi
+(defpackage #:mopr-viz/repr-ffi
   (:use)
   (:export #:init-repr))
 
-(defpackage #:mopr-gui/repr-def
+(defpackage #:mopr-viz/repr-def
   (:use))
 
-(defpackage #:mopr-gui/repr-fun
+(defpackage #:mopr-viz/repr-fun
   (:use))

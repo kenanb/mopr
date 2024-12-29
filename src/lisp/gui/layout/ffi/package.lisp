@@ -3,14 +3,14 @@
 
 (in-package :cl-user)
 
-(push :mopr-gui/yoga-ffi *features*)
+(push :mopr-viz/yoga-ffi *features*)
 
-(defpackage #:mopr-gui/yoga-ffi
+(defpackage #:mopr-viz/yoga-ffi
   (:use)
   (:export #:init-yoga))
 
-(defpackage #:mopr-gui/yoga-def
+(defpackage #:mopr-viz/yoga-def
   (:use))
 
-(defpackage #:mopr-gui/yoga-fun
+(defpackage #:mopr-viz/yoga-fun
   (:use))
