@@ -10,8 +10,8 @@
                 (role path &aux (uuid (mopr-uri:new-uuid path)))))
   "PATHNAME DESCRIPTOR
 
-A pndescriptor represents the means to unambiguously refer to a resource or
-resource grouping that is directly associated with a pathname.
+A pndescriptor represents the means to unambiguously refer to a resource ( an
+asset or asset grouping ) that is directly associated with a pathname.
 
 Every entity that has an associated descriptor will be associated with a UUID at
 creation-time. Normally, this will be a UUIDv7, so that the underlying content

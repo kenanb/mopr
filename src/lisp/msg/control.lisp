@@ -46,7 +46,7 @@
       (loop for c across (enode-children n) for x = (find-enode-by-id c id) if x return x)))
 
 (defgeneric payload-get-options (payload id-sub)
-  (:documentation "Get the options available for the selected entity of given node.")
+  (:documentation "Get the options available for the selected part of given node.")
   (:method (payload id-sub)
     nil))
 

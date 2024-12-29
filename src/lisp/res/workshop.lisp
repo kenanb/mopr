@@ -93,29 +93,29 @@ specific workshop. This will be (mostly) guaranteed at the SINGLETON level.
   (validate-project-path ppath-full)
   (save-project-manifest-unchecked ppath-full pinfo))
 
-(defun project-create-resource (pchain pinfo rfile-rel
-                                &rest ctor-kwargs &key &allow-other-keys)
-  (unless (relative-pathname-p rfile-rel)
-    (error "PROJECT-CREATE-RESOURCE requires a relative directory!"))
-  (with-accessors ((presources project-info-resources)) pinfo
+(defun project-create-asset (pchain pinfo afile-rel
+                             &rest ctor-kwargs &key &allow-other-keys)
+  (unless (relative-pathname-p afile-rel)
+    (error "PROJECT-CREATE-ASSET requires a relative directory!"))
+  (with-accessors ((passets project-info-assets)) pinfo
     (validate-project-path (desc-chain-as-path pchain))
-    (let* ((rdesc (make-pndescriptor-for-file :resource rfile-rel))
-           (rchain (mopr-uri:conc-desc-chains pchain (mopr-uri:make-desc-chain rdesc)))
-           (rpath-full (desc-chain-as-path rchain :file-expected-p t))
-           (rinfo (apply #'make-resource-info ctor-kwargs)))
-      (when (pndesc-alist-assoc presources :path (pndescriptor-path rdesc))
-        (error "This resource path was already registered!"))
-      (ensure-all-directories-exist (list rpath-full))
-      (setf presources (acons rdesc rinfo presources))
+    (let* ((adesc (make-pndescriptor-for-file :asset afile-rel))
+           (achain (mopr-uri:conc-desc-chains pchain (mopr-uri:make-desc-chain adesc)))
+           (apath-full (desc-chain-as-path achain :file-expected-p t))
+           (ainfo (apply #'make-asset-info ctor-kwargs)))
+      (when (pndesc-alist-assoc passets :path (pndescriptor-path adesc))
+        (error "This asset path was already registered!"))
+      (ensure-all-directories-exist (list apath-full))
+      (setf passets (acons adesc ainfo passets))
       (save-project-manifest pchain pinfo)
-      (pndescriptor-uuid rdesc))))
+      (pndescriptor-uuid adesc))))
 
-(defun project-get-resource (pinfo lookup-type lookup-val)
+(defun project-get-asset (pinfo lookup-type lookup-val)
   (let ((sanitized-val (case lookup-type
                          (:path (or (file-pathname-p lookup-val)
-                                    (error "Bad input for resource query!")))
+                                    (error "Bad input for asset query!")))
                          (otherwise lookup-val))))
-    (pndesc-alist-assoc (project-info-resources pinfo) lookup-type sanitized-val)))
+    (pndesc-alist-assoc (project-info-assets pinfo) lookup-type sanitized-val)))
 
 (defun workshop-create-project (wcons pdir-rel
                                 &rest ctor-kwargs &key &allow-other-keys

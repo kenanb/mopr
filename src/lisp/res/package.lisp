@@ -38,7 +38,7 @@
    #:make-project
    #:project-p
    #:project
-   #:project-resources
+   #:project-assets
 
    ;; WORKSHOP
 
@@ -49,8 +49,8 @@
    #:load-workshop-manifest
    ;; #:save-workshop-manifest
    ;; #:save-project-manifest
-   #:project-create-resource
-   #:project-get-resource
+   #:project-create-asset
+   #:project-get-asset
    #:workshop-create-project
    #:workshop-acquire-project
    #:workshop-release-project
