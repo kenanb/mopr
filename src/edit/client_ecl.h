@@ -47,6 +47,12 @@ extern "C"
     MOPR_API unsigned int
      Client_ECL_termBackend( );
 
+    MOPR_API unsigned int
+     Client_ECL_requestGet( const char ** pResponse, const char * uri );
+
+    MOPR_API unsigned int
+     Client_ECL_releaseResponse( const char ** pResponse );
+
 #ifdef __cplusplus
 }
 #endif

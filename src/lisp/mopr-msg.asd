@@ -21,6 +21,8 @@ mainly in Lisp. UNTESTED. DO NOT USE!"
   :components
   ((:file "package")
    (:file "control")
+   (:file "handler"
+   :depends-on ("package" "control"))
    (:file "workshop"
     :depends-on ("package"))))
 

@@ -132,3 +132,30 @@ unsigned int
 
     return 0;
 }
+
+unsigned int
+ Client_ECL_requestGet( const char ** pResponse, const char * uri )
+{
+    cl_object symFnRequest_l =
+     getSymbol( "MOPR-SRV", "IN-PROCESS-BACKEND-HANDLE-GET-REQUEST" );
+
+    cl_object hpResponse_l = ecl_make_pointer( ( void * ) pResponse );
+    cl_object strURI_l = ecl_make_constant_base_string( uri, -1 );
+
+    cl_funcall( 3, symFnRequest_l, hpResponse_l, strURI_l );
+
+    return 0;
+}
+
+unsigned int
+ Client_ECL_releaseResponse( const char ** pResponse )
+{
+    cl_object symFnRelease_l =
+     getSymbol( "MOPR-SRV", "IN-PROCESS-BACKEND-RELEASE-RESPONSE" );
+
+    cl_object hpResponse_l = ecl_make_pointer( ( void * ) pResponse );
+
+    cl_funcall( 2, symFnRelease_l, hpResponse_l );
+
+    return 0;
+}

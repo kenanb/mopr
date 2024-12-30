@@ -20,4 +20,6 @@
    #:ws-acquire-project
    #:ws-release-project
 
+   #:request-handler-get
+
    ))

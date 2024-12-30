@@ -26,11 +26,36 @@
 #include "SDL_image.h"
 #include "SDL_opengl.h"
 
+#include "pugixml.hpp"
+
 #include <stddef.h>
 #include <vector>
 
 namespace mopr
 {
+
+unsigned int
+ requestGet( pugi::xml_document & doc, const char * uri )
+{
+    const char * response = NULL;
+
+    // printf( "C                  | RESPONSE ADDRESS : %p\n", ( void * ) &response );
+
+    // printf( "C <REQUEST         | RESPONSE POINTER : %p\n", ( void * ) response );
+    Client_ECL_requestGet( &response, uri );
+    // printf( "C         REQUEST> | RESPONSE POINTER : %p\n", ( void * ) response );
+
+    // printf( "C         REQUEST> | RESPONSE CONTENT : %s\n", response );
+
+    pugi::xml_parse_result result = doc.load_string( response );
+    std::cout << "Query result: " << result.description( ) << std::endl;
+
+    // printf( "C <RELEASE         | RESPONSE POINTER : %p\n", ( void * ) response );
+    Client_ECL_releaseResponse( &response );
+    // printf( "C         RELEASE> | RESPONSE POINTER : %p\n", ( void * ) response );
+
+    return 0;
+}
 
 void
  appDelegate( SDL_Window * window, const AppEnvironment * appEnvironment )
@@ -85,6 +110,8 @@ void
     CommandOptions commandOptions;
     commandOptions.nofOptions = 0;
     commandOptions.options = NULL;
+
+    pugi::xml_document docCommandOptions;
 
     Client_ECL_populateCommandQueue( &commandQueue );
     // mopr_print_command_queue( &commandQueue );
@@ -275,6 +302,16 @@ void
             Client_ECL_destructCommandOptions( &commandOptions );
             if ( appState.idSelected )
             {
+                std::string uriCommandOptions = "/";
+                uriCommandOptions += "command-options";
+                uriCommandOptions += "?id=" + std::to_string(appState.idSelected);
+                uriCommandOptions += "&id-sub=" + std::to_string(appState.idSubSelected);
+
+                requestGet( docCommandOptions, uriCommandOptions.c_str( ) );
+
+                std::cout << "CommandOptions: \n";
+                docCommandOptions.save(std::cout);
+
                 Client_ECL_populateCommandOptions(
                  &commandOptions, appState.idSelected, appState.idSubSelected );
                 // mopr_print_command_options( &commandOptions );
