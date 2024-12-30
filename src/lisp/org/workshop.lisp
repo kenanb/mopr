@@ -22,7 +22,7 @@ Descriptor path is a workshop-relative path of the project directory.")
 A workshop is mainly an abstraction over a filesystem directory that is a
 container of projects.
 
-During startup, server process will be pointed at the workshop directory.
+During startup, MOPR backend process will be pointed at the workshop directory.
 
 It is assumed that at any time, at most a single server is associated with a
 specific workshop. This will be (mostly) guaranteed at the SINGLETON level.

@@ -41,6 +41,13 @@ void
     auto const & appConfig = mopr::AppConfig::GetInstance( );
 
     //
+    // Initialize MOPR backend.
+    //
+
+    const std::string & resolvedWorkshopPath = appEnvironment->getResolvedWorkshopPath( );
+    Client_ECL_initBackend( resolvedWorkshopPath.c_str( ) );
+
+    //
     // Construct scene.
     //
 
@@ -369,6 +376,7 @@ void
     overlayProgram.fini( );
 
     Client_ECL_termRepr( );
+    Client_ECL_termBackend( );
     Client_ECL_destructCommandQueue( &commandQueue );
     Client_ECL_destructCommandOptions( &commandOptions );
 }

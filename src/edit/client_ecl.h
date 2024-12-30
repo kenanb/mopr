@@ -41,6 +41,12 @@ extern "C"
     MOPR_API unsigned int
      Client_ECL_applyOption( unsigned int id, unsigned int idSub, unsigned int idOpt );
 
+    MOPR_API unsigned int
+     Client_ECL_initBackend( const char * wDirAbs );
+
+    MOPR_API unsigned int
+     Client_ECL_termBackend( );
+
 #ifdef __cplusplus
 }
 #endif

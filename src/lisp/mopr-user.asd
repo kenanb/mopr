@@ -19,6 +19,7 @@
    #:mopr-sgt
    #:mopr-exe
    #:mopr-viz
+   #:mopr-srv
    ;; ENABLED PLUGIN LIST:
    ;;
    ;; Begin

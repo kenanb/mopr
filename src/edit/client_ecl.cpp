@@ -110,3 +110,25 @@ unsigned int
     cl_funcall( 4, symFn_l, id_l, idSub_l, idOpt_l );
     return 0;
 }
+
+unsigned int
+ Client_ECL_initBackend( const char * wDirAbs )
+{
+    cl_object symFnInitBackend_l = getSymbol( "MOPR-SRV", "IN-PROCESS-BACKEND-INIT" );
+
+    cl_object strDir_l = ecl_make_constant_base_string( wDirAbs, -1 );
+
+    cl_funcall( 2, symFnInitBackend_l, strDir_l );
+
+    return 0;
+}
+
+unsigned int
+ Client_ECL_termBackend( )
+{
+    cl_object symFnTermBackend_l = getSymbol( "MOPR-SRV", "IN-PROCESS-BACKEND-TERM" );
+
+    cl_funcall( 1, symFnTermBackend_l );
+
+    return 0;
+}
