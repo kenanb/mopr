@@ -13,7 +13,8 @@ mainly in Lisp. UNTESTED. DO NOT USE!"
   (#:mopr-org
    #:mopr-sgt
    #:mopr-uri
-   #:bordeaux-threads)
+   #:bordeaux-threads
+   #:xmls)
 
   :pathname "msg"
 

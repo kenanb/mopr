@@ -323,7 +323,7 @@ yoga: $(yoga_core)
 
 MOPR_EDIT_CF ::= $(COMMON_CFLAGS) $(USD_CFLAGS) -fPIC
 
-MOPR_EDIT_LIBS = gl glew sdl2 SDL2_image
+MOPR_EDIT_LIBS = gl glew sdl2 SDL2_image pugixml
 
 MOPR_EDIT_CPP_OBJ ::= src/edit/.main.cpp.o \
 	src/edit/.client_ecl.cpp.o \

@@ -33,5 +33,16 @@ at creation-time. The UUID version used depends on the nature of asset.
    :type keyword
    :read-only t)
   (uuid (error "DESCRIPTOR cannot be initialized without a uuid!")
-   :type (simple-base-string 36)
+
+   ;; NOTE : PRIN1-READ roundtrip for specific string type in struct
+   ;; is only confirmed to work for SBCL so far. (It at least didn't
+   ;; seem to work with ECL.) We could put :type declarations behind
+   ;; feature-expression based conditional reads, like below:
+   ;;
+   ;; :type #+sbcl (simple-base-string 36) #-sbcl string
+   ;;
+   ;; However, we want to keep workshop records compatible across
+   ;; implementations, if possible, so we just use string for now:
+   :type string
+
    :read-only t))

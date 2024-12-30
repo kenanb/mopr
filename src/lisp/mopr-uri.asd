@@ -11,6 +11,8 @@ mainly in Lisp. UNTESTED. DO NOT USE!"
 
   :depends-on
   (#:frugal-uuid
+   #:alexandria
+   #:split-sequence
    #:quri)
 
   :pathname "uri"

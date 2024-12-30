@@ -7,7 +7,9 @@
             (:include mopr-uri:descriptor)
             (:constructor)
             (:constructor make-new-pndescriptor
-                (role path &aux (uuid (mopr-uri:new-uuid path)))))
+                ;; ECL doesn't associate parameters with included structure slots
+                ;; without explicit declaration of matching symbol packages.
+                (mopr-uri::role path &aux (mopr-uri::uuid (mopr-uri:new-uuid path)))))
   "PATHNAME DESCRIPTOR
 
 A pndescriptor represents the means to unambiguously refer to a resource ( an
