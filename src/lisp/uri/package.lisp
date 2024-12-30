@@ -33,4 +33,11 @@
    #:%desc-alist-assoc-by-info
    #:%desc-alist-assoc-by-uuid
 
+   ;; RESOURCE-ID
+   #:resource-id
+   #:resource-id-str
+   #:resource-id-data
+   #:resource-id-path
+   #:resource-id-query
+
    ))
