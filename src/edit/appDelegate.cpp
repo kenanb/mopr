@@ -44,7 +44,11 @@ void
     // Construct scene.
     //
 
-    const std::string & usdsPath = appEnvironment->getResolvedInputPath( );
+    // TODO : Replace with real workshop-based path resolution logic.
+    const std::string & usdsPath = appEnvironment->getResolvedWorkshopPath( ) + "/"
+                                   + appEnvironment->getProjectPath( ) + "/"
+                                   + appEnvironment->getResourcePath( );
+
     pxr::SdfLayerRefPtr layer = pxr::SdfLayer::CreateAnonymous( );
     MoprLayer sLayer;
     sLayer.SetRefPtr( layer );

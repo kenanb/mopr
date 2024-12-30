@@ -26,7 +26,9 @@ AppEnvironment::AppEnvironment( int argc, char * argv[] )
     : action( ActionRun )
     , appRoot( )
     , appConfigPath( NULL )
-    , inputPath( NULL )
+    , workshopPath( NULL )
+    , projectPath( NULL )
+    , resourcePath( NULL )
     , camera( NULL )
     , frameFirst( 0.0 )
     , frameLast( 100.0 )
@@ -54,7 +56,7 @@ AppEnvironment::AppEnvironment( int argc, char * argv[] )
 
     this->action = ActionRun;
 
-    while ( ( opt = getopt( argc, argv, "c:i:C:f:l:h" ) ) != -1 )
+    while ( ( opt = getopt( argc, argv, "c:w:p:r:C:f:l:h" ) ) != -1 )
     {
         switch ( opt )
         {
@@ -62,8 +64,16 @@ AppEnvironment::AppEnvironment( int argc, char * argv[] )
                 this->appConfigPath = optarg;
                 break;
 
-            case 'i':   // absolute input path
-                this->inputPath = optarg;
+            case 'w':   // workshop path
+                this->workshopPath = optarg;
+                break;
+
+            case 'p':   // workshop-relative project path
+                this->projectPath = optarg;
+                break;
+
+            case 'r':   // project-relative resource path
+                this->resourcePath = optarg;
                 break;
 
             case 'C':   // scene camera
@@ -92,6 +102,11 @@ AppEnvironment::AppEnvironment( int argc, char * argv[] )
                 this->action = ActionHelpFailure;
                 break;
         }
+    }
+
+    if ( !( this->workshopPath && this->projectPath && this->resourcePath ) )
+    {
+        this->action = ActionHelpFailure;
     }
 }
 
@@ -132,15 +147,44 @@ std::string
 }
 
 std::string
- AppEnvironment::getResolvedInputPath( ) const
+ AppEnvironment::getResolvedWorkshopPath( ) const
 {
-    if ( this->inputPath )
+    if ( this->workshopPath )
     {
-        return this->resolveCwdRelativePath( this->inputPath );
+        return this->resolveCwdRelativePath( this->workshopPath );
     }
     else
     {
-        return this->resolveAppRelativePath( "res/startup.lisp" );
+        printf( "Workshop path was not provided! Exiting!\n" );
+        exit( -1 );
+    }
+}
+
+std::string
+ AppEnvironment::getProjectPath( ) const
+{
+    if ( this->projectPath )
+    {
+        return this->projectPath;
+    }
+    else
+    {
+        printf( "Project path was not provided! Exiting!\n" );
+        exit( -1 );
+    }
+}
+
+std::string
+ AppEnvironment::getResourcePath( ) const
+{
+    if ( this->resourcePath )
+    {
+        return this->resourcePath;
+    }
+    else
+    {
+        printf( "Resource path was not provided! Exiting!\n" );
+        exit( -1 );
     }
 }
 

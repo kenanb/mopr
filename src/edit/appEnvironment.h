@@ -18,7 +18,9 @@ struct AppEnvironment
     Action action;
     std::string appRoot;
     char const * appConfigPath;
-    char const * inputPath;
+    char const * workshopPath;
+    char const * projectPath;
+    char const * resourcePath;
     char const * camera;
     double frameFirst;
     double frameLast;
@@ -35,7 +37,13 @@ struct AppEnvironment
      getResolvedAppConfigPath( ) const;
 
     std::string
-     getResolvedInputPath( ) const;
+     getResolvedWorkshopPath( ) const;
+
+    std::string
+     getProjectPath( ) const;
+
+    std::string
+     getResourcePath( ) const;
 };
 
 }   // namespace mopr

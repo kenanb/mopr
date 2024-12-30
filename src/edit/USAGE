@@ -1,7 +1,9 @@
 R"(
-USAGE: mopr -i /absolute/path/to/usds/file.lisp
+USAGE: mopr -w /absolute/path/to/workshop/ -p workshop/relative/path/to/project/ -r project/relative/resource/path.lisp
 
--i : Input Lisp that defines USDS data to load.
+-w : REQUIRED. Workshop path.
+-p : REQUIRED. Workshop-relative project path.
+-r : Project-relative resource path.
 -c : Configuration file path.
 -C : Scene camera path, in SdfPath syntax.
 -h : Show help.
