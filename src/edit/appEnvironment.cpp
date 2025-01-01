@@ -28,7 +28,7 @@ AppEnvironment::AppEnvironment( int argc, char * argv[] )
     , appConfigPath( NULL )
     , workshopPath( NULL )
     , projectPath( NULL )
-    , resourcePath( NULL )
+    , assetPath( NULL )
     , camera( NULL )
     , frameFirst( 0.0 )
     , frameLast( 100.0 )
@@ -56,7 +56,7 @@ AppEnvironment::AppEnvironment( int argc, char * argv[] )
 
     this->action = ActionRun;
 
-    while ( ( opt = getopt( argc, argv, "c:w:p:r:C:f:l:h" ) ) != -1 )
+    while ( ( opt = getopt( argc, argv, "c:w:p:a:C:f:l:h" ) ) != -1 )
     {
         switch ( opt )
         {
@@ -72,8 +72,8 @@ AppEnvironment::AppEnvironment( int argc, char * argv[] )
                 this->projectPath = optarg;
                 break;
 
-            case 'r':   // project-relative resource path
-                this->resourcePath = optarg;
+            case 'a':   // project-relative asset path
+                this->assetPath = optarg;
                 break;
 
             case 'C':   // scene camera
@@ -104,7 +104,7 @@ AppEnvironment::AppEnvironment( int argc, char * argv[] )
         }
     }
 
-    if ( !( this->workshopPath && this->projectPath && this->resourcePath ) )
+    if ( !( this->workshopPath && this->projectPath && this->assetPath ) )
     {
         this->action = ActionHelpFailure;
     }
@@ -151,7 +151,13 @@ std::string
 {
     if ( this->workshopPath )
     {
-        return this->resolveCwdRelativePath( this->workshopPath );
+        std::string ret = this->resolveCwdRelativePath( this->workshopPath );
+        if ( ret.back( ) != '/' )
+        {
+            // Trailing slash is important to ensure successful resource query.
+            ret += '/';
+        }
+        return ret;
     }
     else
     {
@@ -165,7 +171,13 @@ std::string
 {
     if ( this->projectPath )
     {
-        return this->projectPath;
+        std::string ret = this->projectPath;
+        if ( ret.back( ) != '/' )
+        {
+            // Trailing slash is important to ensure successful resource query.
+            ret += '/';
+        }
+        return ret;
     }
     else
     {
@@ -175,15 +187,15 @@ std::string
 }
 
 std::string
- AppEnvironment::getResourcePath( ) const
+ AppEnvironment::getAssetPath( ) const
 {
-    if ( this->resourcePath )
+    if ( this->assetPath )
     {
-        return this->resourcePath;
+        return this->assetPath;
     }
     else
     {
-        printf( "Resource path was not provided! Exiting!\n" );
+        printf( "Asset path was not provided! Exiting!\n" );
         exit( -1 );
     }
 }

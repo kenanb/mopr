@@ -34,11 +34,16 @@
 
   (:export
 
+   ;; PNDESCRIPTOR
+   #:pndescriptor-p
+   #:pndescriptor
+   #:pndescriptor-path
+
    ;; PROJECT
-   #:make-project
-   #:project-p
-   #:project
-   #:project-assets
+   #:make-project-info
+   #:project-info-p
+   #:project-info
+   #:project-info-assets
 
    ;; WORKSHOP
 

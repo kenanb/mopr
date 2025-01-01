@@ -1,9 +1,9 @@
 R"(
-USAGE: mopr -w /absolute/path/to/workshop/ -p workshop/relative/path/to/project/ -r project/relative/resource/path.lisp
+USAGE: mopr -w /absolute/path/to/workshop/ -p workshop/relative/path/to/project/ -a project/relative/asset/path.lisp
 
 -w : REQUIRED. Workshop path.
 -p : REQUIRED. Workshop-relative project path.
--r : Project-relative resource path.
+-a : Project-relative asset path.
 -c : Configuration file path.
 -C : Scene camera path, in SdfPath syntax.
 -h : Show help.

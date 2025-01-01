@@ -20,7 +20,7 @@ struct AppEnvironment
     char const * appConfigPath;
     char const * workshopPath;
     char const * projectPath;
-    char const * resourcePath;
+    char const * assetPath;
     char const * camera;
     double frameFirst;
     double frameLast;
@@ -43,7 +43,7 @@ struct AppEnvironment
      getProjectPath( ) const;
 
     std::string
-     getResourcePath( ) const;
+     getAssetPath( ) const;
 };
 
 }   // namespace mopr

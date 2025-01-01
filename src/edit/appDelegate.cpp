@@ -47,12 +47,120 @@ unsigned int
 
     // printf( "C         REQUEST> | RESPONSE CONTENT : %s\n", response );
 
-    pugi::xml_parse_result result = doc.load_string( response );
-    std::cout << "Query result: " << result.description( ) << std::endl;
+    [[maybe_unused]] pugi::xml_parse_result result = doc.load_string( response );
+
+    // std::cout << "Query result: " << result.description( ) << std::endl;
+    // std::cout << "Document: \n";
+    // doc.save( std::cout );
 
     // printf( "C <RELEASE         | RESPONSE POINTER : %p\n", ( void * ) response );
     Client_ECL_releaseResponse( &response );
     // printf( "C         RELEASE> | RESPONSE POINTER : %p\n", ( void * ) response );
+
+    return 0;
+}
+
+std::string
+ requestGetAndSelectUri( const char * get, const char * select )
+{
+    pugi::xml_document doc;
+    requestGet( doc, get );
+    pugi::xpath_node xp = doc.select_node( select );
+
+    std::string result;
+    if ( xp ) result = xp.node( ).attribute( "uri" ).value( );
+    return result;
+}
+
+std::string
+ locateEndpointWorkshop( )
+{
+    return requestGetAndSelectUri( "/", "//endpoints/endpoint[@name='workshop']" );
+}
+
+std::string
+ locateResourceWorkshop( const std::string & uriEndpointWorkshop )
+{
+    return requestGetAndSelectUri( uriEndpointWorkshop.c_str( ), "//workshop" );
+}
+
+std::string
+ locateEndpointProject( const std::string & uriResourceWorkshop )
+{
+    return requestGetAndSelectUri( uriResourceWorkshop.c_str( ),
+                                   "//endpoints/endpoint[@name='project']" );
+}
+
+std::string
+ locateResourceProject( const std::string & uriEndpointProject,
+                        const AppEnvironment * appEnvironment )
+{
+    std::string selection = "//projects/project[@path='";
+    selection += appEnvironment->getProjectPath( );
+    selection += "']";
+    return requestGetAndSelectUri( uriEndpointProject.c_str( ), selection.c_str( ) );
+}
+
+std::string
+ locateEndpointAsset( const std::string & uriResourceProject )
+{
+    return requestGetAndSelectUri( uriResourceProject.c_str( ),
+                                   "//endpoints/endpoint[@name='asset']" );
+}
+
+std::string
+ locateResourceAsset( const std::string & uriEndpointAsset,
+                      const AppEnvironment * appEnvironment )
+{
+    std::string selection = "//assets/asset[@path='";
+    selection += appEnvironment->getAssetPath( );
+    selection += "']";
+    return requestGetAndSelectUri( uriEndpointAsset.c_str( ), selection.c_str( ) );
+}
+
+std::string
+ locateEndpointWorktree( const std::string & uriResourceAsset )
+{
+    return requestGetAndSelectUri( uriResourceAsset.c_str( ),
+                                   "//endpoints/endpoint[@name='worktree']" );
+}
+
+unsigned int
+ queryWorkshop( const AppEnvironment * appEnvironment )
+{
+    std::string uriEpW = locateEndpointWorkshop( );
+    if ( uriEpW.empty( ) ) return 0;
+    std::cout << "Workshop endpoint URI : " << uriEpW << std::endl;
+
+    std::string uriResW = locateResourceWorkshop( uriEpW );
+    if ( uriResW.empty( ) ) return 0;
+    std::cout << "Workshop resource URI : " << uriResW << std::endl;
+
+    std::string uriEpP = locateEndpointProject( uriResW );
+    if ( uriEpP.empty( ) ) return 0;
+    std::cout << "Project endpoint URI  : " << uriEpP << std::endl;
+
+    std::string uriResP = locateResourceProject( uriEpP, appEnvironment );
+    if ( uriResP.empty( ) ) return 0;
+    std::cout << "Project resource URI  : " << uriResP << std::endl;
+
+    std::string uriEpA = locateEndpointAsset( uriResP );
+    if ( uriEpA.empty( ) ) return 0;
+    std::cout << "Asset endpoint URI    : " << uriEpA << std::endl;
+
+    std::string uriResA = locateResourceAsset( uriEpA, appEnvironment );
+    if ( uriResA.empty( ) ) return 0;
+    std::cout << "Asset resource URI    : " << uriResA << std::endl;
+
+    std::string uriEpWorktree = locateEndpointWorktree( uriResA );
+    if ( uriEpWorktree.empty( ) ) return 0;
+    std::cout << "Worktree endpoint URI : " << uriEpWorktree << std::endl;
+
+    // Testing.
+    {
+        pugi::xml_document doc;
+        requestGet( doc, uriEpWorktree.c_str( ) );
+    }
 
     return 0;
 }
@@ -72,6 +180,8 @@ void
     const std::string & resolvedWorkshopPath = appEnvironment->getResolvedWorkshopPath( );
     Client_ECL_initBackend( resolvedWorkshopPath.c_str( ) );
 
+    queryWorkshop( appEnvironment );
+
     //
     // Construct scene.
     //
@@ -79,7 +189,7 @@ void
     // TODO : Replace with real workshop-based path resolution logic.
     const std::string & usdsPath = appEnvironment->getResolvedWorkshopPath( ) + "/"
                                    + appEnvironment->getProjectPath( ) + "/"
-                                   + appEnvironment->getResourcePath( );
+                                   + appEnvironment->getAssetPath( );
 
     pxr::SdfLayerRefPtr layer = pxr::SdfLayer::CreateAnonymous( );
     MoprLayer sLayer;
