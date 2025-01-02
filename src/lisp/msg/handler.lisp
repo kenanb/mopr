@@ -15,6 +15,7 @@
         ("" . main-request-fn-project-ep)
         (t :project-res-ep base-request-fn-project-res
          ("" . main-request-fn-project-res)
+         ("lock" . main-request-fn-project-lock-ep)
          ("asset" :asset-res base-request-fn-asset-ep
                   ("" . main-request-fn-asset-ep)
                   (t :asset-res-ep base-request-fn-asset-res
@@ -112,13 +113,28 @@ REMAINING : ~S~%"
         (puuid (getf context :project-res)))
     (unless (equal wuuid (getf context :workshop-res))
       (error "Workshop ID doesn't match the active workshop."))
-    (let* ((uri (format nil "/workshop/~A/project/~A/asset/" wuuid puuid)))
+    (let ((ep-uri-asset (format nil "/workshop/~A/project/~A/asset/" wuuid puuid))
+          (ep-uri-lock (format nil "/workshop/~A/project/~A/lock/" wuuid puuid)))
       (xmls:make-node
        :name "endpoints"
        :children
        (list (xmls:make-node :name "endpoint"
                              :attrs `(("name" "asset")
-                                      ("uri" ,uri))))))))
+                                      ("uri" ,ep-uri-asset)))
+             (xmls:make-node :name "endpoint"
+                             :attrs `(("name" "lock")
+                                      ("uri" ,ep-uri-lock))))))))
+
+(defmethod handle-get-request (rid (category (eql 'main-request-fn-project-lock-ep))
+                               &key context remaining)
+  (declare (ignore rid category remaining))
+  (let ((wuuid (mopr-uri:descriptor-uuid (ws-descriptor)))
+        (puuid (getf context :project-res)))
+    (unless (equal wuuid (getf context :workshop-res))
+      (error "Workshop ID doesn't match the active workshop."))
+    (xmls:make-node :name "project-lock"
+                    :attrs `(("state" ,(if (gethash puuid (ws-sessions))
+                                           "acquired" "released"))))))
 
 (defmethod handle-get-request (rid (category (eql 'main-request-fn-asset-ep))
                                &key context remaining)
@@ -178,6 +194,28 @@ REMAINING : ~S~%"
             &key context remaining)
     (format t "POST REQUEST BODY:~%~A~%" request-body)
     (failure-response :post rid category context remaining "unsupported")))
+
+(defmethod handle-post-request (rid request-body (category (eql 'main-request-fn-project-lock-ep))
+                                &key context remaining)
+  (declare (ignore rid))
+  (let ((wuuid (mopr-uri:descriptor-uuid (ws-descriptor)))
+        (puuid (getf context :project-res)))
+    (unless (equal wuuid (getf context :workshop-res))
+      (error "Workshop ID doesn't match the active workshop."))
+    (cond
+      ((equal (xmls:node-name request-body) "action")
+       (let ((action-name (cadr (assoc "name" (xmls:node-attrs request-body) :test #'string=)))
+             (sid (messaging-session-id *messaging-session*)))
+         (cond
+           ((equal action-name "acquire")
+            (ws-acquire-project :uuid puuid sid)
+            (setf (messaging-session-puuid *messaging-session*) puuid)
+            (format t "Session acquired project lock.~%"))
+           ((equal action-name "release")
+            (setf (messaging-session-puuid *messaging-session*) nil)
+            (ws-release-project :uuid puuid sid)
+            (format t "Session released project lock.~%"))))))
+    (handle-get-request rid category :context context :remaining remaining)))
 
 (defun dispatch-path (keyform-list handler)
   "DISPATCH-PATH keyform-list handler => (category-symbol :context plist :remaining list)

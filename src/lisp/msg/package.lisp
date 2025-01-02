@@ -8,7 +8,6 @@
   (:export
 
    ;; WORKSHOP SINGLETON
-
    #:acquire-ws
    #:release-ws
    #:ws-bound-p
@@ -20,7 +19,12 @@
    #:ws-acquire-project
    #:ws-release-project
 
+   ;; HANDLER
    #:request-handler-get
    #:request-handler-post
+
+   ;; SESSION
+   #:*messaging-session*
+   #:messaging-session
 
    ))

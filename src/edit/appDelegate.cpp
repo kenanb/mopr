@@ -105,22 +105,18 @@ std::string
 }
 
 std::string
- locateEndpointWorkshop( )
+ locateEndpoint( const char * uriResource, const char * endpoint )
 {
-    return requestGetAndSelectUri( "/", "//endpoints/endpoint[@name='workshop']" );
+    std::string select = "//endpoints/endpoint[@name='";
+    select += endpoint;
+    select += "']";
+    return requestGetAndSelectUri( uriResource, select.c_str( ) );
 }
 
 std::string
  locateResourceWorkshop( const std::string & uriEndpointWorkshop )
 {
     return requestGetAndSelectUri( uriEndpointWorkshop.c_str( ), "//workshop" );
-}
-
-std::string
- locateEndpointProject( const std::string & uriResourceWorkshop )
-{
-    return requestGetAndSelectUri( uriResourceWorkshop.c_str( ),
-                                   "//endpoints/endpoint[@name='project']" );
 }
 
 std::string
@@ -134,10 +130,22 @@ std::string
 }
 
 std::string
- locateEndpointAsset( const std::string & uriResourceProject )
+ manageProjectLock( const std::string & uriResourceProject, bool acquire )
 {
-    return requestGetAndSelectUri( uriResourceProject.c_str( ),
-                                   "//endpoints/endpoint[@name='asset']" );
+    pugi::xml_document docResponse;
+    pugi::xml_document docRequest;
+
+    pugi::xml_node node_action = docRequest.append_child( "action" );
+    pugi::xml_attribute attr_action_name = node_action.append_attribute( "name" );
+    attr_action_name.set_value( acquire ? "acquire" : "release" );
+
+    requestPost( docResponse, uriResourceProject.c_str( ), docRequest );
+
+    pugi::xpath_node xp = docResponse.select_node( "//project-lock" );
+
+    std::string result;
+    if ( xp ) result = xp.node( ).attribute( "state" ).value( );
+    return result;
 }
 
 std::string
@@ -150,17 +158,10 @@ std::string
     return requestGetAndSelectUri( uriEndpointAsset.c_str( ), selection.c_str( ) );
 }
 
-std::string
- locateEndpointWorktree( const std::string & uriResourceAsset )
-{
-    return requestGetAndSelectUri( uriResourceAsset.c_str( ),
-                                   "//endpoints/endpoint[@name='worktree']" );
-}
-
 unsigned int
  queryWorkshop( const AppEnvironment * appEnvironment )
 {
-    std::string uriEpW = locateEndpointWorkshop( );
+    std::string uriEpW = locateEndpoint( "/", "workshop" );
     if ( uriEpW.empty( ) ) return 0;
     std::cout << "Workshop endpoint URI : " << uriEpW << std::endl;
 
@@ -168,7 +169,7 @@ unsigned int
     if ( uriResW.empty( ) ) return 0;
     std::cout << "Workshop resource URI : " << uriResW << std::endl;
 
-    std::string uriEpP = locateEndpointProject( uriResW );
+    std::string uriEpP = locateEndpoint( uriResW.c_str( ), "project" );
     if ( uriEpP.empty( ) ) return 0;
     std::cout << "Project endpoint URI  : " << uriEpP << std::endl;
 
@@ -176,7 +177,15 @@ unsigned int
     if ( uriResP.empty( ) ) return 0;
     std::cout << "Project resource URI  : " << uriResP << std::endl;
 
-    std::string uriEpA = locateEndpointAsset( uriResP );
+    std::string uriEpPL = locateEndpoint( uriResP.c_str( ), "lock" );
+    if ( uriEpPL.empty( ) ) return 0;
+    std::cout << "Proj lock endpoint URI: " << uriEpPL << std::endl;
+
+    std::string pLockState;
+    pLockState = manageProjectLock( uriEpPL, true );
+    if ( pLockState != "acquired" ) return 0;
+
+    std::string uriEpA = locateEndpoint( uriResP.c_str( ), "asset" );
     if ( uriEpA.empty( ) ) return 0;
     std::cout << "Asset endpoint URI    : " << uriEpA << std::endl;
 
@@ -184,7 +193,7 @@ unsigned int
     if ( uriResA.empty( ) ) return 0;
     std::cout << "Asset resource URI    : " << uriResA << std::endl;
 
-    std::string uriEpWorktree = locateEndpointWorktree( uriResA );
+    std::string uriEpWorktree = locateEndpoint( uriResA.c_str( ), "worktree" );
     if ( uriEpWorktree.empty( ) ) return 0;
     std::cout << "Worktree endpoint URI : " << uriEpWorktree << std::endl;
 
@@ -196,6 +205,9 @@ unsigned int
         requestPost( docResponse, uriEpWorktree.c_str( ), docRequest );
         docResponse.save( std::cout );
     }
+
+    pLockState = manageProjectLock( uriEpPL, false );
+    if ( pLockState != "released" ) return 0;
 
     return 0;
 }

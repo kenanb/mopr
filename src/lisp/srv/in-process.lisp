@@ -3,14 +3,22 @@
 
 (in-package #:mopr-srv)
 
+;; IN-PROCESS SESSION
+;;
+;; For in-process backend, there is a single client that lives within the same
+;; process. So we just bind the session during backend initialization, and
+;; unbind during backend termination.
+
 (defun in-process-backend-init (wdir-abs)
   (format t "MOPR initializing in-process backend.~%")
   (format t "Acquiring workshop lock at path: ~A~%" wdir-abs)
-  (mopr-msg:acquire-ws wdir-abs))
+  (mopr-msg:acquire-ws wdir-abs)
+  (setf mopr-msg:*messaging-session* (make-instance 'mopr-msg:messaging-session)))
 
 (defun in-process-backend-term ()
   (format t "MOPR terminating in-process backend.~%")
   (format t "Releasing workshop lock.~%")
+  (setf mopr-msg:*messaging-session* nil)
   (mopr-msg:release-ws))
 
 (defun in-process-backend-handle-get-request (response-body-h uri-str)

@@ -21,8 +21,10 @@ mainly in Lisp. UNTESTED. DO NOT USE!"
   :components
   ((:file "package")
    (:file "control")
+   (:file "session"
+   :depends-on ("package"))
    (:file "handler"
-   :depends-on ("package" "control"))
+   :depends-on ("package" "control" "session"))
    (:file "workshop"
     :depends-on ("package"))))
 

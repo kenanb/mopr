@@ -15,7 +15,7 @@ Descriptor path is a workshop-relative path of the project directory.")
     :type hash-table
     :initform (make-hash-table :test 'equal)
     :accessor workshop-info-sessions
-    :documentation "An alist of project UUID to the ID of client
+    :documentation "An hash-table of project UUID to the ID of client
 (currently assigned to project) mappings."))
   (:documentation "WORKSHOP-INFO
 
