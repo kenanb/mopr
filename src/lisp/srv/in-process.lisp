@@ -13,21 +13,37 @@
   (format t "Releasing workshop lock.~%")
   (mopr-msg:release-ws))
 
-(defun in-process-backend-handle-get-request (response-h uri-str)
-  (let* ((response (mopr-msg:request-handler-get uri-str))
-         (response-f (cffi:foreign-string-alloc response)))
-    ;; (format t "L                  | RESPONSE ADDRESS : ~A~%" response-h)
+(defun in-process-backend-handle-get-request (response-body-h uri-str)
+  (let* ((response-str (mopr-msg:request-handler-get uri-str))
+         (response-f (cffi:foreign-string-alloc response-str)))
+    ;; (format t "L                  | RESPONSE ADDRESS : ~A~%" response-body-h)
     ;; (format t "L                  | ALLOCATED STRING : ~A~%" response-f)
-    ;; (format t "L <SETF            | RESPONSE MEM-REF : ~A~%" (cffi:mem-ref response-h :pointer))
-    (setf (cffi:mem-ref response-h :pointer) response-f)
-    ;; (format t "L            SETF> | RESPONSE MEM-REF : ~A~%" (cffi:mem-ref response-h :pointer))
+    ;; (format t "L <SETF            | RESPONSE MEM-REF : ~A~%"
+    ;;         (cffi:mem-ref response-body-h :pointer))
+    (setf (cffi:mem-ref response-body-h :pointer) response-f)
+    ;; (format t "L            SETF> | RESPONSE MEM-REF : ~A~%"
+    ;;         (cffi:mem-ref response-body-h :pointer))
     ))
 
-(defun in-process-backend-release-response (response-h)
-  (let* ((response-f (cffi:mem-ref response-h :pointer)))
-    ;; (format t "L                  | RESPONSE ADDRESS : ~A~%" response-h)
+(defun in-process-backend-handle-post-request (response-body-h uri-str request-body-str)
+  (let* ((response-str (mopr-msg:request-handler-post uri-str request-body-str))
+         (response-f (cffi:foreign-string-alloc response-str)))
+    ;; (format t "L                  | RESPONSE ADDRESS : ~A~%" response-body-h)
+    ;; (format t "L                  | ALLOCATED STRING : ~A~%" response-f)
+    ;; (format t "L <SETF            | RESPONSE MEM-REF : ~A~%"
+    ;;         (cffi:mem-ref response-body-h :pointer))
+    (setf (cffi:mem-ref response-body-h :pointer) response-f)
+    ;; (format t "L            SETF> | RESPONSE MEM-REF : ~A~%"
+    ;;         (cffi:mem-ref response-body-h :pointer))
+    ))
+
+(defun in-process-backend-release-response (response-body-h)
+  (let* ((response-f (cffi:mem-ref response-body-h :pointer)))
+    ;; (format t "L                  | RESPONSE ADDRESS : ~A~%" response-body-h)
     (cffi:foreign-string-free response-f)
-    ;; (format t "L <SETF            | RESPONSE MEM-REF : ~A~%" (cffi:mem-ref response-h :pointer))
-    (setf (cffi:mem-ref response-h :pointer) (cffi:null-pointer))
-    ;; (format t "L            SETF> | RESPONSE MEM-REF : ~A~%" (cffi:mem-ref response-h :pointer))
+    ;; (format t "L <SETF            | RESPONSE MEM-REF : ~A~%"
+    ;;         (cffi:mem-ref response-body-h :pointer))
+    (setf (cffi:mem-ref response-body-h :pointer) (cffi:null-pointer))
+    ;; (format t "L            SETF> | RESPONSE MEM-REF : ~A~%"
+    ;;         (cffi:mem-ref response-body-h :pointer))
     ))

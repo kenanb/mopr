@@ -28,6 +28,7 @@
 
 #include "pugixml.hpp"
 
+#include <sstream>
 #include <stddef.h>
 #include <vector>
 
@@ -35,7 +36,7 @@ namespace mopr
 {
 
 unsigned int
- requestGet( pugi::xml_document & doc, const char * uri )
+ requestGet( pugi::xml_document & docResponse, const char * uri )
 {
     const char * response = NULL;
 
@@ -47,11 +48,42 @@ unsigned int
 
     // printf( "C         REQUEST> | RESPONSE CONTENT : %s\n", response );
 
-    [[maybe_unused]] pugi::xml_parse_result result = doc.load_string( response );
+    [[maybe_unused]] pugi::xml_parse_result result = docResponse.load_string( response );
 
     // std::cout << "Query result: " << result.description( ) << std::endl;
     // std::cout << "Document: \n";
-    // doc.save( std::cout );
+    // docResponse.save( std::cout );
+
+    // printf( "C <RELEASE         | RESPONSE POINTER : %p\n", ( void * ) response );
+    Client_ECL_releaseResponse( &response );
+    // printf( "C         RELEASE> | RESPONSE POINTER : %p\n", ( void * ) response );
+
+    return 0;
+}
+
+unsigned int
+ requestPost( pugi::xml_document & docResponse,
+              const char * uri,
+              const pugi::xml_document & docRequest )
+{
+    const char * response = NULL;
+    std::ostringstream requestStream;
+    docRequest.save( requestStream );
+    const std::string & requestString = requestStream.str( );
+
+    // printf( "C                  | RESPONSE ADDRESS : %p\n", ( void * ) &response );
+
+    // printf( "C <REQUEST         | RESPONSE POINTER : %p\n", ( void * ) response );
+    Client_ECL_requestPost( &response, uri, requestString.c_str( ) );
+    // printf( "C         REQUEST> | RESPONSE POINTER : %p\n", ( void * ) response );
+
+    // printf( "C         REQUEST> | RESPONSE CONTENT : %s\n", response );
+
+    [[maybe_unused]] pugi::xml_parse_result result = docResponse.load_string( response );
+
+    // std::cout << "Query result: " << result.description( ) << std::endl;
+    // std::cout << "Document: \n";
+    // docResponse.save( std::cout );
 
     // printf( "C <RELEASE         | RESPONSE POINTER : %p\n", ( void * ) response );
     Client_ECL_releaseResponse( &response );
@@ -158,8 +190,11 @@ unsigned int
 
     // Testing.
     {
-        pugi::xml_document doc;
-        requestGet( doc, uriEpWorktree.c_str( ) );
+        pugi::xml_document docRequest;
+
+        pugi::xml_document docResponse;
+        requestPost( docResponse, uriEpWorktree.c_str( ), docRequest );
+        docResponse.save( std::cout );
     }
 
     return 0;
@@ -414,13 +449,14 @@ void
             {
                 std::string uriCommandOptions = "/";
                 uriCommandOptions += "command-options";
-                uriCommandOptions += "?id=" + std::to_string(appState.idSelected);
-                uriCommandOptions += "&id-sub=" + std::to_string(appState.idSubSelected);
+                uriCommandOptions += "?id=" + std::to_string( appState.idSelected );
+                uriCommandOptions +=
+                 "&id-sub=" + std::to_string( appState.idSubSelected );
 
                 requestGet( docCommandOptions, uriCommandOptions.c_str( ) );
 
                 std::cout << "CommandOptions: \n";
-                docCommandOptions.save(std::cout);
+                docCommandOptions.save( std::cout );
 
                 Client_ECL_populateCommandOptions(
                  &commandOptions, appState.idSelected, appState.idSubSelected );

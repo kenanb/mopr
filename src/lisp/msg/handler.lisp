@@ -4,54 +4,57 @@
 (in-package #:mopr-msg)
 
 (defconstant +dispatch-tree+
-  '(:top base-get-fn-top
-    ("" :root-ep base-get-fn-root-ep
-     ("" . main-get-fn-root-ep)
-     ("workshop" :workshop-res base-get-fn-workshop-ep
-      ("" . main-get-fn-workshop-ep)
-      (t :workshop-res-ep base-get-fn-workshop-res
-       ("" . main-get-fn-workshop-res)
-       ("project" :project-res base-get-fn-project-ep
-        ("" . main-get-fn-project-ep)
-        (t :project-res-ep base-get-fn-project-res
-         ("" . main-get-fn-project-res)
-         ("asset" :asset-res base-get-fn-asset-ep
-                  ("" . main-get-fn-asset-ep)
-                  (t :asset-res-ep base-get-fn-asset-res
-                     ("" . main-get-fn-asset-res)
-                     ("worktree" . base-get-fn-worktree)))))))
-     (t . get-fn-unknown))
-    (t . get-fn-relative)))
+  '(:top base-request-fn-top
+    ("" :root-ep base-request-fn-root-ep
+     ("" . main-request-fn-root-ep)
+     ("workshop" :workshop-res base-request-fn-workshop-ep
+      ("" . main-request-fn-workshop-ep)
+      (t :workshop-res-ep base-request-fn-workshop-res
+       ("" . main-request-fn-workshop-res)
+       ("project" :project-res base-request-fn-project-ep
+        ("" . main-request-fn-project-ep)
+        (t :project-res-ep base-request-fn-project-res
+         ("" . main-request-fn-project-res)
+         ("asset" :asset-res base-request-fn-asset-ep
+                  ("" . main-request-fn-asset-ep)
+                  (t :asset-res-ep base-request-fn-asset-res
+                     ("" . main-request-fn-asset-res)
+                     ("worktree" . base-request-fn-worktree)))))))
+     (t . request-fn-unknown))
+    (t . request-fn-relative)))
 
-(defun failure-response (rid category context remaining reason)
+(defun failure-response (verb rid category context remaining reason)
   (declare (ignore rid))
-  (format t "~%GET request ~A:
+  (format t "~A request ~A:
 CATEGORY  : ~A
 CONTEXT   : ~S
 REMAINING : ~S~%"
-          reason category context remaining)
-  (xmls:make-node :name "unhandled-request"))
+          verb reason category context remaining)
+  (xmls:make-node :name "unhandled-request"
+                  :attrs `(("verb" ,(symbol-name verb))
+                           ("reason" ,reason)
+                           ("category" ,(symbol-name category)))))
 
 (defgeneric handle-get-request (rid category &key context remaining)
 
   (:method (rid category &key context remaining)
-    (failure-response rid category context remaining "unimplemented"))
+    (failure-response :get rid category context remaining "unimplemented"))
 
-  (:method (rid (category (eql 'base-get-fn-top))
+  (:method (rid (category (eql 'base-request-fn-top))
             &key context remaining)
     (declare (ignore rid category context remaining))
-    (error "The GET request handle BASE-GET-FN-TOP should be unreachable with the current design!"))
+    (error "The GET request handle BASE-REQUEST-FN-TOP should be unreachable with the current design!"))
 
-  (:method (rid (category (eql 'get-fn-relative))
+  (:method (rid (category (eql 'request-fn-relative))
             &key context remaining)
     (declare (ignore rid category context remaining))
-    (error "The GET request handle GET-FN-RELATIVE is currently unsupported!"))
+    (error "The GET request handle REQUEST-FN-RELATIVE is currently unsupported!"))
 
-  (:method (rid (category (eql 'get-fn-unknown))
+  (:method (rid (category (eql 'request-fn-unknown))
             &key context remaining)
-    (failure-response rid category context remaining "unsupported")))
+    (failure-response :get rid category context remaining "unsupported")))
 
-(defmethod handle-get-request (rid (category (eql 'main-get-fn-root-ep))
+(defmethod handle-get-request (rid (category (eql 'main-request-fn-root-ep))
                                &key context remaining)
   (declare (ignore rid context remaining))
   (xmls:make-node
@@ -60,7 +63,7 @@ REMAINING : ~S~%"
    (list (xmls:make-node :name "endpoint" :attrs `(("name" "workshop")
                                                    ("uri" "/workshop/"))))))
 
-(defmethod handle-get-request (rid (category (eql 'main-get-fn-workshop-ep))
+(defmethod handle-get-request (rid (category (eql 'main-request-fn-workshop-ep))
                                &key context remaining)
   (declare (ignore rid category context remaining))
   (let* ((wuuid (mopr-uri:descriptor-uuid (ws-descriptor)))
@@ -70,7 +73,7 @@ REMAINING : ~S~%"
      :attrs `(("uuid" ,wuuid)
               ("uri" ,uri)))))
 
-(defmethod handle-get-request (rid (category (eql 'main-get-fn-workshop-res))
+(defmethod handle-get-request (rid (category (eql 'main-request-fn-workshop-res))
                                &key context remaining)
   (declare (ignore rid category remaining))
   (let ((wuuid (mopr-uri:descriptor-uuid (ws-descriptor))))
@@ -84,7 +87,7 @@ REMAINING : ~S~%"
                              :attrs `(("name" "project")
                                       ("uri" ,uri))))))))
 
-(defmethod handle-get-request (rid (category (eql 'main-get-fn-project-ep))
+(defmethod handle-get-request (rid (category (eql 'main-request-fn-project-ep))
                                &key context remaining)
   (declare (ignore rid category remaining))
   (let ((wuuid (mopr-uri:descriptor-uuid (ws-descriptor))))
@@ -102,7 +105,7 @@ REMAINING : ~S~%"
                                                ("uuid" ,puuid)
                                                ("uri" ,uri)))))))
 
-(defmethod handle-get-request (rid (category (eql 'main-get-fn-project-res))
+(defmethod handle-get-request (rid (category (eql 'main-request-fn-project-res))
                                &key context remaining)
   (declare (ignore rid category remaining))
   (let ((wuuid (mopr-uri:descriptor-uuid (ws-descriptor)))
@@ -117,7 +120,7 @@ REMAINING : ~S~%"
                              :attrs `(("name" "asset")
                                       ("uri" ,uri))))))))
 
-(defmethod handle-get-request (rid (category (eql 'main-get-fn-asset-ep))
+(defmethod handle-get-request (rid (category (eql 'main-request-fn-asset-ep))
                                &key context remaining)
   (declare (ignore rid category remaining))
   (let ((wuuid (mopr-uri:descriptor-uuid (ws-descriptor)))
@@ -139,7 +142,7 @@ REMAINING : ~S~%"
                                                  ("uuid" ,auuid)
                                                  ("uri" ,uri))))))))
 
-(defmethod handle-get-request (rid (category (eql 'main-get-fn-asset-res))
+(defmethod handle-get-request (rid (category (eql 'main-request-fn-asset-res))
                                &key context remaining)
   (declare (ignore rid category remaining))
   (let ((wuuid (mopr-uri:descriptor-uuid (ws-descriptor)))
@@ -155,15 +158,36 @@ REMAINING : ~S~%"
                              :attrs `(("name" "worktree")
                                       ("uri" ,uri))))))))
 
+(defgeneric handle-post-request (rid request-body category &key context remaining)
+
+  (:method (rid request-body category &key context remaining)
+    (format t "POST REQUEST BODY:~%~A~%" request-body)
+    (failure-response :post rid category context remaining "unimplemented"))
+
+  (:method (rid request-body (category (eql 'base-request-fn-top))
+            &key context remaining)
+    (declare (ignore rid request-body category context remaining))
+    (error "The POST request handle BASE-REQUEST-FN-TOP should be unreachable with the current design!"))
+
+  (:method (rid request-body (category (eql 'request-fn-relative))
+            &key context remaining)
+    (declare (ignore rid request-body category context remaining))
+    (error "The POST request handle REQUEST-FN-RELATIVE is currently unsupported!"))
+
+  (:method (rid request-body (category (eql 'request-fn-unknown))
+            &key context remaining)
+    (format t "POST REQUEST BODY:~%~A~%" request-body)
+    (failure-response :post rid category context remaining "unsupported")))
+
 (defun dispatch-path (keyform-list handler)
-  "DISPATCH-PATH keyform-list handler => (fn . context)
+  "DISPATCH-PATH keyform-list handler => (category-symbol :context plist :remaining list)
 handler::= { ancestral-handler | innermost-handler }
-ancestral-handler::= (context-parameter fn clause*)
-innermost-handler::= { (context-parameter fn) | fn }
+ancestral-handler::= (context-parameter category-symbol clause*)
+innermost-handler::= { (context-parameter category-symbol) | category-symbol }
 clause::= (key . handler)
 key ::= { t | match-string }
 
-Atomic form of innermost-handler is syntactic sugar for the list form (:THIS fn).
+Atomic form of innermost-handler is syntactic sugar for the list form (:THIS category-symbol).
 This allows visually treating dot as a placeholder for :THIS in innermost-handler.
 "
   (loop for ht = handler
@@ -180,4 +204,14 @@ This allows visually treating dot as a placeholder for :THIS in innermost-handle
     ;;         (mopr-uri:resource-id-query rid))
     (xmls:toxml
      (apply #'handle-get-request rid
+            (dispatch-path (mopr-uri:resource-id-path rid) +dispatch-tree+)))))
+
+(defun request-handler-post (uri-str request-body-str)
+  (let* ((rid (make-instance 'mopr-uri:resource-id :str uri-str)))
+    ;; (format t "uri: ~S~%     ~S~%     ~S~%"
+    ;;         (mopr-uri:resource-id-data rid)
+    ;;         (mopr-uri:resource-id-path rid)
+    ;;         (mopr-uri:resource-id-query rid))
+    (xmls:toxml
+     (apply #'handle-post-request rid (xmls:parse request-body-str)
             (dispatch-path (mopr-uri:resource-id-path rid) +dispatch-tree+)))))

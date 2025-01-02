@@ -3,6 +3,11 @@
 // NOTE: This is a CPP file for now, only to keep the build setup simple.
 //       It is implemented with the assumption that it will later be a C file.
 
+// TODO : Consider using ecl_make_simple_base_string instead of constant variant
+//        in this API. The "simple" variant creates a simple-base-string with a
+//        fresh string allocation, while "constant" variant points at the data
+//        of C string.
+
 static cl_object
  getSymbol( const char * pkgName, const char * symName )
 {
@@ -143,6 +148,23 @@ unsigned int
     cl_object strURI_l = ecl_make_constant_base_string( uri, -1 );
 
     cl_funcall( 3, symFnRequest_l, hpResponse_l, strURI_l );
+
+    return 0;
+}
+
+unsigned int
+ Client_ECL_requestPost( const char ** pResponse,
+                         const char * uri,
+                         const char * requestBody )
+{
+    cl_object symFnRequest_l =
+     getSymbol( "MOPR-SRV", "IN-PROCESS-BACKEND-HANDLE-POST-REQUEST" );
+
+    cl_object hpResponse_l = ecl_make_pointer( ( void * ) pResponse );
+    cl_object strURI_l = ecl_make_constant_base_string( uri, -1 );
+    cl_object requestBody_l = ecl_make_constant_base_string( requestBody, -1 );
+
+    cl_funcall( 4, symFnRequest_l, hpResponse_l, strURI_l, requestBody_l );
 
     return 0;
 }

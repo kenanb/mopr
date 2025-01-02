@@ -21,5 +21,6 @@
    #:ws-release-project
 
    #:request-handler-get
+   #:request-handler-post
 
    ))

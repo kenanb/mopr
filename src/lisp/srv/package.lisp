@@ -10,6 +10,7 @@
    #:in-process-backend-init
    #:in-process-backend-term
    #:in-process-backend-handle-get-request
+   #:in-process-backend-handle-post-request
    #:in-process-backend-release-response
 
    ))
