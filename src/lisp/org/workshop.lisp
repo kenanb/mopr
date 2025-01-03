@@ -57,9 +57,8 @@ specific workshop. This will be (mostly) guaranteed at the SINGLETON level.
 
 ;; Projects
 
-(defun workshop-create-project (wcons pdir-rel
-                                &rest ctor-kwargs &key &allow-other-keys
-                                &aux (wdesc (car wcons)) (winfo (cdr wcons)))
+(defun workshop-create-project (wchain winfo pdir-rel
+                                &rest ctor-kwargs &key &allow-other-keys)
   "WORKSHOP-CREATE-PROJECT
 
 Utility function to setup a new project in workshop, at given workshop-relative
@@ -79,21 +78,20 @@ using WORKSHOP-ACQUIRE-PROJECT once this call succeeds.
   (unless (relative-pathname-p pdir-rel)
     (error "WORKSHOP-CREATE-PROJECT requires a relative directory!"))
   (with-accessors ((wprojects workshop-info-projects)) winfo
-    (validate-workshop-path (pndescriptor-path wdesc))
+    (validate-workshop-path (desc-chain-as-path wchain))
     (let* ((pdesc (make-pndescriptor-for-directory :project pdir-rel))
-           (pchain (mopr-uri:make-desc-chain wdesc pdesc))
-           (ppath-full (desc-chain-as-path pchain))
+           (pchain (mopr-uri:conc-desc-chains
+                    wchain (mopr-uri:make-desc-chain pdesc)))
            (pinfo (apply #'make-project-info ctor-kwargs)))
       (when (pndesc-alist-assoc wprojects :path (pndescriptor-path pdesc))
         (error "This project path was already registered!"))
-      (ensure-all-directories-exist (list ppath-full))
-      (save-project-manifest-unchecked ppath-full pinfo)
+      (ensure-all-directories-exist (list (desc-chain-as-path pchain)))
+      (save-project-manifest-unchecked pchain pinfo)
       (setf wprojects (acons pdesc pinfo wprojects))
-      (save-workshop-manifest-unchecked wcons)
+      (save-workshop-manifest-unchecked wchain winfo)
       (pndescriptor-uuid pdesc))))
 
-(defun workshop-acquire-project (wcons lookup-type lookup-val session-id
-                                 &aux (winfo (cdr wcons)))
+(defun workshop-acquire-project (winfo lookup-type lookup-val session-id)
   (let* ((sanitized-val (case lookup-type
                           (:path (ensure-directory-pathname lookup-val))
                           (otherwise lookup-val)))
@@ -109,8 +107,7 @@ using WORKSHOP-ACQUIRE-PROJECT once this call succeeds.
           (prog1 pcons
             (setf (gethash puuid (workshop-info-sessions winfo)) session-id))))))
 
-(defun workshop-release-project (wcons lookup-type lookup-val session-id
-                                 &aux (winfo (cdr wcons)))
+(defun workshop-release-project (winfo lookup-type lookup-val session-id)
   (let* ((sanitized-val (case lookup-type
                           (:path (ensure-directory-pathname lookup-val))
                           (otherwise lookup-val)))
@@ -191,7 +188,8 @@ using WORKSHOP-ACQUIRE-PROJECT once this call succeeds.
 (defun load-project-manifest-list-unchecked (wchain pdesc-list)
   (flet ((load-pmanifest (pdesc)
            (cons pdesc (load-project-manifest
-                        (mopr-uri:conc-desc-chains wchain (mopr-uri:make-desc-chain pdesc))))))
+                        (mopr-uri:conc-desc-chains
+                         wchain (mopr-uri:make-desc-chain pdesc))))))
     (mapcar #'load-pmanifest pdesc-list)))
 
 (defun load-workshop-manifest-unchecked (wchain &aux (read-pkg (get-read-package)))
@@ -204,17 +202,16 @@ using WORKSHOP-ACQUIRE-PROJECT once this call succeeds.
   (validate-workshop-path (desc-chain-as-path wchain))
   (load-workshop-manifest-unchecked wchain))
 
-(defun save-workshop-manifest-unchecked (wcons &aux (read-pkg (get-read-package))
-                                                 (wdesc (car wcons)) (winfo (cdr wcons)))
-  (with-open-file (out (get-workshop-manifest-path (pndescriptor-path wdesc))
+(defun save-workshop-manifest-unchecked (wchain winfo &aux (read-pkg (get-read-package)))
+  (with-open-file (out (get-workshop-manifest-path (desc-chain-as-path wchain))
                        :direction :output
                        :if-exists :supersede)
     (with-manifest-io-syntax (:read-pkg read-pkg)
       (pprint (mapcar #'car (workshop-info-projects winfo)) out))))
 
-(defun save-workshop-manifest (wcons &aux (wdesc (car wcons)))
-  (validate-workshop-path (pndescriptor-path wdesc))
-  (save-workshop-manifest-unchecked wcons))
+(defun save-workshop-manifest (wchain winfo)
+  (validate-workshop-path (desc-chain-as-path wchain))
+  (save-workshop-manifest-unchecked wchain winfo))
 
 (defun acquire-workshop (wdesc)
   (progn
@@ -254,13 +251,14 @@ This call doesn't create the workshop directory itself, because:
   (unless (absolute-pathname-p wdir-abs)
     (error "MAKE-WORKSHOP requires an absolute directory!"))
   (let* ((wdesc (make-pndescriptor-for-directory :workshop wdir-abs))
-         (wcons (cons wdesc (make-instance 'workshop-info)))
+         (wchain (mopr-uri:make-desc-chain wdesc))
+         (winfo (make-instance 'workshop-info))
          (wpath (pndescriptor-path wdesc)))
     (unless (directory-exists-p wpath)
       (error "SETUP-WORKSHOP requires the workshop directory to already exist."))
     (when (or (subdirectories wpath) (directory-files wpath))
       (error "SETUP-WORKSHOP requires the workshop directory to be initially empty."))
     (save-workshop-metadata-unchecked wdesc)
-    (save-workshop-manifest-unchecked wcons)
+    (save-workshop-manifest-unchecked wchain winfo)
     (set-workshop-lockfile-state-unchecked wdesc :released)
     (pndescriptor-uuid wdesc)))

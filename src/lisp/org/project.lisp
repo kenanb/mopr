@@ -35,16 +35,15 @@ specific project. This is expected to be tracked by the WORKSHOP instance.
   (validate-project-path (desc-chain-as-path pchain))
   (load-project-manifest-unchecked pchain))
 
-(defun save-project-manifest-unchecked (ppath-full pinfo &aux (read-pkg (get-read-package)))
-  (with-open-file (out (get-project-manifest-path ppath-full)
+(defun save-project-manifest-unchecked (pchain pinfo &aux (read-pkg (get-read-package)))
+  (with-open-file (out (get-project-manifest-path (desc-chain-as-path pchain))
                        :direction :output
                        :if-exists :supersede)
     (with-manifest-io-syntax (:read-pkg read-pkg) (pprint pinfo out))))
 
-(defun save-project-manifest (pchain pinfo
-                              &aux (ppath-full (desc-chain-as-path pchain)))
-  (validate-project-path ppath-full)
-  (save-project-manifest-unchecked ppath-full pinfo))
+(defun save-project-manifest (pchain pinfo)
+  (validate-project-path (desc-chain-as-path pchain))
+  (save-project-manifest-unchecked pchain pinfo))
 
 (defun project-create-asset (pchain pinfo afile-rel
                              &rest ctor-kwargs &key &allow-other-keys)

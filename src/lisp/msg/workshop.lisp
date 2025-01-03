@@ -29,12 +29,15 @@
 
 (defun ws-create-project (pdir-rel &rest ctor-kwargs &key &allow-other-keys)
   (bt:with-lock-held (*workshop-lock*)
-    (apply #'mopr-org:workshop-create-project *workshop* pdir-rel ctor-kwargs)))
+    (apply #'mopr-org:workshop-create-project
+           (mopr-uri:make-desc-chain (car *workshop*))
+           (cdr *workshop*)
+           pdir-rel ctor-kwargs)))
 
 (defun ws-acquire-project (lookup-type lookup-val session-id)
   (bt:with-lock-held (*workshop-lock*)
-    (mopr-org:workshop-acquire-project *workshop* lookup-type lookup-val session-id)))
+    (mopr-org:workshop-acquire-project (cdr *workshop*) lookup-type lookup-val session-id)))
 
 (defun ws-release-project (lookup-type lookup-val session-id)
   (bt:with-lock-held (*workshop-lock*)
-    (mopr-org:workshop-release-project *workshop* lookup-type lookup-val session-id)))
+    (mopr-org:workshop-release-project (cdr *workshop*) lookup-type lookup-val session-id)))
