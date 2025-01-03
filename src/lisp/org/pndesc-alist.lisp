@@ -16,3 +16,9 @@
                      (:path #'%desc-alist-assoc-by-path)
                      (otherwise (error "Unknown PNDESC-ALIST lookup type!")))))
     (funcall lookup-fn desc-alist lookup-val)))
+
+(defun pndesc-alist-sanitizing-assoc (alist lookup-type lookup-val)
+  (let* ((sanitized-val (case lookup-type
+                          (:path (ensure-directory-pathname lookup-val))
+                          (otherwise lookup-val))))
+    (mopr-org:pndesc-alist-assoc alist lookup-type sanitized-val)))

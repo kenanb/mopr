@@ -37,7 +37,17 @@
    ;; PNDESCRIPTOR
    #:pndescriptor-p
    #:pndescriptor
+   #:pndescriptor-uuid
    #:pndescriptor-path
+
+   #:pndesc-alist-assoc
+   #:pndesc-alist-sanitizing-assoc
+
+   ;; ASSET
+   #:make-asset-info
+   #:asset-info-p
+   #:asset-info
+   #:asset-info-content-type
 
    ;; PROJECT
    #:make-project-info
@@ -45,11 +55,14 @@
    #:project-info
    #:project-info-assets
 
-   ;; WORKSHOP
+   #:load-project-manifest
 
+   ;; WORKSHOP
+   #:make-workshop-info
+   #:workshop-info-p
    #:workshop-info
    #:workshop-info-projects
-   #:workshop-info-sessions
+
    #:load-workshop-metadata
    #:load-workshop-manifest
    ;; #:save-workshop-manifest
@@ -59,8 +72,6 @@
    #:project-create-asset
    #:project-get-asset
    #:workshop-create-project
-   #:workshop-acquire-project
-   #:workshop-release-project
    #:setup-workshop
 
    ))
