@@ -50,10 +50,12 @@
    #:workshop-info
    #:workshop-info-projects
    #:workshop-info-sessions
-   #:workshop-set-lock-state-or-fail
+   #:load-workshop-metadata
    #:load-workshop-manifest
    ;; #:save-workshop-manifest
    ;; #:save-project-manifest
+   #:acquire-workshop
+   #:release-workshop
    #:project-create-asset
    #:project-get-asset
    #:workshop-create-project

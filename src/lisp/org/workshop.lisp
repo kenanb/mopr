@@ -30,9 +30,14 @@ specific workshop. This will be (mostly) guaranteed at the SINGLETON level.
 
 ;; Utility
 
-(defconstant +workshop-manifest-filename+ "_mopr_workshop.lisp")
+(defconstant +workshop-metadata-filename+ "_mopr_workshop_metadata.lisp")
 
-(defconstant +workshop-lockfile-filename+ "_mopr_workshop.lock")
+(defconstant +workshop-manifest-filename+ "_mopr_workshop_manifest.lisp")
+
+(defconstant +workshop-lockfile-filename+ "_mopr_workshop_lockfile")
+
+(defun get-workshop-metadata-path (wpath)
+  (merge-pathnames* +workshop-metadata-filename+ wpath))
 
 (defun get-workshop-manifest-path (wpath)
   (merge-pathnames* +workshop-manifest-filename+ wpath))
@@ -44,9 +49,11 @@ specific workshop. This will be (mostly) guaranteed at the SINGLETON level.
   (unless (directory-exists-p wpath)
     (error "VALIDATE-WORKSHOP-PATH was given a non-existent directory."))
   (unless (file-exists-p (get-workshop-lockfile-path wpath))
-    (error "VALIDATE-WORKSHOP-PATH was given a directory that's missing a lockfile."))
+    (error "VALIDATE-WORKSHOP-PATH was given a directory that's missing the lockfile."))
+  (unless (file-exists-p (get-workshop-metadata-path wpath))
+    (error "VALIDATE-WORKSHOP-PATH was given a directory that's missing the metadata."))
   (unless (file-exists-p (get-workshop-manifest-path wpath))
-    (error "VALIDATE-WORKSHOP-PATH was given a directory that's missing a manifest.")))
+    (error "VALIDATE-WORKSHOP-PATH was given a directory that's missing the manifest.")))
 
 ;; Projects
 
@@ -126,7 +133,7 @@ using WORKSHOP-ACQUIRE-PROJECT once this call succeeds.
 (defconstant +workshop-lockfile-acquired-string+ "MOPR_WORKSHOP_LOCK_ACQUIRED")
 (defconstant +workshop-lockfile-released-string+ "MOPR_WORKSHOP_LOCK_RELEASED")
 
-(defun workshop-get-lockfile-state-unchecked (wcons &aux (wdesc (car wcons)))
+(defun get-workshop-lockfile-state-unchecked (wdesc)
   (let* ((wpath (pndescriptor-path wdesc))
          (lockfile-path (get-workshop-lockfile-path wpath))
          (lock-state-string (with-safe-io-syntax () (read-file-string lockfile-path))))
@@ -135,7 +142,7 @@ using WORKSHOP-ACQUIRE-PROJECT once this call succeeds.
       ((string= +workshop-lockfile-released-string+ lock-state-string) :released)
       (t (error "Unexpected lockfile state value found!")))))
 
-(defun workshop-set-lockfile-state-unchecked (wcons state &aux (wdesc (car wcons)))
+(defun set-workshop-lockfile-state-unchecked (wdesc state)
   (let* ((wpath (pndescriptor-path wdesc))
          (lockfile-path (get-workshop-lockfile-path wpath))
          (state-string
@@ -149,33 +156,53 @@ using WORKSHOP-ACQUIRE-PROJECT once this call succeeds.
       (with-safe-io-syntax () (princ state-string out))))
   state)
 
-(defun workshop-set-lock-state-or-fail (wcons requested &aux (wdesc (car wcons)))
+(defun workshop-set-lock-state-or-fail (wdesc requested)
   (validate-workshop-path (pndescriptor-path wdesc))
-  (when (eql requested (workshop-get-lockfile-state-unchecked wcons))
+  (when (eql requested (get-workshop-lockfile-state-unchecked wdesc))
     (error "Attempted to set the value to existing lockfile value!"))
-  (workshop-set-lockfile-state-unchecked wcons requested))
+  (set-workshop-lockfile-state-unchecked wdesc requested))
+
+;; Metadata Handling
+
+(defun load-workshop-metadata-unchecked (wpath &aux (read-pkg (get-read-package)))
+  (with-open-file (in (get-workshop-metadata-path wpath))
+    (let* ((metadata (with-manifest-io-syntax (:read-pkg read-pkg) (read in nil)))
+           (wuuid (getf metadata :uuid)))
+      (make-pndescriptor :role :workshop :uuid wuuid :path wpath))))
+
+(defun load-workshop-metadata (wdir-abs
+                               &aux (wpath (ensure-directory-pathname wdir-abs)))
+  (validate-workshop-path wpath)
+  (load-workshop-metadata-unchecked wpath))
+
+(defun save-workshop-metadata-unchecked (wdesc &aux (read-pkg (get-read-package)))
+  (with-open-file (out (get-workshop-metadata-path (pndescriptor-path wdesc))
+                       :direction :output
+                       :if-exists :supersede)
+    (with-manifest-io-syntax (:read-pkg read-pkg)
+      (pprint (list :uuid (pndescriptor-uuid wdesc)) out))))
+
+(defun save-workshop-metadata (wdesc)
+  (validate-workshop-path (pndescriptor-path wdesc))
+  (save-workshop-metadata-unchecked wdesc))
 
 ;; Manifest Handling
 
-(defun load-project-manifest-list-unchecked (wdesc pdesc-list)
+(defun load-project-manifest-list-unchecked (wchain pdesc-list)
   (flet ((load-pmanifest (pdesc)
            (cons pdesc (load-project-manifest
-                        (mopr-uri:make-desc-chain wdesc pdesc)))))
+                        (mopr-uri:conc-desc-chains wchain (mopr-uri:make-desc-chain pdesc))))))
     (mapcar #'load-pmanifest pdesc-list)))
 
-(defun load-workshop-manifest-unchecked (wpath &aux (read-pkg (get-read-package)))
-  (with-open-file (in (get-workshop-manifest-path wpath))
+(defun load-workshop-manifest-unchecked (wchain &aux (read-pkg (get-read-package)))
+  (with-open-file (in (get-workshop-manifest-path (desc-chain-as-path wchain)))
     (let* ((manifest (with-manifest-io-syntax (:read-pkg read-pkg) (read in nil)))
-           (wuuid (getf manifest :uuid))
-           (pdesc-list (getf manifest :projects))
-           (wdesc (make-pndescriptor :role :workshop :uuid wuuid :path wpath))
-           (wprojects (load-project-manifest-list-unchecked wdesc pdesc-list)))
-      (cons wdesc (make-instance 'workshop-info :projects wprojects)))))
+           (wprojects (load-project-manifest-list-unchecked wchain manifest)))
+      (make-instance 'workshop-info :projects wprojects))))
 
-(defun load-workshop-manifest (wdir-abs
-                               &aux (wpath (ensure-directory-pathname wdir-abs)))
-  (validate-workshop-path wpath)
-  (load-workshop-manifest-unchecked wpath))
+(defun load-workshop-manifest (wchain)
+  (validate-workshop-path (desc-chain-as-path wchain))
+  (load-workshop-manifest-unchecked wchain))
 
 (defun save-workshop-manifest-unchecked (wcons &aux (read-pkg (get-read-package))
                                                  (wdesc (car wcons)) (winfo (cdr wcons)))
@@ -183,13 +210,20 @@ using WORKSHOP-ACQUIRE-PROJECT once this call succeeds.
                        :direction :output
                        :if-exists :supersede)
     (with-manifest-io-syntax (:read-pkg read-pkg)
-      (pprint (list
-               :projects (mapcar #'car (workshop-info-projects winfo))
-               :uuid (pndescriptor-uuid wdesc)) out))))
+      (pprint (mapcar #'car (workshop-info-projects winfo)) out))))
 
 (defun save-workshop-manifest (wcons &aux (wdesc (car wcons)))
   (validate-workshop-path (pndescriptor-path wdesc))
   (save-workshop-manifest-unchecked wcons))
+
+(defun acquire-workshop (wdesc)
+  (progn
+    (workshop-set-lock-state-or-fail wdesc :acquired)
+    (cons wdesc (load-workshop-manifest (mopr-uri:make-desc-chain wdesc)))))
+
+(defun release-workshop (wdesc)
+  (prog1 nil
+    (workshop-set-lock-state-or-fail wdesc :released)))
 
 ;; Workshop Setup
 
@@ -226,6 +260,7 @@ This call doesn't create the workshop directory itself, because:
       (error "SETUP-WORKSHOP requires the workshop directory to already exist."))
     (when (or (subdirectories wpath) (directory-files wpath))
       (error "SETUP-WORKSHOP requires the workshop directory to be initially empty."))
+    (save-workshop-metadata-unchecked wdesc)
     (save-workshop-manifest-unchecked wcons)
-    (workshop-set-lockfile-state-unchecked wcons :released)
+    (set-workshop-lockfile-state-unchecked wdesc :released)
     (pndescriptor-uuid wdesc)))

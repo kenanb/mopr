@@ -7,15 +7,11 @@
 
 (defvar *workshop-lock* (bt:make-lock))
 
-(defun acquire-ws (wdir-abs &aux (wcons (mopr-org:load-workshop-manifest wdir-abs)))
-  (prog1 nil
-    (mopr-org:workshop-set-lock-state-or-fail wcons :acquired)
-    (setf *workshop* wcons)))
+(defun acquire-ws (wdir-abs &aux (wdesc (mopr-org:load-workshop-metadata wdir-abs)))
+  (setf *workshop* (mopr-org:acquire-workshop wdesc)))
 
-(defun release-ws (&aux (wcons *workshop*))
-  (prog1 nil
-    (setf *workshop* nil)
-    (mopr-org:workshop-set-lock-state-or-fail wcons :released)))
+(defun release-ws (&aux (wdesc (car *workshop*)))
+  (setf *workshop* (mopr-org:release-workshop wdesc)))
 
 (defun ws-bound-p ()
   (if *workshop* t nil))

@@ -3,7 +3,7 @@
 
 (in-package #:mopr-org)
 
-(defconstant +project-manifest-filename+ "_mopr_project.lisp")
+(defconstant +project-manifest-filename+ "_mopr_project_manifest.lisp")
 
 (defstruct (project-info (:include entity-info))
   "PROJECT-INFO
@@ -27,14 +27,13 @@ specific project. This is expected to be tracked by the WORKSHOP instance.
   (unless (file-exists-p (get-project-manifest-path ppath-full))
     (error "VALIDATE-PROJECT-PATH was given a directory that's missing a manifest.")))
 
-(defun load-project-manifest-unchecked (ppath-full &aux (read-pkg (get-read-package)))
-  (with-open-file (in (get-project-manifest-path ppath-full))
+(defun load-project-manifest-unchecked (pchain &aux (read-pkg (get-read-package)))
+  (with-open-file (in (get-project-manifest-path (desc-chain-as-path pchain)))
     (with-manifest-io-syntax (:read-pkg read-pkg) (read in nil))))
 
-(defun load-project-manifest (pchain
-                              &aux (ppath-full (desc-chain-as-path pchain)))
-  (validate-project-path ppath-full)
-  (load-project-manifest-unchecked ppath-full))
+(defun load-project-manifest (pchain)
+  (validate-project-path (desc-chain-as-path pchain))
+  (load-project-manifest-unchecked pchain))
 
 (defun save-project-manifest-unchecked (ppath-full pinfo &aux (read-pkg (get-read-package)))
   (with-open-file (out (get-project-manifest-path ppath-full)
