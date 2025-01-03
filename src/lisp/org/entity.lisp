@@ -14,24 +14,14 @@ Base class of workshop content.
   (description ""
    :type string))
 
-(defstruct (asset-info (:include entity-info))
-  "ASSET-INFO
+(defun get-read-package ()
+  (or (find-package "MOPR-USER")
+      (error "Cannot find MOPR-USER package.~%")))
 
-An asset is mainly an abstraction over a file. Assets can be procedures, scene
-description and other media.
-"
-  (content-type :source
-   :type keyword))
-
-(defstruct (project-info (:include entity-info))
-  "PROJECT-INFO
-
-A project is mainly an abstraction over a filesystem directory that is a
-container of assets.
-
-At any time, a single client connected to the server (the server currently
-assumed to be holding the lock to the workshop) is assumed to be working on a
-specific project. This is expected to be tracked by the WORKSHOP instance.
-"
-  (assets nil
-   :type list))
+(defmacro with-manifest-io-syntax ((&key read-pkg) &body body)
+  `(with-standard-io-syntax
+     (let ((*package* ,read-pkg)
+           (*read-default-float-format* 'double-float)
+           (*print-readably* t)
+           (*read-eval* nil))
+       ,@body)))

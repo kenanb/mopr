@@ -19,6 +19,10 @@ mainly in Lisp. UNTESTED. DO NOT USE!"
   ((:file "package")
    (:file "entity"
     :depends-on ("package"))
+   (:file "asset"
+    :depends-on ("package" "entity"))
+   (:file "project"
+    :depends-on ("package" "entity" "asset"))
    (:file "pndescriptor"
     :depends-on ("package"))
    (:file "pndesc-alist"
@@ -28,6 +32,8 @@ mainly in Lisp. UNTESTED. DO NOT USE!"
    (:file "workshop"
     :depends-on ("package"
                  "entity"
+                 "asset"
+                 "project"
                  "pndescriptor"
                  "pndesc-alist"
                  "pndesc-chain"))))
