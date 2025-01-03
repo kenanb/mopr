@@ -1,8 +1,6 @@
 #ifndef MOPR_MAIN_CLIENT_ECL_H
 #define MOPR_MAIN_CLIENT_ECL_H
 
-#include <ecl/ecl.h>
-
 #include "repr/command.h"
 
 // Generic includes.
@@ -13,16 +11,9 @@ extern "C"
 {
 #endif
 
-    MOPR_API unsigned int
-     Client_ECL_populateFromLispFile( void * pLayer,
-                                      const char * resolvedPath,
-                                      unsigned int callEnabled );
 
     MOPR_API unsigned int
-     Client_ECL_initRepr( );
-
-    MOPR_API unsigned int
-     Client_ECL_termRepr( );
+     Client_ECL_execRepr( void * pLayer, unsigned int callEnabled );
 
     MOPR_API unsigned int
      Client_ECL_populateCommandQueue( CommandQueue * queue );

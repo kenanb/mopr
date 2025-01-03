@@ -8,7 +8,6 @@
 
   :depends-on
   (#:mopr-sgt
-   #:mopr-msg
    #:uiop
    #:cffi
    #:float-features
@@ -50,10 +49,11 @@
      (:file "shared")
      (:file "rdata"
       :depends-on ("shared" "ffi"))
+     (:file "control")
      (:file "rnode"
       :depends-on ("shared" "rdata" "ffi"))
      (:file "repr"
-      :depends-on ("shared" "rdata" "rnode" "ffi"))))))
+      :depends-on ("shared" "rdata" "rnode" "ffi" "control"))))))
 
 (register-system-packages "mopr-viz"
                           '(:mopr-viz/repr-def
@@ -64,3 +64,6 @@
                             :mopr-viz/repr-rdata
                             :mopr-viz/repr-rnode
                             :mopr-viz/repr))
+
+(register-system-packages "mopr-viz"
+                          '(:mopr-msg/ctrl))

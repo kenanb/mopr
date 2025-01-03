@@ -6,6 +6,7 @@
 #include "appConfig.h"
 #include "appDelegate.h"
 #include "appState.h"
+#include "messaging.h"
 
 #include "common.h"
 #include "editor.h"
@@ -26,191 +27,11 @@
 #include "SDL_image.h"
 #include "SDL_opengl.h"
 
-#include "pugixml.hpp"
-
-#include <sstream>
 #include <stddef.h>
 #include <vector>
 
 namespace mopr
 {
-
-unsigned int
- requestGet( pugi::xml_document & docResponse, const char * uri )
-{
-    const char * response = NULL;
-
-    // printf( "C                  | RESPONSE ADDRESS : %p\n", ( void * ) &response );
-
-    // printf( "C <REQUEST         | RESPONSE POINTER : %p\n", ( void * ) response );
-    Client_ECL_requestGet( &response, uri );
-    // printf( "C         REQUEST> | RESPONSE POINTER : %p\n", ( void * ) response );
-
-    // printf( "C         REQUEST> | RESPONSE CONTENT : %s\n", response );
-
-    [[maybe_unused]] pugi::xml_parse_result result = docResponse.load_string( response );
-
-    // std::cout << "Query result: " << result.description( ) << std::endl;
-    // std::cout << "Document: \n";
-    // docResponse.save( std::cout );
-
-    // printf( "C <RELEASE         | RESPONSE POINTER : %p\n", ( void * ) response );
-    Client_ECL_releaseResponse( &response );
-    // printf( "C         RELEASE> | RESPONSE POINTER : %p\n", ( void * ) response );
-
-    return 0;
-}
-
-unsigned int
- requestPost( pugi::xml_document & docResponse,
-              const char * uri,
-              const pugi::xml_document & docRequest )
-{
-    const char * response = NULL;
-    std::ostringstream requestStream;
-    docRequest.save( requestStream );
-    const std::string & requestString = requestStream.str( );
-
-    // printf( "C                  | RESPONSE ADDRESS : %p\n", ( void * ) &response );
-
-    // printf( "C <REQUEST         | RESPONSE POINTER : %p\n", ( void * ) response );
-    Client_ECL_requestPost( &response, uri, requestString.c_str( ) );
-    // printf( "C         REQUEST> | RESPONSE POINTER : %p\n", ( void * ) response );
-
-    // printf( "C         REQUEST> | RESPONSE CONTENT : %s\n", response );
-
-    [[maybe_unused]] pugi::xml_parse_result result = docResponse.load_string( response );
-
-    // std::cout << "Query result: " << result.description( ) << std::endl;
-    // std::cout << "Document: \n";
-    // docResponse.save( std::cout );
-
-    // printf( "C <RELEASE         | RESPONSE POINTER : %p\n", ( void * ) response );
-    Client_ECL_releaseResponse( &response );
-    // printf( "C         RELEASE> | RESPONSE POINTER : %p\n", ( void * ) response );
-
-    return 0;
-}
-
-std::string
- requestGetAndSelectUri( const char * get, const char * select )
-{
-    pugi::xml_document doc;
-    requestGet( doc, get );
-    pugi::xpath_node xp = doc.select_node( select );
-
-    std::string result;
-    if ( xp ) result = xp.node( ).attribute( "uri" ).value( );
-    return result;
-}
-
-std::string
- locateEndpoint( const char * uriResource, const char * endpoint )
-{
-    std::string select = "//endpoints/endpoint[@name='";
-    select += endpoint;
-    select += "']";
-    return requestGetAndSelectUri( uriResource, select.c_str( ) );
-}
-
-std::string
- locateResourceWorkshop( const std::string & uriEndpointWorkshop )
-{
-    return requestGetAndSelectUri( uriEndpointWorkshop.c_str( ), "//workshop" );
-}
-
-std::string
- locateResourceProject( const std::string & uriEndpointProject,
-                        const AppEnvironment * appEnvironment )
-{
-    std::string selection = "//projects/project[@path='";
-    selection += appEnvironment->getProjectPath( );
-    selection += "']";
-    return requestGetAndSelectUri( uriEndpointProject.c_str( ), selection.c_str( ) );
-}
-
-std::string
- manageProjectLock( const std::string & uriResourceProject, bool acquire )
-{
-    pugi::xml_document docResponse;
-    pugi::xml_document docRequest;
-
-    pugi::xml_node node_action = docRequest.append_child( "action" );
-    pugi::xml_attribute attr_action_name = node_action.append_attribute( "name" );
-    attr_action_name.set_value( acquire ? "acquire" : "release" );
-
-    requestPost( docResponse, uriResourceProject.c_str( ), docRequest );
-
-    pugi::xpath_node xp = docResponse.select_node( "//project-lock" );
-
-    std::string result;
-    if ( xp ) result = xp.node( ).attribute( "state" ).value( );
-    return result;
-}
-
-std::string
- locateResourceAsset( const std::string & uriEndpointAsset,
-                      const AppEnvironment * appEnvironment )
-{
-    std::string selection = "//assets/asset[@path='";
-    selection += appEnvironment->getAssetPath( );
-    selection += "']";
-    return requestGetAndSelectUri( uriEndpointAsset.c_str( ), selection.c_str( ) );
-}
-
-unsigned int
- queryWorkshop( const AppEnvironment * appEnvironment )
-{
-    std::string uriEpW = locateEndpoint( "/", "workshop" );
-    if ( uriEpW.empty( ) ) return 0;
-    std::cout << "Workshop endpoint URI : " << uriEpW << std::endl;
-
-    std::string uriResW = locateResourceWorkshop( uriEpW );
-    if ( uriResW.empty( ) ) return 0;
-    std::cout << "Workshop resource URI : " << uriResW << std::endl;
-
-    std::string uriEpP = locateEndpoint( uriResW.c_str( ), "project" );
-    if ( uriEpP.empty( ) ) return 0;
-    std::cout << "Project endpoint URI  : " << uriEpP << std::endl;
-
-    std::string uriResP = locateResourceProject( uriEpP, appEnvironment );
-    if ( uriResP.empty( ) ) return 0;
-    std::cout << "Project resource URI  : " << uriResP << std::endl;
-
-    std::string uriEpPL = locateEndpoint( uriResP.c_str( ), "lock" );
-    if ( uriEpPL.empty( ) ) return 0;
-    std::cout << "Proj lock endpoint URI: " << uriEpPL << std::endl;
-
-    std::string pLockState;
-    pLockState = manageProjectLock( uriEpPL, true );
-    if ( pLockState != "acquired" ) return 0;
-
-    std::string uriEpA = locateEndpoint( uriResP.c_str( ), "asset" );
-    if ( uriEpA.empty( ) ) return 0;
-    std::cout << "Asset endpoint URI    : " << uriEpA << std::endl;
-
-    std::string uriResA = locateResourceAsset( uriEpA, appEnvironment );
-    if ( uriResA.empty( ) ) return 0;
-    std::cout << "Asset resource URI    : " << uriResA << std::endl;
-
-    std::string uriEpWorktree = locateEndpoint( uriResA.c_str( ), "worktree" );
-    if ( uriEpWorktree.empty( ) ) return 0;
-    std::cout << "Worktree endpoint URI : " << uriEpWorktree << std::endl;
-
-    // Testing.
-    {
-        pugi::xml_document docRequest;
-
-        pugi::xml_document docResponse;
-        requestPost( docResponse, uriEpWorktree.c_str( ), docRequest );
-        docResponse.save( std::cout );
-    }
-
-    pLockState = manageProjectLock( uriEpPL, false );
-    if ( pLockState != "released" ) return 0;
-
-    return 0;
-}
 
 void
  appDelegate( SDL_Window * window, const AppEnvironment * appEnvironment )
@@ -225,23 +46,26 @@ void
     //
 
     const std::string & resolvedWorkshopPath = appEnvironment->getResolvedWorkshopPath( );
-    Client_ECL_initBackend( resolvedWorkshopPath.c_str( ) );
 
-    queryWorkshop( appEnvironment );
+    Messaging messaging;
+    messaging.initBackend( resolvedWorkshopPath );
+
+    messaging.initGenericWorkshopEndpoints( appEnvironment );
+    messaging.acquireProject( );
+    messaging.initGenericProjectEndpoints( appEnvironment );
+    messaging.debugPrint( );
+
+    messaging.bindStaging( );
 
     //
     // Construct scene.
     //
 
-    // TODO : Replace with real workshop-based path resolution logic.
-    const std::string & usdsPath = appEnvironment->getResolvedWorkshopPath( ) + "/"
-                                   + appEnvironment->getProjectPath( ) + "/"
-                                   + appEnvironment->getAssetPath( );
-
     pxr::SdfLayerRefPtr layer = pxr::SdfLayer::CreateAnonymous( );
     MoprLayer sLayer;
     sLayer.SetRefPtr( layer );
-    Client_ECL_populateFromLispFile( ( void * ) &sLayer, usdsPath.c_str( ), 1 );
+    // Stage needs to be available for app state initialization.
+    Client_ECL_execRepr( ( void * ) &sLayer, 1 );
     if ( !layer )
     {
         printf( "Couldn't populate layer!\n" );
@@ -255,7 +79,7 @@ void
     // Representation classes.
     //
 
-    Client_ECL_initRepr( );
+    messaging.initRepr( );
 
     // Populated and cleaned up on the Lisp side.
     CommandQueue commandQueue;
@@ -267,8 +91,6 @@ void
     CommandOptions commandOptions;
     commandOptions.nofOptions = 0;
     commandOptions.options = NULL;
-
-    pugi::xml_document docCommandOptions;
 
     Client_ECL_populateCommandQueue( &commandQueue );
     // mopr_print_command_queue( &commandQueue );
@@ -459,16 +281,11 @@ void
             Client_ECL_destructCommandOptions( &commandOptions );
             if ( appState.idSelected )
             {
-                std::string uriCommandOptions = "/";
-                uriCommandOptions += "command-options";
-                uriCommandOptions += "?id=" + std::to_string( appState.idSelected );
-                uriCommandOptions +=
-                 "&id-sub=" + std::to_string( appState.idSubSelected );
-
-                requestGet( docCommandOptions, uriCommandOptions.c_str( ) );
-
-                std::cout << "CommandOptions: \n";
-                docCommandOptions.save( std::cout );
+                // std::string uriCommandOptions = "/";
+                // uriCommandOptions += "command-options";
+                // uriCommandOptions += "?id=" + std::to_string( appState.idSelected );
+                // uriCommandOptions +=
+                //  "&id-sub=" + std::to_string( appState.idSubSelected );
 
                 Client_ECL_populateCommandOptions(
                  &commandOptions, appState.idSelected, appState.idSubSelected );
@@ -570,8 +387,9 @@ void
 
     overlayProgram.fini( );
 
-    Client_ECL_termRepr( );
-    Client_ECL_termBackend( );
+    messaging.termRepr( );
+    messaging.releaseProject( );
+    messaging.termBackend( );
     Client_ECL_destructCommandQueue( &commandQueue );
     Client_ECL_destructCommandOptions( &commandOptions );
 }

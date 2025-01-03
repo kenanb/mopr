@@ -8,21 +8,13 @@
                 #:multiple-set-c-ref)
   (:use :cl)
   (:export
-   #:bind-repr
-   #:init-repr
-   #:term-repr
-   #:populate-command-queue
-   #:destruct-command-queue
-   #:populate-command-options
-   #:destruct-command-options
-   #:apply-command-option))
+   #:%populate-command-queue
+   #:%destruct-command-queue
+   #:%populate-command-options
+   #:%destruct-command-options
+   #:%apply-command-option))
 
 (in-package :mopr-viz/repr)
-
-(defconstant +component-classes+ '(mopr-msg/ctrl:node-identifier
-                                   mopr-viz/repr-rnode:rnode))
-
-(defvar *procedure* nil)
 
 ;;
 ;;; Utilities
@@ -31,21 +23,6 @@
 (defun enode-rdatas (node)
   (let ((rn (mopr-sgt:enode-find-component node 'mopr-viz/repr-rnode:rnode)))
     (mopr-viz/repr-rnode:rnode-rdatas rn)))
-
-(defun get-root-enode () (mopr-sgt:procedure-root *procedure*))
-
-;;
-;;; ENODE Tree
-;;
-
-(defun bind-repr (pr)
-  (setf *procedure* (mopr-sgt:make-enode-procedure pr)))
-
-(defun init-repr ()
-  (mopr-sgt:enode-procedure-create-components *procedure* +component-classes+))
-
-(defun term-repr ()
-  (mopr-sgt:enode-procedure-delete-components *procedure* +component-classes+))
 
 ;;
 ;;; Trivial Vector Type Backed by a C Array
@@ -108,26 +85,27 @@
      (loop for c across (mopr-sgt:enode-children n)
            summing (%count-visible-rdata-recursive c))))
 
-(defun populate-command-queue (cmd-queue-ptr
-                               &aux
-                                 (cmd-queue (autowrap:wrap-pointer
-                                             cmd-queue-ptr 'mopr-viz/repr-def:command-queue)))
+(defun %populate-command-queue (pr cmd-queue-ptr
+                                &aux
+                                  (cmd-queue (autowrap:wrap-pointer
+                                              cmd-queue-ptr 'mopr-viz/repr-def:command-queue))
+                                  (root-enode (mopr-sgt:procedure-root pr)))
   (mopr-viz/layout-shared:with-layout-settings
     (let* ((pixels-w (plus-c:c-ref cmd-queue mopr-viz/repr-def:command-queue :pixels-w))
            ;; (pixels-h (plus-c:c-ref cmd-queue mopr-viz/repr-def:command-queue :pixels-h))
            (root-yn (mopr-viz/repr-rdata:rdata-ynode
-                     (car (enode-rdatas (get-root-enode)))))
+                     (car (enode-rdatas root-enode))))
            (wcmds
              (make-instance 'cvec
                             :ctype 'mopr-viz/repr-def:combined-command
-                            :size (%count-visible-rdata-recursive (get-root-enode)))))
+                            :size (%count-visible-rdata-recursive root-enode))))
 
       (mopr-viz/yoga-fun:node-calculate-layout root-yn
                                                pixels-w
                                                mopr-viz/yoga-def:+undefined+ ;; pixels-h
                                                mopr-viz/yoga-def:+direction-ltr+)
 
-      (%populate-commands-recursive (get-root-enode) wcmds)
+      (%populate-commands-recursive root-enode wcmds)
 
       (multiple-set-c-ref cmd-queue (mopr-viz/repr-def:command-queue)
                           :nof-commands (cvec-size wcmds)
@@ -137,10 +115,10 @@
 
 ;; NOTE: Free calls are made from the same module the allocations were made from,
 ;;       to avoid possible issues with multiple malloc implementations in runtime.
-(defun destruct-command-queue (cmd-queue-ptr
-                               &aux
-                                 (cmd-queue (autowrap:wrap-pointer
-                                             cmd-queue-ptr 'mopr-viz/repr-def:command-queue)))
+(defun %destruct-command-queue (cmd-queue-ptr
+                                &aux
+                                  (cmd-queue (autowrap:wrap-pointer
+                                              cmd-queue-ptr 'mopr-viz/repr-def:command-queue)))
   (let* ((cmd-count (plus-c:c-ref cmd-queue mopr-viz/repr-def:command-queue :nof-commands))
          (commands (plus-c:c-ref cmd-queue mopr-viz/repr-def:command-queue :commands)))
 
@@ -173,10 +151,10 @@
     (multiple-set-c-ref cmd-queue (mopr-viz/repr-def:command-queue) :nof-commands 0
                                                                     :commands (autowrap:ptr nil))))
 
-(defun destruct-command-options (cmd-options-ptr
-                                 &aux
-                                   (cmd-options (autowrap:wrap-pointer
-                                                 cmd-options-ptr 'mopr-viz/repr-def:command-options)))
+(defun %destruct-command-options (cmd-options-ptr
+                                  &aux
+                                    (cmd-options (autowrap:wrap-pointer
+                                                  cmd-options-ptr 'mopr-viz/repr-def:command-options)))
   (let* ((opt-count (plus-c:c-ref cmd-options mopr-viz/repr-def:command-options :nof-options))
          (options (plus-c:c-ref cmd-options mopr-viz/repr-def:command-options :options)))
 
@@ -188,12 +166,12 @@
     (multiple-set-c-ref cmd-options (mopr-viz/repr-def:command-options) :nof-options 0
                                                                         :options (autowrap:ptr nil))))
 
-(defun populate-command-options (cmd-options-ptr id id-sub
-                                 &aux
-                                   (cmd-options (autowrap:wrap-pointer
-                                                 cmd-options-ptr 'mopr-viz/repr-def:command-options)))
+(defun %populate-command-options (pr cmd-options-ptr id id-sub
+                                  &aux
+                                    (cmd-options (autowrap:wrap-pointer
+                                                  cmd-options-ptr 'mopr-viz/repr-def:command-options)))
   (when (zerop id-sub) (error "Zero id-sub passed to root-enode-populate-command-options!"))
-  (mopr-sgt:with-bound-procedure-accessors ((root mopr-sgt:procedure-root)) *procedure*
+  (mopr-sgt:with-bound-procedure-accessors ((root mopr-sgt:procedure-root)) pr
     (let* ((n (mopr-msg/ctrl:find-enode-by-id root id))
            (opts (mopr-msg/ctrl:payload-get-options (mopr-sgt:bnode-find-payload n) (1- id-sub)))
            (nof-opts (length opts))
@@ -206,10 +184,10 @@
                           :nof-options nof-opts
                           :options (autowrap:ptr vopts)))))
 
-(defun apply-command-option (id id-sub id-opt)
+(defun %apply-command-option (pr id id-sub id-opt)
   (when (zerop id-sub) (error "Zero id-sub passed to root-enode-apply-command-option!"))
   (when (zerop id-opt) (error "Zero id-opt passed to root-enode-apply-command-option!"))
-  (mopr-sgt:with-bound-procedure-accessors ((root mopr-sgt:procedure-root)) *procedure*
+  (mopr-sgt:with-bound-procedure-accessors ((root mopr-sgt:procedure-root)) pr
     (let* ((n (mopr-msg/ctrl:find-enode-by-id root id))
            (opts (mopr-msg/ctrl:payload-get-options (mopr-sgt:bnode-find-payload n) (1- id-sub)))
            (idx (1- id-opt)))

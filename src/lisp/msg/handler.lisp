@@ -20,7 +20,8 @@
                   ("" . main-request-fn-asset-ep)
                   (t :asset-res-ep base-request-fn-asset-res
                      ("" . main-request-fn-asset-res)
-                     ("worktree" . base-request-fn-worktree)))))))
+                     ("staging" . base-request-fn-staging)
+                     ("working" . base-request-fn-working)))))))
      (t . request-fn-unknown))
     (t . request-fn-relative)))
 
@@ -166,13 +167,35 @@ REMAINING : ~S~%"
         (auuid (getf context :asset-res)))
     (unless (equal wuuid (getf context :workshop-res))
       (error "Workshop ID doesn't match the active workshop."))
-    (let* ((uri (format nil "/workshop/~A/project/~A/asset/~A/worktree/" wuuid puuid auuid)))
+    (let* ((ep-uri-staging (format nil "/workshop/~A/project/~A/asset/~A/staging/" wuuid puuid auuid))
+           (ep-uri-working (format nil "/workshop/~A/project/~A/asset/~A/working/" wuuid puuid auuid)))
       (xmls:make-node
        :name "endpoints"
        :children
        (list (xmls:make-node :name "endpoint"
-                             :attrs `(("name" "worktree")
-                                      ("uri" ,uri))))))))
+                             :attrs `(("name" "staging")
+                                      ("uri" ,ep-uri-staging)))
+             (xmls:make-node :name "endpoint"
+                             :attrs `(("name" "working")
+                                      ("uri" ,ep-uri-working))))))))
+
+(defmethod handle-get-request (rid (category (eql 'base-request-fn-staging))
+                               &key context remaining)
+  (declare (ignore rid category remaining))
+  (let ((wuuid (mopr-uri:descriptor-uuid (ws-descriptor)))
+        (puuid (messaging-session-puuid *messaging-session*))
+        (auuid (getf context :asset-res)))
+    (unless (equal wuuid (getf context :workshop-res))
+      (error "Workshop ID doesn't match the active workshop."))
+    (unless (equal puuid (getf context :project-res))
+      (error "Project ID doesn't match the active project."))
+    (let* ((pcons (mopr-uri:desc-alist-assoc (ws-projects) :uuid puuid))
+           (pdesc (car pcons))
+           (acons (mopr-uri:desc-alist-assoc (mopr-org:project-info-assets (cdr pcons)) :uuid auuid))
+           (adesc (car acons))
+           (apath (mopr-org:desc-chain-as-path (mopr-uri:make-desc-chain (ws-descriptor) pdesc adesc)
+                                               :file-expected-p t)))
+      (xmls:make-node :name "asset" :attrs `(("path" ,(namestring apath)))))))
 
 (defgeneric handle-post-request (rid request-body category &key context remaining)
 
@@ -216,6 +239,54 @@ REMAINING : ~S~%"
             (ws-release-project :uuid puuid sid)
             (format t "Session released project lock.~%"))))))
     (handle-get-request rid category :context context :remaining remaining)))
+
+(defmethod handle-post-request (rid request-body (category (eql 'base-request-fn-staging))
+                                &key context remaining)
+  (declare (ignore rid category remaining))
+  (let ((wuuid (mopr-uri:descriptor-uuid (ws-descriptor)))
+        (puuid (messaging-session-puuid *messaging-session*))
+        (auuid (getf context :asset-res)))
+    (unless (equal wuuid (getf context :workshop-res))
+      (error "Workshop ID doesn't match the active workshop."))
+    (unless (equal puuid (getf context :project-res))
+      (error "Project ID doesn't match the active project."))
+    (let* ((pcons (mopr-uri:desc-alist-assoc (ws-projects) :uuid puuid))
+           (pdesc (car pcons))
+           (acons (mopr-uri:desc-alist-assoc (mopr-org:project-info-assets (cdr pcons)) :uuid auuid))
+           (adesc (car acons))
+           (apath (mopr-org:desc-chain-as-path (mopr-uri:make-desc-chain (ws-descriptor) pdesc adesc)
+                                               :file-expected-p t)))
+      (cond
+        ((equal (xmls:node-name request-body) "action")
+         (let ((action-name (cadr (assoc "name" (xmls:node-attrs request-body) :test #'string=))))
+           (cond
+             ((equal action-name "bind")
+              (bind-repr apath)
+              (format t "File bound: ~A~%" apath))))))
+      (handle-get-request rid category :context context :remaining remaining))))
+
+(defmethod handle-post-request (rid request-body (category (eql 'base-request-fn-working))
+                                &key context remaining)
+  (declare (ignore rid category remaining))
+  (let ((wuuid (mopr-uri:descriptor-uuid (ws-descriptor)))
+        (puuid (messaging-session-puuid *messaging-session*))
+        (auuid (getf context :asset-res)))
+    (unless (equal wuuid (getf context :workshop-res))
+      (error "Workshop ID doesn't match the active workshop."))
+    (unless (equal puuid (getf context :project-res))
+      (error "Project ID doesn't match the active project."))
+    (cond
+      ((equal (xmls:node-name request-body) "action")
+       (let ((action-name (cadr (assoc "name" (xmls:node-attrs request-body) :test #'string=))))
+         (cond
+           ((equal action-name "init-repr")
+            (init-repr)
+            (format t "Representation components for bound procedure are initialized.~%"))
+           ((equal action-name "term-repr")
+            (term-repr)
+            (format t "Representation components for bound procedure are terminated.~%"))))))
+    ;; TODO : Revisit.
+    (xmls:make-node :name "action-result" :attrs `(("status" "OK")))))
 
 (defun dispatch-path (keyform-list handler)
   "DISPATCH-PATH keyform-list handler => (category-symbol :context plist :remaining list)

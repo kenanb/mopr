@@ -337,6 +337,7 @@ MOPR_EDIT_CPP_OBJ ::= src/edit/.main.cpp.o \
 	src/edit/.appDelegate.cpp.o \
 	src/edit/.appEnvironment.cpp.o \
 	src/edit/.appState.cpp.o \
+	src/edit/.messaging.cpp.o \
 	src/edit/ext/imgui/.imgui.cpp.o \
 	src/edit/ext/imgui/.imgui_draw.cpp.o \
 	src/edit/ext/imgui/.imgui_tables.cpp.o \

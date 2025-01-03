@@ -43,6 +43,9 @@
    #:pndesc-alist-assoc
    #:pndesc-alist-sanitizing-assoc
 
+   ;; DESC-CHAIN
+   #:desc-chain-as-path
+
    ;; ASSET
    #:make-asset-info
    #:asset-info-p

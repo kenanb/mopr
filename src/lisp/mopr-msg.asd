@@ -12,7 +12,9 @@ mainly in Lisp. UNTESTED. DO NOT USE!"
   :depends-on
   (#:mopr-org
    #:mopr-sgt
+   #:mopr-exe
    #:mopr-uri
+   #:mopr-viz
    #:bordeaux-threads
    #:xmls)
 
@@ -20,13 +22,11 @@ mainly in Lisp. UNTESTED. DO NOT USE!"
 
   :components
   ((:file "package")
-   (:file "control")
    (:file "session"
    :depends-on ("package"))
+   (:file "direct-calls"
+   :depends-on ("package"))
    (:file "handler"
-   :depends-on ("package" "control" "session"))
+   :depends-on ("package" "session"))
    (:file "workshop"
     :depends-on ("package"))))
-
-(register-system-packages "mopr-msg"
-                          '(:mopr-msg/ctrl))
