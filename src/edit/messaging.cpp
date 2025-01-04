@@ -25,6 +25,21 @@ Messaging::Messaging( )
 {
 }
 
+void
+ Messaging::debugPrint( )
+{
+    std::cout << "\nWorkshop endpoint URI  : " << uriEpW
+              << "\nWorkshop resource URI  : " << uriResW
+              << "\nProject endpoint URI   : " << uriEpP
+              << "\nProject resource URI   : " << uriResP
+              << "\nProj lock endpoint URI : " << uriEpPL
+              << "\nAsset endpoint URI     : " << uriEpA
+              << "\nAsset resource URI     : " << uriResA
+              << "\nStaging endpoint URI   : " << uriEpStaging
+              << "\nWorking endpoint URI   : " << uriEpWorking
+              << "\nBound resource URI     : " << uriResBound << std::endl;
+}
+
 unsigned int
  Messaging::initBackend( const std::string & workshopPath )
 {
@@ -270,19 +285,27 @@ unsigned int
     return 0;
 }
 
-void
- Messaging::debugPrint( )
+unsigned int
+ Messaging::populateCommandOptions( std::vector< std::string > & commandOptions,
+                                    unsigned int id,
+                                    unsigned int idSub )
 {
-    std::cout << "\nWorkshop endpoint URI  : " << uriEpW
-              << "\nWorkshop resource URI  : " << uriResW
-              << "\nProject endpoint URI   : " << uriEpP
-              << "\nProject resource URI   : " << uriResP
-              << "\nProj lock endpoint URI : " << uriEpPL
-              << "\nAsset endpoint URI     : " << uriEpA
-              << "\nAsset resource URI     : " << uriResA
-              << "\nStaging endpoint URI   : " << uriEpStaging
-              << "\nWorking endpoint URI   : " << uriEpWorking
-              << "\nBound resource URI     : " << uriResBound << std::endl;
+    std::string uriOptions = uriResBound;
+    uriOptions += "option";
+    uriOptions += "?id=" + std::to_string( id );
+    uriOptions += "&id-sub=" + std::to_string( idSub );
+    pugi::xml_document docResponse;
+
+    requestGet( docResponse, uriOptions.c_str( ) );
+
+    pugi::xpath_node_set xp = docResponse.select_nodes( "//options/option" );
+
+    for ( pugi::xpath_node_set::const_iterator it = xp.begin( ); it != xp.end( ); ++it )
+    {
+        commandOptions.emplace_back( it->node( ).attribute( "name" ).value( ) );
+    }
+
+    return 0;
 }
 
 }   // namespace mopr

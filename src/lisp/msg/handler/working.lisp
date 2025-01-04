@@ -3,6 +3,18 @@
 
 (in-package #:mopr-msg)
 
+(defmethod handle-get-request (rid (category (eql 'base-request-fn-option))
+                               &key context remaining)
+  (declare (ignore category remaining))
+  (let ((wuuid (mopr-uri:descriptor-uuid (ws-descriptor)))
+        (puuid (messaging-session-puuid *messaging-session*))
+        (auuid (getf context :asset-res)))
+    (unless (equal wuuid (getf context :workshop-res))
+      (error "Workshop ID doesn't match the active workshop."))
+    (unless (equal puuid (getf context :project-res))
+      (error "Project ID doesn't match the active project."))
+    (populate-command-options (mopr-uri:resource-id-query rid))))
+
 (defmethod handle-post-request (rid request-body (category (eql 'main-request-fn-working-res))
                                 &key context remaining)
   (declare (ignore rid category remaining))

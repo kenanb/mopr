@@ -54,32 +54,6 @@ unsigned int
 }
 
 unsigned int
- Client_ECL_populateCommandOptions( CommandOptions * options,
-                                    unsigned int id,
-                                    unsigned int idSub )
-{
-    cl_object symFn_l = getSymbol( "MOPR-MSG", "POPULATE-COMMAND-OPTIONS" );
-
-    cl_object id_l = ecl_make_unsigned_integer( id );
-    cl_object idSub_l = ecl_make_unsigned_integer( idSub );
-    cl_object hOptions_l = ecl_make_pointer( options );
-
-    cl_funcall( 4, symFn_l, hOptions_l, id_l, idSub_l );
-    return 0;
-}
-
-unsigned int
- Client_ECL_destructCommandOptions( CommandOptions * options )
-{
-    cl_object symFn_l = getSymbol( "MOPR-MSG", "DESTRUCT-COMMAND-OPTIONS" );
-
-    cl_object hOptions_l = ecl_make_pointer( options );
-
-    cl_funcall( 2, symFn_l, hOptions_l );
-    return 0;
-}
-
-unsigned int
  Client_ECL_applyOption( unsigned int id, unsigned int idSub, unsigned int idOpt )
 {
     cl_object symFn_l = getSymbol( "MOPR-MSG", "APPLY-COMMAND-OPTION" );

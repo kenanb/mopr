@@ -10,8 +10,6 @@
   (:export
    #:%populate-command-queue
    #:%destruct-command-queue
-   #:%populate-command-options
-   #:%destruct-command-options
    #:%apply-command-option))
 
 (in-package :mopr-viz/repr)
@@ -150,39 +148,6 @@
 
     (multiple-set-c-ref cmd-queue (mopr-viz/repr-def:command-queue) :nof-commands 0
                                                                     :commands (autowrap:ptr nil))))
-
-(defun %destruct-command-options (cmd-options-ptr
-                                  &aux
-                                    (cmd-options (autowrap:wrap-pointer
-                                                  cmd-options-ptr 'mopr-viz/repr-def:command-options)))
-  (let* ((opt-count (plus-c:c-ref cmd-options mopr-viz/repr-def:command-options :nof-options))
-         (options (plus-c:c-ref cmd-options mopr-viz/repr-def:command-options :options)))
-
-    (loop for i below opt-count
-          do (autowrap:free (autowrap:c-aref options i :pointer)))
-
-    (autowrap:free options)
-
-    (multiple-set-c-ref cmd-options (mopr-viz/repr-def:command-options) :nof-options 0
-                                                                        :options (autowrap:ptr nil))))
-
-(defun %populate-command-options (pr cmd-options-ptr id id-sub
-                                  &aux
-                                    (cmd-options (autowrap:wrap-pointer
-                                                  cmd-options-ptr 'mopr-viz/repr-def:command-options)))
-  (when (zerop id-sub) (error "Zero id-sub passed to root-enode-populate-command-options!"))
-  (mopr-sgt:with-bound-procedure-accessors ((root mopr-sgt:procedure-root)) pr
-    (let* ((n (mopr-msg/ctrl:find-enode-by-id root id))
-           (opts (mopr-msg/ctrl:payload-get-options (mopr-sgt:bnode-find-payload n) (1- id-sub)))
-           (nof-opts (length opts))
-           (vopts (autowrap:alloc :pointer nof-opts)))
-
-      (loop for o in opts for i from 0
-            do (setf (autowrap:c-aref vopts i :pointer) (autowrap:alloc-string o)))
-
-      (multiple-set-c-ref cmd-options (mopr-viz/repr-def:command-options)
-                          :nof-options nof-opts
-                          :options (autowrap:ptr vopts)))))
 
 (defun %apply-command-option (pr id id-sub id-opt)
   (when (zerop id-sub) (error "Zero id-sub passed to root-enode-apply-command-option!"))

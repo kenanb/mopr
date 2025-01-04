@@ -4,6 +4,7 @@
 #include "appEnvironment.h"
 
 #include <string>
+#include <vector>
 
 namespace mopr
 {
@@ -23,6 +24,9 @@ struct Messaging
     std::string uriResBound;
 
     Messaging( );
+
+    void
+     debugPrint( );
 
     unsigned int
      initBackend( const std::string & workshopPath );
@@ -51,8 +55,10 @@ struct Messaging
     unsigned int
      releaseProject( );
 
-    void
-     debugPrint( );
+    unsigned int
+     populateCommandOptions( std::vector< std::string > & commandOptions,
+                             unsigned int id,
+                             unsigned int idSub );
 };
 
 }   // namespace mopr

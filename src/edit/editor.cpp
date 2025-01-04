@@ -404,7 +404,7 @@ bool
 }
 
 void
- Editor::drawOptions( CommandOptions const * const o, unsigned int * optSelected )
+ Editor::drawOptions( const std::vector< std::string > & o, unsigned int * optSelected )
 {
     ImGuiViewport * viewport = ImGui::GetMainViewport( );
     int windowWidth = viewport->Size.x / 2;
@@ -435,10 +435,10 @@ void
     static const CommandSettings settings;
     CommandContext ctxCmd{ 0, 0, offset, this->fontInfos, &settings };
 
-    for ( int i = 0; i < o->nofOptions; i++ )
+    for ( int i = 0; i < o.size( ); i++ )
     {
         unsigned int idx = i + 1;
-        if ( drawOption( draw_list, o->options[ i ], idx, &ctxCmd, *optSelected ) )
+        if ( drawOption( draw_list, o[ i ].c_str( ), idx, &ctxCmd, *optSelected ) )
         {
             *optSelected = idx;
         }
@@ -446,8 +446,7 @@ void
 
     // Advance the ImGui cursor to claim space. If the "reserved" height and width were
     // not fully used, we expect the values to have already been adjusted to "used" area.
-    ImGui::SetCursorScreenPos(
-     ImVec2( offset.x + 300, offset.y + ( o->nofOptions * 40 ) ) );
+    ImGui::SetCursorScreenPos( ImVec2( offset.x + 300, offset.y + ( o.size( ) * 40 ) ) );
 
     ImGui::End( );
 }

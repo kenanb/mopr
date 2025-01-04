@@ -87,9 +87,7 @@ void
     commandQueue.pixelsW = 640.0;
     commandQueue.pixelsH = 960.0;
 
-    CommandOptions commandOptions;
-    commandOptions.nofOptions = 0;
-    commandOptions.options = NULL;
+    std::vector< std::string > commandOptions;
 
     Client_ECL_populateCommandQueue( &commandQueue );
     // mopr_print_command_queue( &commandQueue );
@@ -277,18 +275,11 @@ void
 
         if ( idPrev != appState.idSelected || idSubPrev != appState.idSubSelected )
         {
-            Client_ECL_destructCommandOptions( &commandOptions );
+            commandOptions.clear( );
             if ( appState.idSelected )
             {
-                // std::string uriCommandOptions = "/";
-                // uriCommandOptions += "command-options";
-                // uriCommandOptions += "?id=" + std::to_string( appState.idSelected );
-                // uriCommandOptions +=
-                //  "&id-sub=" + std::to_string( appState.idSubSelected );
-
-                Client_ECL_populateCommandOptions(
-                 &commandOptions, appState.idSelected, appState.idSubSelected );
-                // mopr_print_command_options( &commandOptions );
+                messaging.populateCommandOptions(
+                 commandOptions, appState.idSelected, appState.idSubSelected );
             }
 
             // Reset.
@@ -350,9 +341,9 @@ void
         ImGui::NewFrame( );
 
         editor.draw( &commandQueue, &appState.idSelected, &appState.idSubSelected );
-        if ( commandOptions.nofOptions )
+        if ( commandOptions.size( ) )
         {
-            editor.drawOptions( &commandOptions, &optSelected );
+            editor.drawOptions( commandOptions, &optSelected );
         }
 
         ImGui::Render( );
@@ -390,7 +381,6 @@ void
     messaging.releaseProject( );
     messaging.termBackend( );
     Client_ECL_destructCommandQueue( &commandQueue );
-    Client_ECL_destructCommandOptions( &commandOptions );
 }
 
 }   // namespace mopr

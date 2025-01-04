@@ -5,6 +5,9 @@
 
 #include "imgui.h"
 
+#include <string>
+#include <vector>
+
 namespace mopr
 {
 
@@ -37,7 +40,7 @@ struct Editor
            unsigned int * idSubSelected );
 
     void
-     drawOptions( CommandOptions const * const o, unsigned int * optSelected );
+     drawOptions( const std::vector< std::string > & o, unsigned int * optSelected );
 
     FontInfo const * fontInfos;
 };

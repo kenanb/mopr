@@ -11,7 +11,6 @@ extern "C"
 {
 #endif
 
-
     MOPR_API unsigned int
      Client_ECL_execRepr( void * pLayer, unsigned int callEnabled );
 
@@ -20,14 +19,6 @@ extern "C"
 
     MOPR_API unsigned int
      Client_ECL_destructCommandQueue( CommandQueue * queue );
-
-    MOPR_API unsigned int
-     Client_ECL_populateCommandOptions( CommandOptions * options,
-                                        unsigned int id,
-                                        unsigned int idSub );
-
-    MOPR_API unsigned int
-     Client_ECL_destructCommandOptions( CommandOptions * options );
 
     MOPR_API unsigned int
      Client_ECL_applyOption( unsigned int id, unsigned int idSub, unsigned int idOpt );
