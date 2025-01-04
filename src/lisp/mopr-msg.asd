@@ -26,7 +26,9 @@ mainly in Lisp. UNTESTED. DO NOT USE!"
    :depends-on ("package"))
    (:file "direct-calls"
    :depends-on ("package"))
+   (:file "dispatch"
+   :depends-on ("package"))
    (:file "handler"
-   :depends-on ("package" "session"))
+   :depends-on ("package" "session" "dispatch"))
    (:file "workshop"
     :depends-on ("package"))))
