@@ -25,7 +25,8 @@ This allows visually treating dot as a placeholder for :THIS in innermost-handle
     :working-res-ep base-request-fn-working-res
     ("" . main-request-fn-working-res)
     ("option" . base-request-fn-option)
-    ("editor" . base-request-fn-editor)))
+    ("editor" . base-request-fn-editor)
+    (t . request-fn-unknown)))
 
 (defconstant +dispatch-tree-asset+
   `(;; URI PREFIX: /workshop/wID/project/pID/asset/aID/
@@ -35,7 +36,8 @@ This allows visually treating dot as a placeholder for :THIS in innermost-handle
     ("working"
      :working-res base-request-fn-working-ep
      ("" . main-request-fn-working-ep)
-     (t . ,+dispatch-tree-working+))))
+     (t . ,+dispatch-tree-working+))
+    (t . request-fn-unknown)))
 
 (defconstant +dispatch-tree-project+
   `(;; URI PREFIX: /workshop/wID/project/pID/
@@ -45,7 +47,8 @@ This allows visually treating dot as a placeholder for :THIS in innermost-handle
     ("asset"
      :asset-res base-request-fn-asset-ep
      ("" . main-request-fn-asset-ep)
-     (t . ,+dispatch-tree-asset+))))
+     (t . ,+dispatch-tree-asset+))
+    (t . request-fn-unknown)))
 
 (defconstant +dispatch-tree-workshop+
   `(;; URI PREFIX: /workshop/wID/
@@ -54,19 +57,23 @@ This allows visually treating dot as a placeholder for :THIS in innermost-handle
     ("project"
      :project-res base-request-fn-project-ep
      ("" . main-request-fn-project-ep)
-     (t . ,+dispatch-tree-project+))))
+     (t . ,+dispatch-tree-project+))
+    (t . request-fn-unknown)))
+
+(defconstant +dispatch-tree-absolute+
+  `(;; URI PREFIX: /
+    :absolute-ep base-request-fn-absolute-ep
+    ("" . main-request-fn-absolute-ep)
+    ("workshop"
+     :workshop-res base-request-fn-workshop-ep
+     ("" . main-request-fn-workshop-ep)
+     (t . ,+dispatch-tree-workshop+))
+    (t . request-fn-unknown)))
 
 (defconstant +dispatch-tree+
   `(;; The root of the tree is a handler definition, and not a clause. Because
     ;; the root handler is assumed to be the CDR of an unconditional match
     ;; clause T.
     :top base-request-fn-top
-    (""
-     :root-ep base-request-fn-root-ep
-     ("" . main-request-fn-root-ep)
-     ("workshop"
-      :workshop-res base-request-fn-workshop-ep
-      ("" . main-request-fn-workshop-ep)
-      (t . ,+dispatch-tree-workshop+))
-     (t . request-fn-unknown))
+    ("" . ,+dispatch-tree-absolute+)
     (t . request-fn-relative)))

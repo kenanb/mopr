@@ -22,13 +22,24 @@ mainly in Lisp. UNTESTED. DO NOT USE!"
 
   :components
   ((:file "package")
+   (:file "handler-base"
+    :depends-on ("package"))
    (:file "session"
-   :depends-on ("package"))
-   (:file "direct-calls"
-   :depends-on ("package"))
-   (:file "dispatch"
-   :depends-on ("package"))
-   (:file "handler"
-   :depends-on ("package" "session" "dispatch"))
+    :depends-on ("package"))
    (:file "workshop"
-    :depends-on ("package"))))
+    :depends-on ("package"))
+   (:file "direct-calls"
+    :depends-on ("package"))
+   (:module #:handler
+    :depends-on ("package" "handler-base" "session" "workshop" "direct-calls")
+    :components
+    ((:file "absolute")
+     (:file "relative")
+     (:file "workshop")
+     (:file "project")
+     (:file "asset")
+     (:file "working")))
+   (:file "dispatch"
+    :depends-on ("package"))
+   (:file "handler-main"
+    :depends-on ("package" "dispatch" "handler-base"))))
