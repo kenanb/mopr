@@ -20,6 +20,7 @@ struct Messaging
     std::string pLockState;
     std::string uriEpStaging;
     std::string uriEpWorking;
+    std::string uriResBound;
 
     Messaging( );
 

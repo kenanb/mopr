@@ -53,9 +53,8 @@ void
     messaging.initGenericWorkshopEndpoints( appEnvironment );
     messaging.acquireProject( );
     messaging.initGenericProjectEndpoints( appEnvironment );
-    messaging.debugPrint( );
-
     messaging.bindStaging( );
+    messaging.debugPrint( );
 
     //
     // Construct scene.

@@ -3,25 +3,54 @@
 
 (in-package #:mopr-msg)
 
+(defconstant +dispatch-tree-working+
+  `(;;
+    :working-res-ep base-request-fn-working-res
+    ("" . main-request-fn-working-res)
+    ("option" . base-request-fn-option)
+    ("editor" . base-request-fn-editor)))
+
+(defconstant +dispatch-tree-asset+
+  `(;;
+    :asset-res-ep base-request-fn-asset-res
+    ("" . main-request-fn-asset-res)
+    ("staging" . base-request-fn-staging)
+    ("working"
+     :working-res base-request-fn-working-ep
+     ("" . main-request-fn-working-ep)
+     (t . ,+dispatch-tree-working+))))
+
+(defconstant +dispatch-tree-project+
+  `(;;
+    :project-res-ep base-request-fn-project-res
+    ("" . main-request-fn-project-res)
+    ("lock" . main-request-fn-project-lock-ep)
+    ("asset"
+     :asset-res base-request-fn-asset-ep
+     ("" . main-request-fn-asset-ep)
+     (t . ,+dispatch-tree-asset+))))
+
+(defconstant +dispatch-tree-workshop+
+  `(;;
+    :workshop-res-ep base-request-fn-workshop-res
+    ("" . main-request-fn-workshop-res)
+    ("project"
+     :project-res base-request-fn-project-ep
+     ("" . main-request-fn-project-ep)
+     (t . ,+dispatch-tree-project+))))
+
 (defconstant +dispatch-tree+
-  '(:top base-request-fn-top
-    ("" :root-ep base-request-fn-root-ep
+  `(;; The root of the tree is a handler definition, and not a clause. Because
+    ;; the root handler is assumed to be the CDR of an unconditional match
+    ;; clause T.
+    :top base-request-fn-top
+    (""
+     :root-ep base-request-fn-root-ep
      ("" . main-request-fn-root-ep)
-     ("workshop" :workshop-res base-request-fn-workshop-ep
+     ("workshop"
+      :workshop-res base-request-fn-workshop-ep
       ("" . main-request-fn-workshop-ep)
-      (t :workshop-res-ep base-request-fn-workshop-res
-       ("" . main-request-fn-workshop-res)
-       ("project" :project-res base-request-fn-project-ep
-        ("" . main-request-fn-project-ep)
-        (t :project-res-ep base-request-fn-project-res
-         ("" . main-request-fn-project-res)
-         ("lock" . main-request-fn-project-lock-ep)
-         ("asset" :asset-res base-request-fn-asset-ep
-                  ("" . main-request-fn-asset-ep)
-                  (t :asset-res-ep base-request-fn-asset-res
-                     ("" . main-request-fn-asset-res)
-                     ("staging" . base-request-fn-staging)
-                     ("working" . base-request-fn-working)))))))
+      (t . ,+dispatch-tree-workshop+))
      (t . request-fn-unknown))
     (t . request-fn-relative)))
 
@@ -242,7 +271,7 @@ REMAINING : ~S~%"
 
 (defmethod handle-post-request (rid request-body (category (eql 'base-request-fn-staging))
                                 &key context remaining)
-  (declare (ignore rid category remaining))
+  (declare (ignore rid category))
   (let ((wuuid (mopr-uri:descriptor-uuid (ws-descriptor)))
         (puuid (messaging-session-puuid *messaging-session*))
         (auuid (getf context :asset-res)))
@@ -255,17 +284,21 @@ REMAINING : ~S~%"
            (acons (mopr-uri:desc-alist-assoc (mopr-org:project-info-assets (cdr pcons)) :uuid auuid))
            (adesc (car acons))
            (apath (mopr-org:desc-chain-as-path (mopr-uri:make-desc-chain (ws-descriptor) pdesc adesc)
-                                               :file-expected-p t)))
+                                               :file-expected-p t))
+           (ret (handle-get-request rid category :context context :remaining remaining)))
       (cond
         ((equal (xmls:node-name request-body) "action")
          (let ((action-name (cadr (assoc "name" (xmls:node-attrs request-body) :test #'string=))))
            (cond
              ((equal action-name "bind")
               (bind-repr apath)
-              (format t "File bound: ~A~%" apath))))))
-      (handle-get-request rid category :context context :remaining remaining))))
+              (format t "File bound: ~A~%" apath)
+              (push `("uri" ,(format nil "/workshop/~A/project/~A/asset/~A/working/0/" wuuid puuid auuid))
+                    (xmls:node-attrs ret))
+              ret))))
+        (t ret)))))
 
-(defmethod handle-post-request (rid request-body (category (eql 'base-request-fn-working))
+(defmethod handle-post-request (rid request-body (category (eql 'main-request-fn-working-res))
                                 &key context remaining)
   (declare (ignore rid category remaining))
   (let ((wuuid (mopr-uri:descriptor-uuid (ws-descriptor)))

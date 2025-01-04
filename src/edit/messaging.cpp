@@ -21,6 +21,7 @@ Messaging::Messaging( )
     , pLockState( )
     , uriEpStaging( )
     , uriEpWorking( )
+    , uriResBound( )
 {
 }
 
@@ -212,6 +213,8 @@ unsigned int
 
     pugi::xpath_node xp = docResponse.select_node( "//asset" );
 
+    uriResBound = xp.node( ).attribute( "uri" ).value( );
+
     std::string result;
     if ( xp ) result = xp.node( ).attribute( "path" ).value( );
     std::cout << "Loaded asset path: " << result << std::endl;
@@ -229,7 +232,7 @@ unsigned int
     pugi::xml_attribute attr_action_name = node_action.append_attribute( "name" );
     attr_action_name.set_value( "init-repr" );
 
-    requestPost( docResponse, uriEpWorking.c_str( ), docRequest );
+    requestPost( docResponse, uriResBound.c_str( ), docRequest );
 
     return 0;
 }
@@ -244,7 +247,7 @@ unsigned int
     pugi::xml_attribute attr_action_name = node_action.append_attribute( "name" );
     attr_action_name.set_value( "term-repr" );
 
-    requestPost( docResponse, uriEpWorking.c_str( ), docRequest );
+    requestPost( docResponse, uriResBound.c_str( ), docRequest );
 
     return 0;
 }
@@ -278,7 +281,8 @@ void
               << "\nAsset endpoint URI     : " << uriEpA
               << "\nAsset resource URI     : " << uriResA
               << "\nStaging endpoint URI   : " << uriEpStaging
-              << "\nWorking endpoint URI   : " << uriEpWorking << std::endl;
+              << "\nWorking endpoint URI   : " << uriEpWorking
+              << "\nBound resource URI     : " << uriResBound << std::endl;
 }
 
 }   // namespace mopr
