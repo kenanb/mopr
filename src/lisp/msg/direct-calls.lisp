@@ -31,13 +31,13 @@
 (defun destruct-command-queue (cmd-queue-ptr)
   (mopr-viz/repr:%destruct-command-queue cmd-queue-ptr))
 
-(defun %populate-editor-layout (pr)
+(defun %populate-editor-layout (pr &key pixels-w pixels-h &allow-other-keys)
   (mopr-sgt:with-bound-procedure-accessors ((root mopr-sgt:procedure-root)) pr
     (xmls:make-node
-     :name "layout")))
+     :name "layout" :attrs `(("pixels-w" ,pixels-w) ("pixels-h" ,pixels-h)))))
 
-(defun populate-editor-layout ()
-  (%populate-editor-layout *procedure*))
+(defun populate-editor-layout (query)
+  (apply #'%populate-editor-layout *procedure* query))
 
 (defun %populate-command-options (pr &key id-node id-sub &allow-other-keys)
   (when (zerop id-sub) (error "Zero id-sub passed to root-enode-populate-command-options!"))

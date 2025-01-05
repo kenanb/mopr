@@ -286,10 +286,12 @@ unsigned int
 }
 
 unsigned int
- Messaging::populateEditorLayout( )
+ Messaging::populateEditorLayout( int pixelsW, int pixelsH )
 {
     std::string uriEditorLayout = uriResBound;
     uriEditorLayout += "editor-layout";
+    uriEditorLayout += "?pixels-w=" + std::to_string( pixelsW );
+    uriEditorLayout += "&pixels-h=" + std::to_string( pixelsH );
     pugi::xml_document docResponse;
 
     requestGet( docResponse, uriEditorLayout.c_str( ) );

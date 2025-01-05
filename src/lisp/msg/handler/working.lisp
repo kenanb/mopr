@@ -5,7 +5,7 @@
 
 (defmethod handle-get-request (rid (category (eql 'base-request-fn-editor-layout))
                                &key context remaining)
-  (declare (ignore rid category remaining))
+  (declare (ignore category remaining))
   (let ((wuuid (mopr-uri:descriptor-uuid (ws-descriptor)))
         (puuid (messaging-session-puuid *messaging-session*))
         (auuid (getf context :asset-res)))
@@ -13,7 +13,7 @@
       (error "Workshop ID doesn't match the active workshop."))
     (unless (equal puuid (getf context :project-res))
       (error "Project ID doesn't match the active project."))
-    (populate-editor-layout)))
+    (populate-editor-layout (mopr-uri:resource-id-query rid))))
 
 (defmethod handle-get-request (rid (category (eql 'base-request-fn-option))
                                &key context remaining)
