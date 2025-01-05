@@ -286,6 +286,19 @@ unsigned int
 }
 
 unsigned int
+ Messaging::populateEditorLayout( )
+{
+    std::string uriEditorLayout = uriResBound;
+    uriEditorLayout += "editor-layout";
+    pugi::xml_document docResponse;
+
+    requestGet( docResponse, uriEditorLayout.c_str( ) );
+    docResponse.save( std::cout );
+
+    return 0;
+}
+
+unsigned int
  Messaging::populateCommandOptions( std::vector< std::string > & commandOptions,
                                     unsigned int idNode,
                                     unsigned int idSub )

@@ -25,7 +25,7 @@ This allows visually treating dot as a placeholder for :THIS in innermost-handle
     :working-res-ep base-request-fn-working-res
     ("" . main-request-fn-working-res)
     ("option" . base-request-fn-option)
-    ("editor" . base-request-fn-editor)
+    ("editor-layout" . base-request-fn-editor-layout)
     (t . request-fn-unknown)))
 
 (defconstant +dispatch-tree-asset+

@@ -89,6 +89,7 @@ void
 
     std::vector< std::string > commandOptions;
 
+    messaging.populateEditorLayout( );
     Client_ECL_populateCommandQueue( &commandQueue );
     // mopr_print_command_queue( &commandQueue );
 

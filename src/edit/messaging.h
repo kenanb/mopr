@@ -56,6 +56,9 @@ struct Messaging
      releaseProject( );
 
     unsigned int
+     populateEditorLayout( );
+
+    unsigned int
      populateCommandOptions( std::vector< std::string > & commandOptions,
                              unsigned int idNode,
                              unsigned int idSub );
