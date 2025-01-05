@@ -33,8 +33,12 @@
 
 (defun %populate-editor-layout (pr &key pixels-w pixels-h &allow-other-keys)
   (mopr-sgt:with-bound-procedure-accessors ((root mopr-sgt:procedure-root)) pr
-    (xmls:make-node
-     :name "layout" :attrs `(("pixels-w" ,pixels-w) ("pixels-h" ,pixels-h)))))
+    (let ((layout (mopr-viz/repr:calculate-editor-layout root pixels-w pixels-h)))
+      (xmls:make-node
+       :name "layout"
+       :attrs (car layout)
+       :children (mapcar (lambda (attrs) (xmls:make-node :name "command" :attrs attrs))
+                         (cdr layout))))))
 
 (defun populate-editor-layout (query)
   (apply #'%populate-editor-layout *procedure* query))

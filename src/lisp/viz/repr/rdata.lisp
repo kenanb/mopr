@@ -10,6 +10,7 @@
   (:export
    #:rdata-command-type
    #:populate-command-from-rdata
+   #:rdata-command-attributes
    #:rdata
    #:rdata-ynode
    #:frozen-rdata
@@ -49,6 +50,9 @@
 (defgeneric populate-command-from-rdata (node c)
   (:documentation "Populate command to represent the behaviour of the given node."))
 
+(defgeneric rdata-command-attributes (node)
+  (:documentation "Generate command attributes to represent the behaviour of the given node."))
+
 (defclass rdata ()
   ((ynode
     :type mopr-viz/yoga-def:node-ref
@@ -71,6 +75,13 @@
                       :w (mopr-viz/layout-shared:layout-dimension y :width)
                       :h (mopr-viz/layout-shared:layout-dimension y :height)))
 
+(defmethod rdata-command-attributes ((n rdata) &aux (y (rdata-ynode n)))
+  `(("c-type" ,(write-to-string (rdata-command-type n)))
+    ("x" ,(write-to-string (recursive-get-left y)))
+    ("y" ,(write-to-string (recursive-get-top y)))
+    ("w" ,(write-to-string (mopr-viz/layout-shared:layout-dimension y :width)))
+    ("h" ,(write-to-string (mopr-viz/layout-shared:layout-dimension y :height)))))
+
 ;;
 ;;; FROZEN-RDATA
 ;;
@@ -87,6 +98,9 @@
 
 (defmethod populate-command-from-rdata ((n hidden-rdata) c)
   (error "Invalid node passed to populate-command-from-rdata!"))
+
+(defmethod rdata-command-attributes ((n hidden-rdata))
+  (error "Invalid node passed to rdata-command-attributes!"))
 
 ;;
 ;;; ROOT-CONTAINER-RDATA
@@ -154,6 +168,11 @@
                       :text (autowrap:alloc-string (rdata-text n)))
   (call-next-method))
 
+(defmethod rdata-command-attributes ((n expr-label-rdata))
+  `(("bg" ,(rdata-bg n))
+    ("text" ,(rdata-text n))
+    ,@(call-next-method)))
+
 ;;
 ;;; CONTENT-CONTAINER-RDATA
 ;;
@@ -211,6 +230,11 @@
                       :text (autowrap:alloc-string (rdata-text n)))
   (call-next-method))
 
+(defmethod rdata-command-attributes ((n attr-label-rdata))
+  `(("bg" ,(rdata-bg n))
+    ("text" ,(rdata-text n))
+    ,@(call-next-method)))
+
 (defclass attr-input-rdata (rdata)
   ((text
     :initarg :text
@@ -231,3 +255,7 @@
   (multiple-set-c-ref c (mopr-viz/repr-def:combined-command :draw-attr-input)
                       :text (autowrap:alloc-string (rdata-text n)))
   (call-next-method))
+
+(defmethod rdata-command-attributes ((n attr-input-rdata))
+  `(("text" ,(rdata-text n))
+    ,@(call-next-method)))
