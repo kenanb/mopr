@@ -266,7 +266,7 @@ void
 
         if ( optSelected )
         {
-            Client_ECL_applyOption(
+            messaging.applyCommandOption(
              appState.idSelected, appState.idSubSelected, optSelected );
 
             // Reset.

@@ -22,5 +22,5 @@
     (setf query (loop for (k . v) in (quri:uri-query-params data)
                       for kw = (alexandria:make-keyword (string-upcase k))
                       appending (list kw (case kw
-                                           ((:id :id-sub) (parse-integer v))
+                                           ((:id-node :id-sub) (parse-integer v))
                                            (t v)))))))

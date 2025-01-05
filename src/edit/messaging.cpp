@@ -287,12 +287,12 @@ unsigned int
 
 unsigned int
  Messaging::populateCommandOptions( std::vector< std::string > & commandOptions,
-                                    unsigned int id,
+                                    unsigned int idNode,
                                     unsigned int idSub )
 {
     std::string uriOptions = uriResBound;
     uriOptions += "option";
-    uriOptions += "?id=" + std::to_string( id );
+    uriOptions += "?id-node=" + std::to_string( idNode );
     uriOptions += "&id-sub=" + std::to_string( idSub );
     pugi::xml_document docResponse;
 
@@ -304,6 +304,35 @@ unsigned int
     {
         commandOptions.emplace_back( it->node( ).attribute( "name" ).value( ) );
     }
+
+    return 0;
+}
+
+unsigned int
+ Messaging::applyCommandOption( unsigned int idNode,
+                                unsigned int idSub,
+                                unsigned int idOpt )
+{
+    std::string uriOptions = uriResBound;
+    uriOptions += "option";
+
+    std::string idNodeStr = std::to_string( idNode );
+    std::string idSubStr = std::to_string( idSub );
+    std::string idOptStr = std::to_string( idOpt );
+
+    pugi::xml_document docResponse;
+    pugi::xml_document docRequest;
+    pugi::xml_node node_action = docRequest.append_child( "action" );
+    pugi::xml_attribute attr_action_name = node_action.append_attribute( "name" );
+    attr_action_name.set_value( "apply-option" );
+    pugi::xml_attribute attr_action_idNode = node_action.append_attribute( "id-node" );
+    attr_action_idNode.set_value( idNodeStr.c_str( ) );
+    pugi::xml_attribute attr_action_idSub = node_action.append_attribute( "id-sub" );
+    attr_action_idSub.set_value( idSubStr.c_str( ) );
+    pugi::xml_attribute attr_action_idOpt = node_action.append_attribute( "id-opt" );
+    attr_action_idOpt.set_value( idOptStr.c_str( ) );
+
+    requestPost( docResponse, uriOptions.c_str( ), docRequest );
 
     return 0;
 }

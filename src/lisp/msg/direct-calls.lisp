@@ -31,19 +31,28 @@
 (defun destruct-command-queue (cmd-queue-ptr)
   (mopr-viz/repr:%destruct-command-queue cmd-queue-ptr))
 
-(defun %populate-command-options (pr &key id id-sub &allow-other-keys)
+(defun %populate-command-options (pr &key id-node id-sub &allow-other-keys)
   (when (zerop id-sub) (error "Zero id-sub passed to root-enode-populate-command-options!"))
   (mopr-sgt:with-bound-procedure-accessors ((root mopr-sgt:procedure-root)) pr
-    (let* ((n (mopr-msg/ctrl:find-enode-by-id root id))
+    (let* ((n (mopr-msg/ctrl:find-enode-by-id root id-node))
            (opts (mopr-msg/ctrl:payload-get-options (mopr-sgt:bnode-find-payload n) (1- id-sub)))
            (nof-opts (length opts)))
       (xmls:make-node
-       :name "options" :attrs `(("id" ,id) ("id-sub" ,id-sub))
+       :name "options" :attrs `(("id-node" ,id-node) ("id-sub" ,id-sub))
        :children (loop for o in opts
                        collecting (xmls:make-node :name "option" :attrs `(("name" ,o))))))))
 
 (defun populate-command-options (query)
   (apply #'%populate-command-options *procedure* query))
 
-(defun apply-command-option (id id-sub id-opt)
-  (mopr-viz/repr:%apply-command-option *procedure* id id-sub id-opt))
+(defun %apply-command-option (pr id-node id-sub id-opt)
+  (when (zerop id-sub) (error "Zero id-sub passed to root-enode-apply-command-option!"))
+  (when (zerop id-opt) (error "Zero id-opt passed to root-enode-apply-command-option!"))
+  (mopr-sgt:with-bound-procedure-accessors ((root mopr-sgt:procedure-root)) pr
+    (let* ((n (mopr-msg/ctrl:find-enode-by-id root id-node))
+           (opts (mopr-msg/ctrl:payload-get-options (mopr-sgt:bnode-find-payload n) (1- id-sub)))
+           (idx (1- id-opt)))
+      (format t "APPLIED OPTION: ~A~%" (nth idx opts)))))
+
+(defun apply-command-option (&rest args)
+  (apply #'%apply-command-option *procedure* args))

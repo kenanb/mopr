@@ -21,9 +21,6 @@ extern "C"
      Client_ECL_destructCommandQueue( CommandQueue * queue );
 
     MOPR_API unsigned int
-     Client_ECL_applyOption( unsigned int id, unsigned int idSub, unsigned int idOpt );
-
-    MOPR_API unsigned int
      Client_ECL_initBackend( const char * wDirAbs );
 
     MOPR_API unsigned int

@@ -57,8 +57,11 @@ struct Messaging
 
     unsigned int
      populateCommandOptions( std::vector< std::string > & commandOptions,
-                             unsigned int id,
+                             unsigned int idNode,
                              unsigned int idSub );
+
+    unsigned int
+     applyCommandOption( unsigned int idNode, unsigned int idSub, unsigned int idOpt );
 };
 
 }   // namespace mopr

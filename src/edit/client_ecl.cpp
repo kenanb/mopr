@@ -54,19 +54,6 @@ unsigned int
 }
 
 unsigned int
- Client_ECL_applyOption( unsigned int id, unsigned int idSub, unsigned int idOpt )
-{
-    cl_object symFn_l = getSymbol( "MOPR-MSG", "APPLY-COMMAND-OPTION" );
-
-    cl_object id_l = ecl_make_unsigned_integer( id );
-    cl_object idSub_l = ecl_make_unsigned_integer( idSub );
-    cl_object idOpt_l = ecl_make_unsigned_integer( idOpt );
-
-    cl_funcall( 4, symFn_l, id_l, idSub_l, idOpt_l );
-    return 0;
-}
-
-unsigned int
  Client_ECL_initBackend( const char * wDirAbs )
 {
     cl_object symFnInitBackend_l = getSymbol( "MOPR-SRV", "IN-PROCESS-BACKEND-INIT" );

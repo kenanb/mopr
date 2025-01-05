@@ -9,8 +9,7 @@
   (:use :cl)
   (:export
    #:%populate-command-queue
-   #:%destruct-command-queue
-   #:%apply-command-option))
+   #:%destruct-command-queue))
 
 (in-package :mopr-viz/repr)
 
@@ -148,12 +147,3 @@
 
     (multiple-set-c-ref cmd-queue (mopr-viz/repr-def:command-queue) :nof-commands 0
                                                                     :commands (autowrap:ptr nil))))
-
-(defun %apply-command-option (pr id id-sub id-opt)
-  (when (zerop id-sub) (error "Zero id-sub passed to root-enode-apply-command-option!"))
-  (when (zerop id-opt) (error "Zero id-opt passed to root-enode-apply-command-option!"))
-  (mopr-sgt:with-bound-procedure-accessors ((root mopr-sgt:procedure-root)) pr
-    (let* ((n (mopr-msg/ctrl:find-enode-by-id root id))
-           (opts (mopr-msg/ctrl:payload-get-options (mopr-sgt:bnode-find-payload n) (1- id-sub)))
-           (idx (1- id-opt)))
-      (format t "APPLIED OPTION: ~A~%" (nth idx opts)))))
