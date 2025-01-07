@@ -6,6 +6,7 @@
 #include "appConfig.h"
 #include "appDelegate.h"
 #include "appState.h"
+#include "procedureViz.h"
 #include "messaging.h"
 
 #include "common.h"
@@ -82,16 +83,12 @@ void
 
     // Populated and cleaned up on the Lisp side.
     CommandQueue commandQueue;
-    commandQueue.nofCommands = 0;
-    commandQueue.commands = NULL;
-    commandQueue.pixelsW = 640.0;
-    commandQueue.pixelsH = 960.0;
 
     std::vector< std::string > commandOptions;
 
-    messaging.populateEditorLayout( 640, 960 );
-    Client_ECL_populateCommandQueue( &commandQueue );
-    // mopr_print_command_queue( &commandQueue );
+    commandQueue.clear();
+    messaging.populateEditorLayout( commandQueue, 640, 960 );
+    // commandQueue.debugPrint();
 
     //
     // Init app state.
@@ -341,7 +338,7 @@ void
         ImGui_ImplSDL2_NewFrame( );
         ImGui::NewFrame( );
 
-        editor.draw( &commandQueue, &appState.idSelected, &appState.idSubSelected );
+        editor.draw( commandQueue, &appState.idSelected, &appState.idSubSelected );
         if ( commandOptions.size( ) )
         {
             editor.drawOptions( commandOptions, &optSelected );
@@ -381,7 +378,6 @@ void
     messaging.termRepr( );
     messaging.releaseProject( );
     messaging.termBackend( );
-    Client_ECL_destructCommandQueue( &commandQueue );
 }
 
 }   // namespace mopr

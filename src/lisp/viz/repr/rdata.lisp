@@ -4,12 +4,9 @@
 (in-package :cl-user)
 
 (defpackage :mopr-viz/repr-rdata
-  (:import-from :mopr-viz/repr-shared
-                #:multiple-set-c-ref)
   (:use :cl)
   (:export
    #:rdata-command-type
-   #:populate-command-from-rdata
    #:rdata-command-attributes
    #:rdata
    #:rdata-ynode
@@ -47,9 +44,6 @@
 (defgeneric rdata-command-type (node)
   (:documentation "Command type to assign for the node."))
 
-(defgeneric populate-command-from-rdata (node c)
-  (:documentation "Populate command to represent the behaviour of the given node."))
-
 (defgeneric rdata-command-attributes (node)
   (:documentation "Generate command attributes to represent the behaviour of the given node."))
 
@@ -66,14 +60,6 @@
 
 (defmethod rdata-command-type ((n rdata))
   mopr-viz/repr-def:+command-type-base+)
-
-(defmethod populate-command-from-rdata ((n rdata) c &aux (y (rdata-ynode n)))
-  (multiple-set-c-ref c (mopr-viz/repr-def:combined-command :base)
-                      :c-type (rdata-command-type n)
-                      :x (recursive-get-left y)
-                      :y (recursive-get-top y)
-                      :w (mopr-viz/layout-shared:layout-dimension y :width)
-                      :h (mopr-viz/layout-shared:layout-dimension y :height)))
 
 (defmethod rdata-command-attributes ((n rdata) &aux (y (rdata-ynode n)))
   `(("c-type" ,(write-to-string (rdata-command-type n)))
@@ -95,9 +81,6 @@
 
 (defclass hidden-rdata (frozen-rdata)
   ())
-
-(defmethod populate-command-from-rdata ((n hidden-rdata) c)
-  (error "Invalid node passed to populate-command-from-rdata!"))
 
 (defmethod rdata-command-attributes ((n hidden-rdata))
   (error "Invalid node passed to rdata-command-attributes!"))
@@ -162,12 +145,6 @@
 (defmethod rdata-command-type ((n expr-label-rdata))
   mopr-viz/repr-def:+command-type-draw-expr-label+)
 
-(defmethod populate-command-from-rdata ((n expr-label-rdata) c)
-  (multiple-set-c-ref c (mopr-viz/repr-def:combined-command :draw-expr-label)
-                      :bg (rdata-bg n)
-                      :text (autowrap:alloc-string (rdata-text n)))
-  (call-next-method))
-
 (defmethod rdata-command-attributes ((n expr-label-rdata))
   `(("bg" ,(rdata-bg n))
     ("text" ,(rdata-text n))
@@ -224,12 +201,6 @@
 (defmethod rdata-command-type ((n attr-label-rdata))
   mopr-viz/repr-def:+command-type-draw-attr-label+)
 
-(defmethod populate-command-from-rdata ((n attr-label-rdata) c)
-  (multiple-set-c-ref c (mopr-viz/repr-def:combined-command :draw-attr-label)
-                      :bg (rdata-bg n)
-                      :text (autowrap:alloc-string (rdata-text n)))
-  (call-next-method))
-
 (defmethod rdata-command-attributes ((n attr-label-rdata))
   `(("bg" ,(rdata-bg n))
     ("text" ,(rdata-text n))
@@ -250,11 +221,6 @@
 
 (defmethod rdata-command-type ((n attr-input-rdata))
   mopr-viz/repr-def:+command-type-draw-attr-input+)
-
-(defmethod populate-command-from-rdata ((n attr-input-rdata) c)
-  (multiple-set-c-ref c (mopr-viz/repr-def:combined-command :draw-attr-input)
-                      :text (autowrap:alloc-string (rdata-text n)))
-  (call-next-method))
 
 (defmethod rdata-command-attributes ((n attr-input-rdata))
   `(("text" ,(rdata-text n))

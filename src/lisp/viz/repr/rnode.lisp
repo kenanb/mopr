@@ -4,8 +4,6 @@
 (in-package :cl-user)
 
 (defpackage :mopr-viz/repr-rnode
-  (:import-from :mopr-viz/repr-shared
-                #:multiple-set-c-ref)
   (:import-from :mopr-viz/repr-rdata)
   (:use :mopr-sgt)
   (:use :cl)

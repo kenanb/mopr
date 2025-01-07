@@ -3,6 +3,12 @@
 
 (in-package #:mopr-msg)
 
+;; NOTE : Current XMLS seems to fail escaping Newline characters in
+;; XML attribute values during XMLS:TOXML, which means decoder will
+;; (correctly) normalize those newlines to spaces. I locally patched
+;; XMLS::ESCAPE-FOR-HTML so that it maps Newline character to "&#010;"
+;; encoding.
+
 (defun request-handler-get (uri-str)
   (let* ((rid (make-instance 'mopr-uri:resource-id :str uri-str)))
     ;; (format t "uri: ~S~%     ~S~%     ~S~%"

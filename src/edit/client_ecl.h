@@ -15,12 +15,6 @@ extern "C"
      Client_ECL_execRepr( void * pLayer, unsigned int callEnabled );
 
     MOPR_API unsigned int
-     Client_ECL_populateCommandQueue( CommandQueue * queue );
-
-    MOPR_API unsigned int
-     Client_ECL_destructCommandQueue( CommandQueue * queue );
-
-    MOPR_API unsigned int
      Client_ECL_initBackend( const char * wDirAbs );
 
     MOPR_API unsigned int

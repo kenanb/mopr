@@ -25,15 +25,11 @@
 (defun term-repr ()
   (mopr-sgt:enode-procedure-delete-components *procedure* +component-classes+))
 
-(defun populate-command-queue (cmd-queue-ptr)
-  (mopr-viz/repr:%populate-command-queue *procedure* cmd-queue-ptr))
-
-(defun destruct-command-queue (cmd-queue-ptr)
-  (mopr-viz/repr:%destruct-command-queue cmd-queue-ptr))
-
 (defun %populate-editor-layout (pr &key pixels-w pixels-h &allow-other-keys)
   (mopr-sgt:with-bound-procedure-accessors ((root mopr-sgt:procedure-root)) pr
-    (let ((layout (mopr-viz/repr:calculate-editor-layout root pixels-w pixels-h)))
+    (let ((layout (mopr-viz/repr:calculate-editor-layout root
+                                                         (float pixels-w)
+                                                         (float pixels-h))))
       (xmls:make-node
        :name "layout"
        :attrs (car layout)

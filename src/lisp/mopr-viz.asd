@@ -11,8 +11,7 @@
    #:uiop
    #:cffi
    #:float-features
-   #:cl-autowrap
-   #:cl-plus-c)
+   #:cl-autowrap)
 
   :pathname "viz"
 
@@ -46,14 +45,13 @@
        (:file "bindings-repr"
         :depends-on ("package"))
        (:static-file "moprReprIncludes.h")))
-     (:file "shared")
      (:file "rdata"
-      :depends-on ("shared" "ffi"))
+      :depends-on ("ffi"))
      (:file "control")
      (:file "rnode"
-      :depends-on ("shared" "rdata" "ffi"))
+      :depends-on ("rdata" "ffi"))
      (:file "repr"
-      :depends-on ("shared" "rdata" "rnode" "ffi" "control"))))))
+      :depends-on ("rdata" "rnode" "ffi" "control"))))))
 
 (register-system-packages "mopr-viz"
                           '(:mopr-viz/repr-def

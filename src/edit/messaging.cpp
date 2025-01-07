@@ -7,6 +7,8 @@
 #include <iostream>
 #include <sstream>
 
+#include <stdlib.h>
+
 namespace mopr
 {
 
@@ -285,8 +287,68 @@ unsigned int
     return 0;
 }
 
+static CommandBase *
+ generateCommand( const pugi::xml_node & node )
+{
+    CommandBase * elt = nullptr;
+
+    switch ( atoi( node.attribute( "c-type" ).value( ) ) )
+    {
+        case COMMAND_TYPE_DRAW_ROOT_CONTAINER:
+        {
+            elt = new CommandDrawRootContainer( );
+            break;
+        }
+
+        case COMMAND_TYPE_DRAW_EXPR_CONTAINER:
+        {
+            elt = new CommandDrawExprContainer( );
+            break;
+        }
+
+        case COMMAND_TYPE_DRAW_EXPR_LABEL:
+        {
+            elt = new CommandDrawExprLabel(
+             static_cast< CommandTheme >( atoi( node.attribute( "bg" ).value( ) ) ),
+             node.attribute( "text" ).value( ) );
+            break;
+        }
+
+        case COMMAND_TYPE_DRAW_ATTR_LABEL:
+        {
+            elt = new CommandDrawAttrLabel(
+             static_cast< CommandTheme >( atoi( node.attribute( "bg" ).value( ) ) ),
+             node.attribute( "text" ).value( ) );
+            break;
+        }
+
+        case COMMAND_TYPE_DRAW_ATTR_INPUT:
+        {
+            elt = new CommandDrawAttrInput( node.attribute( "text" ).value( ) );
+            break;
+        }
+
+        default:
+            std::cerr << "Procedure visualization encountered unsupported c-type "
+                         "value! Skipping."
+                      << std::endl;
+            break;
+    }
+
+    elt->idNode =
+     static_cast< unsigned int >( atoi( node.attribute( "id-node" ).value( ) ) );
+    elt->idSub =
+     static_cast< unsigned int >( atoi( node.attribute( "id-sub" ).value( ) ) );
+    elt->x = atof( node.attribute( "x" ).value( ) );
+    elt->y = atof( node.attribute( "y" ).value( ) );
+    elt->w = atof( node.attribute( "w" ).value( ) );
+    elt->h = atof( node.attribute( "h" ).value( ) );
+
+    return elt;
+}
+
 unsigned int
- Messaging::populateEditorLayout( int pixelsW, int pixelsH )
+ Messaging::populateEditorLayout( CommandQueue & commandQueue, int pixelsW, int pixelsH )
 {
     std::string uriEditorLayout = uriResBound;
     uriEditorLayout += "editor-layout";
@@ -295,7 +357,21 @@ unsigned int
     pugi::xml_document docResponse;
 
     requestGet( docResponse, uriEditorLayout.c_str( ) );
-    docResponse.save( std::cout );
+    // docResponse.save( std::cout );
+
+    pugi::xpath_node xp_layout = docResponse.select_node( "//layout" );
+
+    commandQueue.pixelsW = atof( xp_layout.node( ).attribute( "pixels-w" ).value( ) );
+    commandQueue.pixelsH = atof( xp_layout.node( ).attribute( "pixels-h" ).value( ) );
+
+    pugi::xpath_node_set xp_commands = docResponse.select_nodes( "//layout/command" );
+
+    for ( pugi::xpath_node_set::const_iterator it = xp_commands.begin( );
+          it != xp_commands.end( );
+          ++it )
+    {
+        commandQueue.commands.emplace_back( generateCommand( it->node( ) ) );
+    }
 
     return 0;
 }

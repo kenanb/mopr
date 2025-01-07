@@ -32,28 +32,6 @@ unsigned int
 }
 
 unsigned int
- Client_ECL_populateCommandQueue( CommandQueue * queue )
-{
-    cl_object symFn_l = getSymbol( "MOPR-MSG", "POPULATE-COMMAND-QUEUE" );
-
-    cl_object hQueue_l = ecl_make_pointer( queue );
-
-    cl_funcall( 2, symFn_l, hQueue_l );
-    return 0;
-}
-
-unsigned int
- Client_ECL_destructCommandQueue( CommandQueue * queue )
-{
-    cl_object symFn_l = getSymbol( "MOPR-MSG", "DESTRUCT-COMMAND-QUEUE" );
-
-    cl_object hQueue_l = ecl_make_pointer( queue );
-
-    cl_funcall( 2, symFn_l, hQueue_l );
-    return 0;
-}
-
-unsigned int
  Client_ECL_initBackend( const char * wDirAbs )
 {
     cl_object symFnInitBackend_l = getSymbol( "MOPR-SRV", "IN-PROCESS-BACKEND-INIT" );

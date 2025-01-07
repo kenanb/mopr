@@ -44,14 +44,6 @@
                      (cl:declare (cl:ignorable s r))
                      (cl:elt m 0))))
 
- ;; Access using cl-plus-c: There seems to be some issues with
- ;; autowrap accessors approach:
- ;; - combined-command union is failing on things like c-aref calls
- ;;   unless we define a type alias around it.
- ;; - nested union > struct > array-member > index based access decides
- ;;   array type is a pointer instead of char.
- ;; The remaining accessors work as expected.
-
  :no-accessors cl:t
 
  :trace-c2ffi cl:t

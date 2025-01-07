@@ -2,6 +2,7 @@
 #define MOPR_MAIN_MESSAGING_H
 
 #include "appEnvironment.h"
+#include "procedureViz.h"
 
 #include <string>
 #include <vector>
@@ -56,7 +57,7 @@ struct Messaging
      releaseProject( );
 
     unsigned int
-     populateEditorLayout( int pixelsW, int pixelsH );
+     populateEditorLayout( CommandQueue & commandQueue, int pixelsW, int pixelsH );
 
     unsigned int
      populateCommandOptions( std::vector< std::string > & commandOptions,

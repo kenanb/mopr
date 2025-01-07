@@ -46,67 +46,6 @@ extern "C"
         COMMAND_TYPE_DRAW_ATTR_INPUT,
     } CommandType;
 
-#define COMMAND_BASE_MEMBERS                                                             \
-    CommandType cType;                                                                   \
-    unsigned int id;                                                                     \
-    unsigned int idSub;                                                                  \
-    float x, y, w, h;
-
-    typedef struct CommandBase
-    {
-        COMMAND_BASE_MEMBERS
-    } CommandBase;
-
-    typedef struct CommandDrawRootContainer
-    {
-        COMMAND_BASE_MEMBERS
-    } CommandDrawRootContainer;
-
-    typedef struct CommandDrawExprContainer
-    {
-        COMMAND_BASE_MEMBERS
-    } CommandDrawExprContainer;
-
-    typedef struct CommandDrawExprLabel
-    {
-        COMMAND_BASE_MEMBERS
-        CommandTheme bg;
-        char * text;
-    } CommandDrawExprLabel;
-
-    typedef struct CommandDrawAttrLabel
-    {
-        COMMAND_BASE_MEMBERS
-        CommandTheme bg;
-        char * text;
-    } CommandDrawAttrLabel;
-
-    typedef struct CommandDrawAttrInput
-    {
-        COMMAND_BASE_MEMBERS
-        char * text;
-    } CommandDrawAttrInput;
-
-    typedef union CombinedCommand
-    {
-        CommandBase base;
-        CommandDrawRootContainer drawRootContainer;
-        CommandDrawExprContainer drawExprContainer;
-        CommandDrawExprLabel drawExprLabel;
-        CommandDrawAttrLabel drawAttrLabel;
-        CommandDrawAttrInput drawAttrInput;
-    } CombinedCommand;
-
-    typedef struct CommandQueue
-    {
-        float pixelsW, pixelsH;
-        int nofCommands;
-        union CombinedCommand * commands;
-    } CommandQueue;
-
-    MOPR_API void
-     mopr_print_command_queue( CommandQueue const * const commandQueue );
-
 #ifdef __cplusplus
 }
 #endif
