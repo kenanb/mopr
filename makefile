@@ -50,8 +50,8 @@ COMMON_CFLAGS ::= -pedantic -Wall -g3 -O3 -Wno-deprecated \
 	-fstrict-aliasing -Wstrict-aliasing=2 -DMOPR_EXPORTS \
 	-I$(CURDIR)/src -fvisibility=hidden
 
-# NOTE : Link step segfaulted as of mold-2.35.x , so mold is disabled for now.
-COMMON_LFLAGS ::= -Wl,-rpath,\$$ORIGIN # -fuse-ld=mold
+# NOTE : Link step segfaults with mold-2.35.x, but works again with mold-2.36.0.
+COMMON_LFLAGS ::= -Wl,-rpath,\$$ORIGIN -fuse-ld=mold
 
 # The reason we use embed is because --libs python3 doesn't return a link flag.
 USD_CFLAGS ::= $(USD_INC_ROOT) -DTBB_SUPPRESS_DEPRECATED_MESSAGES \
