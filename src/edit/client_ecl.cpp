@@ -2,9 +2,6 @@
 
 #include <ecl/ecl.h>
 
-// NOTE: This is a CPP file for now, only to keep the build setup simple.
-//       It is implemented with the assumption that it will later be a C file.
-
 // TODO : Consider using ecl_make_simple_base_string instead of constant variant
 //        in this API. The "simple" variant creates a simple-base-string with a
 //        fresh string allocation, while "constant" variant points at the data
@@ -19,45 +16,36 @@ static cl_object
     return ecl_find_symbol( strSym_l, pkg_l, &flags );
 }
 
-unsigned int
- Client_ECL_execRepr( void * pLayer, unsigned int callEnabled )
+namespace mopr
 {
-    cl_object symFnExec_l = getSymbol( "MOPR-MSG", "EXEC-REPR" );
 
-    cl_object hLayer_l = ecl_make_pointer( pLayer );
-
-    cl_funcall( 3, symFnExec_l, hLayer_l, callEnabled ? ECL_T : ECL_NIL );
-
-    return 0;
-}
-
-unsigned int
- Client_ECL_initBackend( const char * wDirAbs )
+ClientInProcessECL::ClientInProcessECL( const char * wDirAbs )
+    : ClientInProcess( wDirAbs )
 {
-    cl_object symFnInitBackend_l = getSymbol( "MOPR-SRV", "IN-PROCESS-BACKEND-INIT" );
+    cl_object symFnInitBackend_l = getSymbol( "MOPR-SRV/IN-PROCESS", "BACKEND-INIT" );
 
     cl_object strDir_l = ecl_make_constant_base_string( wDirAbs, -1 );
 
     cl_funcall( 2, symFnInitBackend_l, strDir_l );
-
-    return 0;
 }
 
-unsigned int
- Client_ECL_termBackend( )
+ClientInProcessECL::~ClientInProcessECL( )
 {
-    cl_object symFnTermBackend_l = getSymbol( "MOPR-SRV", "IN-PROCESS-BACKEND-TERM" );
+    cl_object symFnTermBackend_l = getSymbol( "MOPR-SRV/IN-PROCESS", "BACKEND-TERM" );
 
     cl_funcall( 1, symFnTermBackend_l );
+}
 
+unsigned int
+ ClientInProcessECL::validate( ) const
+{
     return 0;
 }
 
 unsigned int
- Client_ECL_requestGet( const char ** pResponse, const char * uri )
+ ClientInProcessECL::requestGet( char ** pResponse, const char * uri ) const
 {
-    cl_object symFnRequest_l =
-     getSymbol( "MOPR-SRV", "IN-PROCESS-BACKEND-HANDLE-GET-REQUEST" );
+    cl_object symFnRequest_l = getSymbol( "MOPR-SRV/IN-PROCESS", "HANDLE-GET-REQUEST" );
 
     cl_object hpResponse_l = ecl_make_pointer( ( void * ) pResponse );
     cl_object strURI_l = ecl_make_constant_base_string( uri, -1 );
@@ -68,12 +56,11 @@ unsigned int
 }
 
 unsigned int
- Client_ECL_requestPost( const char ** pResponse,
-                         const char * uri,
-                         const char * requestBody )
+ ClientInProcessECL::requestPost( char ** pResponse,
+                                  const char * uri,
+                                  const char * requestBody ) const
 {
-    cl_object symFnRequest_l =
-     getSymbol( "MOPR-SRV", "IN-PROCESS-BACKEND-HANDLE-POST-REQUEST" );
+    cl_object symFnRequest_l = getSymbol( "MOPR-SRV/IN-PROCESS", "HANDLE-POST-REQUEST" );
 
     cl_object hpResponse_l = ecl_make_pointer( ( void * ) pResponse );
     cl_object strURI_l = ecl_make_constant_base_string( uri, -1 );
@@ -85,10 +72,9 @@ unsigned int
 }
 
 unsigned int
- Client_ECL_releaseResponse( const char ** pResponse )
+ ClientInProcessECL::releaseResponse( char ** pResponse ) const
 {
-    cl_object symFnRelease_l =
-     getSymbol( "MOPR-SRV", "IN-PROCESS-BACKEND-RELEASE-RESPONSE" );
+    cl_object symFnRelease_l = getSymbol( "MOPR-SRV/IN-PROCESS", "RELEASE-RESPONSE" );
 
     cl_object hpResponse_l = ecl_make_pointer( ( void * ) pResponse );
 
@@ -96,3 +82,17 @@ unsigned int
 
     return 0;
 }
+
+unsigned int
+ ClientInProcessECL::execProcedure( void * pLayer, unsigned int callEnabled ) const
+{
+    cl_object symFnExec_l = getSymbol( "MOPR-SRV/IN-PROCESS", "EXEC-PROCEDURE" );
+
+    cl_object hLayer_l = ecl_make_pointer( pLayer );
+
+    cl_funcall( 3, symFnExec_l, hLayer_l, callEnabled ? ECL_T : ECL_NIL );
+
+    return 0;
+}
+
+}   // namespace mopr

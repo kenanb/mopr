@@ -1,13 +1,14 @@
 // GL API providers (GLEW, GLApi) should be included before other GL headers.
 #include "pxr/imaging/garch/glApi.h"
 
+#include "clientLoopbackHTTP.h"
 #include "client_ecl.h"
 
 #include "appConfig.h"
 #include "appDelegate.h"
 #include "appState.h"
-#include "procedureViz.h"
 #include "messaging.h"
+#include "procedureViz.h"
 
 #include "common.h"
 #include "editor.h"
@@ -48,8 +49,25 @@ void
 
     const std::string & resolvedWorkshopPath = appEnvironment->getResolvedWorkshopPath( );
 
-    Messaging messaging;
-    messaging.initBackend( resolvedWorkshopPath );
+    const Client * cli = nullptr;
+    if ( appEnvironment->getPortNumber( ) )
+    {
+        cli = static_cast< Client * >( new ClientLoopbackHTTP(
+         resolvedWorkshopPath.c_str( ), appEnvironment->getPortNumber( ) ) );
+    }
+    else
+    {
+        cli = static_cast< Client * >(
+         new ClientInProcessECL( resolvedWorkshopPath.c_str( ) ) );
+    }
+
+    if ( cli->validate( ) )
+    {
+        printf( "Couldn't validate client!\n" );
+        exit( -1 );
+    }
+
+    Messaging messaging( cli );
 
     messaging.initGenericWorkshopEndpoints( appEnvironment );
     messaging.acquireProject( );
@@ -64,12 +82,18 @@ void
     pxr::SdfLayerRefPtr layer = pxr::SdfLayer::CreateAnonymous( );
     MoprLayer sLayer;
     sLayer.SetRefPtr( layer );
+
     // Stage needs to be available for app state initialization.
-    Client_ECL_execRepr( ( void * ) &sLayer, 1 );
-    if ( !layer )
+    if ( const ClientInProcess * cliInProcess =
+          dynamic_cast< const ClientInProcess * >( cli ) )
     {
-        printf( "Couldn't populate layer!\n" );
-        exit( -1 );
+        cliInProcess->execProcedure( ( void * ) &sLayer, 1 );
+    }
+    else
+    {
+        printf(
+         "Client type doesn't support layer population yet. "
+         "Preview is disabled.\n" );
     }
 
     // Stage needs to be available for app state initialization.
@@ -86,7 +110,7 @@ void
 
     std::vector< std::string > commandOptions;
 
-    commandQueue.clear();
+    commandQueue.clear( );
     messaging.populateEditorLayout( commandQueue, 640, 960 );
     // commandQueue.debugPrint();
 
@@ -377,7 +401,7 @@ void
 
     messaging.termRepr( );
     messaging.releaseProject( );
-    messaging.termBackend( );
+    delete cli;
 }
 
 }   // namespace mopr

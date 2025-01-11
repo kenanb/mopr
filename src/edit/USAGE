@@ -1,10 +1,19 @@
 R"(
-USAGE: mopr -w /absolute/path/to/workshop/ -p workshop/relative/path/to/project/ -a project/relative/asset/path.lisp
+USAGE: mopr_editor -w /absolute/path/to/workshop/ -p workshop/relative/path/to/project/ -a project/relative/asset/path.lisp
 
 -w : REQUIRED. Workshop path.
 -p : REQUIRED. Workshop-relative project path.
 -a : Project-relative asset path.
 -c : Configuration file path.
+-P : Port number of MOPR backend server.
+     If port number is provided:
+     - MOPR Editor (client) will assume there is a running MOPR backend server, bound to IPv4 loopback (127.0.0.1) network address,
+       listening to specified port, serving HTTP over TCP/IP.
+     - It will try to establish connection with this backend server. All communication with the backend will happen over HTTP.
+     Otherwise:
+     - MOPR Editor will initialize the in-process backend.
 -C : Scene camera path, in SdfPath syntax.
+-f : First frame.
+-l : Last frame.
 -h : Show help.
 )"

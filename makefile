@@ -321,12 +321,17 @@ yoga: $(yoga_core)
 ## Target: mopr_edit
 #
 
+CURL_CF ::= `curl-config --cflags`
+
+CURL_LDLIBS ::= `curl-config --libs`
+
 MOPR_EDIT_CF ::= $(COMMON_CFLAGS) $(USD_CFLAGS) -fPIC
 
 MOPR_EDIT_LIBS = gl glew sdl2 SDL2_image pugixml
 
 MOPR_EDIT_CPP_OBJ ::= src/edit/.main.cpp.o \
 	src/edit/.client_ecl.cpp.o \
+	src/edit/.clientLoopbackHTTP.cpp.o \
 	src/edit/.common.cpp.o \
 	src/edit/.glUtil.cpp.o \
 	src/edit/.editor.cpp.o \
@@ -350,7 +355,7 @@ MOPR_EDIT_CPP_OBJ ::= src/edit/.main.cpp.o \
 MOPR_EDIT_CPP_DEP ::= $(MOPR_EDIT_CPP_OBJ:.o=.d)
 
 $(MOPR_EDIT_CPP_DEP): CXXFLAGS = `pkg-config --cflags $(MOPR_EDIT_LIBS)` \
-	$(MOPR_EDIT_CF) $(CXXSTD) -I$(MOPR_YOGA_INC_DIR)
+	$(MOPR_EDIT_CF) $(CURL_CF) $(CXXSTD) -I$(MOPR_YOGA_INC_DIR)
 $(MOPR_EDIT_CPP_DEP): CXXFLAGS += \
 	-Isrc/edit/ext/imgui \
 	-Isrc/edit/ext/imgui/backends \
@@ -361,14 +366,14 @@ include $(MOPR_EDIT_CPP_DEP)
 mopr_edit ::= $(MOPR_OUT_DIR)/mopr_editor
 
 $(mopr_edit): CXXFLAGS ::= `pkg-config --cflags $(MOPR_EDIT_LIBS)` \
-	$(MOPR_EDIT_CF) $(CXXSTD) -I$(MOPR_YOGA_INC_DIR)
+	$(MOPR_EDIT_CF) $(CURL_CF) $(CXXSTD) -I$(MOPR_YOGA_INC_DIR)
 $(mopr_edit): CXXFLAGS += \
 	-Isrc/edit/ext/imgui \
 	-Isrc/edit/ext/imgui/backends \
 	-Isrc/edit/ext/imgui/misc/cpp
 $(mopr_edit): LDFLAGS  ::= $(COMMON_LFLAGS) $(USD_LFLAGS) -L$(MOPR_LIB_DIR)
 $(mopr_edit): LDLIBS   ::= `pkg-config --libs $(MOPR_EDIT_LIBS)` \
-	-lmopr_core -lmopr_repr -lyoga_core
+	 $(CURL_LDLIBS) -lmopr_core -lmopr_repr -lyoga_core
 
 # boost-python is required by usdGeom dependency.
 $(mopr_edit): LDLIBS += -lboost_regex -l$(BOOST_PYTHON_LIB)

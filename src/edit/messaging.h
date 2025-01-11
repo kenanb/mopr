@@ -2,6 +2,7 @@
 #define MOPR_MAIN_MESSAGING_H
 
 #include "appEnvironment.h"
+#include "client.h"
 #include "procedureViz.h"
 
 #include <string>
@@ -12,6 +13,7 @@ namespace mopr
 
 struct Messaging
 {
+    const Client * client;
     std::string uriEpW;
     std::string uriResW;
     std::string uriEpP;
@@ -24,16 +26,10 @@ struct Messaging
     std::string uriEpWorking;
     std::string uriResBound;
 
-    Messaging( );
+    Messaging( const Client * client );
 
     void
      debugPrint( );
-
-    unsigned int
-     initBackend( const std::string & workshopPath );
-
-    unsigned int
-     termBackend( );
 
     unsigned int
      bindStaging( );
@@ -66,6 +62,27 @@ struct Messaging
 
     unsigned int
      applyCommandOption( unsigned int idNode, unsigned int idSub, unsigned int idOpt );
+
+  private:
+    std::string
+     requestGetAndSelectUri( const char * get, const char * select );
+
+    std::string
+     locateEndpoint( const char * uriResource, const char * endpoint );
+
+    std::string
+     locateResourceWorkshop( const std::string & uriEndpointWorkshop );
+
+    std::string
+     locateResourceProject( const std::string & uriEndpointProject,
+                            const AppEnvironment * appEnvironment );
+
+    std::string
+     manageProjectLock( const std::string & uriResourceProject, bool acquire );
+
+    std::string
+     locateResourceAsset( const std::string & uriEndpointAsset,
+                          const AppEnvironment * appEnvironment );
 };
 
 }   // namespace mopr

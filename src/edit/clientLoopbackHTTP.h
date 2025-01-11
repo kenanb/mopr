@@ -1,21 +1,27 @@
-#ifndef MOPR_MAIN_CLIENT_ECL_H
-#define MOPR_MAIN_CLIENT_ECL_H
+#ifndef MOPR_MAIN_CLIENTLOOPBACKHTTP_H
+#define MOPR_MAIN_CLIENTLOOPBACKHTTP_H
 
 // Generic includes.
 #include "base/api.h"
 
 #include "client.h"
 
+#include <string>
+
+typedef void CURL;
+
 namespace mopr
 {
 
-class MOPR_API ClientInProcessECL final
-    : public ClientInProcess
+class MOPR_API ClientLoopbackHTTP final : public Client
 {
-  public:
-    ClientInProcessECL( const char * wDirAbs );
+    const std::string uriBase;
+    CURL * curlHandle;
 
-    virtual ~ClientInProcessECL( ) override;
+  public:
+    ClientLoopbackHTTP( const char * wDirAbs, unsigned int port );
+
+    virtual ~ClientLoopbackHTTP( ) override;
 
     virtual unsigned int
      validate( ) const override;
@@ -30,11 +36,8 @@ class MOPR_API ClientInProcessECL final
 
     virtual unsigned int
      releaseResponse( char ** pResponse ) const override;
-
-    virtual unsigned int
-     execProcedure( void * pLayer, unsigned int callEnabled ) const override;
 };
 
 }   // namespace mopr
 
-#endif   // MOPR_MAIN_CLIENT_ECL_H
+#endif   // MOPR_MAIN_CLIENTLOOPBACKHTTP_H

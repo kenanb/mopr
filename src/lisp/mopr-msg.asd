@@ -28,10 +28,10 @@ mainly in Lisp. UNTESTED. DO NOT USE!"
     :depends-on ("package"))
    (:file "workshop"
     :depends-on ("package"))
-   (:file "direct-calls"
+   (:file "procedure"
     :depends-on ("package"))
    (:module #:handler
-    :depends-on ("package" "handler-base" "session" "workshop" "direct-calls")
+    :depends-on ("package" "handler-base" "session" "workshop" "procedure")
     :components
     ((:file "absolute")
      (:file "relative")

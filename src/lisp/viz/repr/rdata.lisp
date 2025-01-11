@@ -139,8 +139,8 @@
 (defmethod initialize-instance :after ((node expr-label-rdata) &key)
   (with-slots (ynode) node
     (mopr-viz/yoga-fun:node-style-set-flex-grow ynode 0.0f0)
-    (mopr-viz/yoga-fun:node-style-set-width ynode 60)
-    (mopr-viz/yoga-fun:node-style-set-min-height ynode 32)))
+    (mopr-viz/yoga-fun:node-style-set-width ynode 60.0f0)
+    (mopr-viz/yoga-fun:node-style-set-min-height ynode 32.0f0)))
 
 (defmethod rdata-command-type ((n expr-label-rdata))
   mopr-viz/repr-def:+command-type-draw-expr-label+)
@@ -195,8 +195,8 @@
 (defmethod initialize-instance :after ((node attr-label-rdata) &key (h-co 1))
   (with-slots (ynode text) node
     (mopr-viz/yoga-fun:node-style-set-flex-grow ynode 0.0f0)
-    (mopr-viz/yoga-fun:node-style-set-min-width ynode (+ 16 (* (length text) 10)))
-    (mopr-viz/yoga-fun:node-style-set-min-height ynode (+ 16 (* h-co 16)))))
+    (mopr-viz/yoga-fun:node-style-set-min-width ynode (coerce (+ 16 (* (length text) 10)) 'single-float))
+    (mopr-viz/yoga-fun:node-style-set-min-height ynode (coerce (+ 16 (* h-co 16)) 'single-float))))
 
 (defmethod rdata-command-type ((n attr-label-rdata))
   mopr-viz/repr-def:+command-type-draw-attr-label+)
@@ -216,8 +216,8 @@
 (defmethod initialize-instance :after ((node attr-input-rdata) &key (h-co 1))
   (with-slots (ynode) node
     (mopr-viz/yoga-fun:node-style-set-flex-grow ynode 1.0f0)
-    (mopr-viz/yoga-fun:node-style-set-min-width ynode 200)
-    (mopr-viz/yoga-fun:node-style-set-min-height ynode (+ 16 (* h-co 16)))))
+    (mopr-viz/yoga-fun:node-style-set-min-width ynode 200.0f0)
+    (mopr-viz/yoga-fun:node-style-set-min-height ynode (coerce (+ 16 (* h-co 16)) 'single-float))))
 
 (defmethod rdata-command-type ((n attr-input-rdata))
   mopr-viz/repr-def:+command-type-draw-attr-input+)

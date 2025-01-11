@@ -24,6 +24,7 @@ struct AppEnvironment
     char const * camera;
     double frameFirst;
     double frameLast;
+    unsigned int portNumber;
 
     AppEnvironment( int argc, char * argv[] );
 
@@ -44,6 +45,9 @@ struct AppEnvironment
 
     std::string
      getAssetPath( ) const;
+
+    unsigned int
+     getPortNumber( ) const;
 };
 
 }   // namespace mopr

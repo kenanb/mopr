@@ -1,7 +1,5 @@
 #include "messaging.h"
 
-#include "client_ecl.h"
-
 #include "pugixml.hpp"
 
 #include <iostream>
@@ -12,8 +10,9 @@
 namespace mopr
 {
 
-Messaging::Messaging( )
-    : uriEpW( )
+Messaging::Messaging( const Client * client )
+    : client( client )
+    , uriEpW( )
     , uriResW( )
     , uriEpP( )
     , uriResP( )
@@ -42,27 +41,15 @@ void
               << "\nBound resource URI     : " << uriResBound << std::endl;
 }
 
-unsigned int
- Messaging::initBackend( const std::string & workshopPath )
-{
-    return Client_ECL_initBackend( workshopPath.c_str( ) );
-}
-
-unsigned int
- Messaging::termBackend( )
-{
-    return Client_ECL_termBackend( );
-}
-
 static unsigned int
- requestGet( pugi::xml_document & docResponse, const char * uri )
+ requestGet( const Client * client, pugi::xml_document & docResponse, const char * uri )
 {
-    const char * response = NULL;
+    char * response = NULL;
 
     // printf( "C                  | RESPONSE ADDRESS : %p\n", ( void * ) &response );
 
     // printf( "C <REQUEST         | RESPONSE POINTER : %p\n", ( void * ) response );
-    Client_ECL_requestGet( &response, uri );
+    client->requestGet( &response, uri );
     // printf( "C         REQUEST> | RESPONSE POINTER : %p\n", ( void * ) response );
 
     // printf( "C         REQUEST> | RESPONSE CONTENT : %s\n", response );
@@ -74,18 +61,19 @@ static unsigned int
     // docResponse.save( std::cout );
 
     // printf( "C <RELEASE         | RESPONSE POINTER : %p\n", ( void * ) response );
-    Client_ECL_releaseResponse( &response );
+    client->releaseResponse( &response );
     // printf( "C         RELEASE> | RESPONSE POINTER : %p\n", ( void * ) response );
 
     return 0;
 }
 
 static unsigned int
- requestPost( pugi::xml_document & docResponse,
+ requestPost( const Client * client,
+              pugi::xml_document & docResponse,
               const char * uri,
               const pugi::xml_document & docRequest )
 {
-    const char * response = NULL;
+    char * response = NULL;
     std::ostringstream requestStream;
     docRequest.save( requestStream );
     const std::string & requestString = requestStream.str( );
@@ -93,7 +81,7 @@ static unsigned int
     // printf( "C                  | RESPONSE ADDRESS : %p\n", ( void * ) &response );
 
     // printf( "C <REQUEST         | RESPONSE POINTER : %p\n", ( void * ) response );
-    Client_ECL_requestPost( &response, uri, requestString.c_str( ) );
+    client->requestPost( &response, uri, requestString.c_str( ) );
     // printf( "C         REQUEST> | RESPONSE POINTER : %p\n", ( void * ) response );
 
     // printf( "C         REQUEST> | RESPONSE CONTENT : %s\n", response );
@@ -105,17 +93,17 @@ static unsigned int
     // docResponse.save( std::cout );
 
     // printf( "C <RELEASE         | RESPONSE POINTER : %p\n", ( void * ) response );
-    Client_ECL_releaseResponse( &response );
+    client->releaseResponse( &response );
     // printf( "C         RELEASE> | RESPONSE POINTER : %p\n", ( void * ) response );
 
     return 0;
 }
 
-static std::string
- requestGetAndSelectUri( const char * get, const char * select )
+std::string
+ Messaging::requestGetAndSelectUri( const char * get, const char * select )
 {
     pugi::xml_document doc;
-    requestGet( doc, get );
+    requestGet( client, doc, get );
     pugi::xpath_node xp = doc.select_node( select );
 
     std::string result;
@@ -123,8 +111,8 @@ static std::string
     return result;
 }
 
-static std::string
- locateEndpoint( const char * uriResource, const char * endpoint )
+std::string
+ Messaging::locateEndpoint( const char * uriResource, const char * endpoint )
 {
     std::string select = "//endpoints/endpoint[@name='";
     select += endpoint;
@@ -132,15 +120,15 @@ static std::string
     return requestGetAndSelectUri( uriResource, select.c_str( ) );
 }
 
-static std::string
- locateResourceWorkshop( const std::string & uriEndpointWorkshop )
+std::string
+ Messaging::locateResourceWorkshop( const std::string & uriEndpointWorkshop )
 {
     return requestGetAndSelectUri( uriEndpointWorkshop.c_str( ), "//workshop" );
 }
 
-static std::string
- locateResourceProject( const std::string & uriEndpointProject,
-                        const AppEnvironment * appEnvironment )
+std::string
+ Messaging::locateResourceProject( const std::string & uriEndpointProject,
+                                   const AppEnvironment * appEnvironment )
 {
     std::string selection = "//projects/project[@path='";
     selection += appEnvironment->getProjectPath( );
@@ -148,8 +136,8 @@ static std::string
     return requestGetAndSelectUri( uriEndpointProject.c_str( ), selection.c_str( ) );
 }
 
-static std::string
- manageProjectLock( const std::string & uriResourceProject, bool acquire )
+std::string
+ Messaging::manageProjectLock( const std::string & uriResourceProject, bool acquire )
 {
     pugi::xml_document docResponse;
     pugi::xml_document docRequest;
@@ -158,7 +146,7 @@ static std::string
     pugi::xml_attribute attr_action_name = node_action.append_attribute( "name" );
     attr_action_name.set_value( acquire ? "acquire" : "release" );
 
-    requestPost( docResponse, uriResourceProject.c_str( ), docRequest );
+    requestPost( client, docResponse, uriResourceProject.c_str( ), docRequest );
 
     pugi::xpath_node xp = docResponse.select_node( "//project-lock" );
 
@@ -167,9 +155,9 @@ static std::string
     return result;
 }
 
-static std::string
- locateResourceAsset( const std::string & uriEndpointAsset,
-                      const AppEnvironment * appEnvironment )
+std::string
+ Messaging::locateResourceAsset( const std::string & uriEndpointAsset,
+                                 const AppEnvironment * appEnvironment )
 {
     std::string selection = "//assets/asset[@path='";
     selection += appEnvironment->getAssetPath( );
@@ -226,7 +214,7 @@ unsigned int
     pugi::xml_attribute attr_action_name = node_action.append_attribute( "name" );
     attr_action_name.set_value( "bind" );
 
-    requestPost( docResponse, uriEpStaging.c_str( ), docRequest );
+    requestPost( client, docResponse, uriEpStaging.c_str( ), docRequest );
 
     pugi::xpath_node xp = docResponse.select_node( "//asset" );
 
@@ -249,7 +237,7 @@ unsigned int
     pugi::xml_attribute attr_action_name = node_action.append_attribute( "name" );
     attr_action_name.set_value( "init-repr" );
 
-    requestPost( docResponse, uriResBound.c_str( ), docRequest );
+    requestPost( client, docResponse, uriResBound.c_str( ), docRequest );
 
     return 0;
 }
@@ -264,7 +252,7 @@ unsigned int
     pugi::xml_attribute attr_action_name = node_action.append_attribute( "name" );
     attr_action_name.set_value( "term-repr" );
 
-    requestPost( docResponse, uriResBound.c_str( ), docRequest );
+    requestPost( client, docResponse, uriResBound.c_str( ), docRequest );
 
     return 0;
 }
@@ -356,7 +344,7 @@ unsigned int
     uriEditorLayout += "&pixels-h=" + std::to_string( pixelsH );
     pugi::xml_document docResponse;
 
-    requestGet( docResponse, uriEditorLayout.c_str( ) );
+    requestGet( client, docResponse, uriEditorLayout.c_str( ) );
     // docResponse.save( std::cout );
 
     pugi::xpath_node xp_layout = docResponse.select_node( "//layout" );
@@ -387,7 +375,7 @@ unsigned int
     uriOptions += "&id-sub=" + std::to_string( idSub );
     pugi::xml_document docResponse;
 
-    requestGet( docResponse, uriOptions.c_str( ) );
+    requestGet( client, docResponse, uriOptions.c_str( ) );
 
     pugi::xpath_node_set xp = docResponse.select_nodes( "//options/option" );
 
@@ -423,7 +411,7 @@ unsigned int
     pugi::xml_attribute attr_action_idOpt = node_action.append_attribute( "id-opt" );
     attr_action_idOpt.set_value( idOptStr.c_str( ) );
 
-    requestPost( docResponse, uriOptions.c_str( ), docRequest );
+    requestPost( client, docResponse, uriOptions.c_str( ), docRequest );
 
     return 0;
 }

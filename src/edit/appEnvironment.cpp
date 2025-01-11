@@ -32,6 +32,7 @@ AppEnvironment::AppEnvironment( int argc, char * argv[] )
     , camera( NULL )
     , frameFirst( 0.0 )
     , frameLast( 100.0 )
+    , portNumber( 0 ) // 0 means "use in-process backend".
 {
     // Extract app root.
     //
@@ -56,7 +57,7 @@ AppEnvironment::AppEnvironment( int argc, char * argv[] )
 
     this->action = ActionRun;
 
-    while ( ( opt = getopt( argc, argv, "c:w:p:a:C:f:l:h" ) ) != -1 )
+    while ( ( opt = getopt( argc, argv, "c:w:p:a:C:P:f:l:h" ) ) != -1 )
     {
         switch ( opt )
         {
@@ -80,17 +81,39 @@ AppEnvironment::AppEnvironment( int argc, char * argv[] )
                 this->camera = optarg;
                 break;
 
+            case 'P':   // port number
+            {
+                const std::string portArg = optarg;
+                unsigned long port = std::stoul( portArg );
+                if ( port < 1024 )
+                {
+                    printf(
+                     "Ports in Well Known Ports list is not suitable! Exiting.\n" );
+                    exit( -1 );
+                }
+                else if ( port > 65535 )
+                {
+                    printf( "Port number is out of range! Exiting.\n" );
+                    exit( -1 );
+                }
+                else
+                {
+                    this->portNumber = port;
+                }
+                break;
+            }
+
             case 'f':   // first frame
             {
-                std::string frameFirst = optarg;
-                this->frameFirst = std::stoi( optarg );
+                const std::string frameFirstArg = optarg;
+                this->frameFirst = std::stoi( frameFirstArg );
                 break;
             }
 
             case 'l':   // last frame
             {
-                std::string frameLast = optarg;
-                this->frameLast = std::stoi( optarg );
+                const std::string frameLastArg = optarg;
+                this->frameLast = std::stoi( frameLastArg );
                 break;
             }
 
@@ -198,6 +221,12 @@ std::string
         printf( "Asset path was not provided! Exiting!\n" );
         exit( -1 );
     }
+}
+
+unsigned int
+ AppEnvironment::getPortNumber( ) const
+{
+    return this->portNumber;
 }
 
 }   // namespace mopr

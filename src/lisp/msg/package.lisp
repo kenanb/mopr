@@ -27,15 +27,7 @@
    #:*messaging-session*
    #:messaging-session
 
-   ;; DIRECT-CALLS
-   #:bind-repr
+   ;; PROCEDURE
    #:exec-repr
-   #:init-repr
-   #:term-repr
-   #:populate-command-queue
-   #:destruct-command-queue
-   #:populate-command-options
-   #:destruct-command-options
-   #:apply-command-option
 
    ))
