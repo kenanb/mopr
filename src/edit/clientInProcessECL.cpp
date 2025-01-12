@@ -1,4 +1,4 @@
-#include "client_ecl.h"
+#include "clientInProcessECL.h"
 
 #include <ecl/ecl.h>
 

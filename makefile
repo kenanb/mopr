@@ -330,7 +330,7 @@ MOPR_EDIT_CF ::= $(COMMON_CFLAGS) $(USD_CFLAGS) -fPIC
 MOPR_EDIT_LIBS = gl glew sdl2 SDL2_image pugixml
 
 MOPR_EDIT_CPP_OBJ ::= src/edit/.main.cpp.o \
-	src/edit/.client_ecl.cpp.o \
+	src/edit/.clientInProcessECL.cpp.o \
 	src/edit/.clientLoopbackHTTP.cpp.o \
 	src/edit/.common.cpp.o \
 	src/edit/.glUtil.cpp.o \

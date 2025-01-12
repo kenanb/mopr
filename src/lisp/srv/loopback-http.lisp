@@ -30,12 +30,12 @@
    '((format t "~%"))))
 
 (defun dispatch-root ()
+  ;; (ht-debug-print
+  ;;   (hunchentoot:cookies-in*)
+  ;;   (hunchentoot:request-method*)
+  ;;   (hunchentoot:request-uri*)
+  ;;   (hunchentoot:headers-in*))
   (setf (hunchentoot:content-type*) +content-type+)
-  (ht-debug-print
-    (hunchentoot:cookies-in*)
-    (hunchentoot:request-method*)
-    (hunchentoot:request-uri*)
-    (hunchentoot:headers-in*))
   (case (hunchentoot:request-method*)
     (:get
      (mopr-msg:request-handler-get
@@ -70,4 +70,5 @@
 
   (setf mopr-msg:*messaging-session* nil)
   (hunchentoot:stop *server*)
+  (setf *server* nil)
   (mopr-msg:release-ws))

@@ -1,5 +1,5 @@
-#ifndef MOPR_MAIN_CLIENT_ECL_H
-#define MOPR_MAIN_CLIENT_ECL_H
+#ifndef MOPR_MAIN_CLIENTINPROCESSECL_H
+#define MOPR_MAIN_CLIENTINPROCESSECL_H
 
 // Generic includes.
 #include "base/api.h"
@@ -37,4 +37,4 @@ class MOPR_API ClientInProcessECL final
 
 }   // namespace mopr
 
-#endif   // MOPR_MAIN_CLIENT_ECL_H
+#endif   // MOPR_MAIN_CLIENTINPROCESSECL_H

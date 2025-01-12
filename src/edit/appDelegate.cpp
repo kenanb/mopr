@@ -1,8 +1,8 @@
 // GL API providers (GLEW, GLApi) should be included before other GL headers.
 #include "pxr/imaging/garch/glApi.h"
 
+#include "clientInProcessECL.h"
 #include "clientLoopbackHTTP.h"
-#include "client_ecl.h"
 
 #include "appConfig.h"
 #include "appDelegate.h"
