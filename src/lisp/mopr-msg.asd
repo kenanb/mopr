@@ -12,6 +12,7 @@ mainly in Lisp. UNTESTED. DO NOT USE!"
   :depends-on
   (#:mopr-org
    #:mopr-sgt
+   #:mopr-ops
    #:mopr-exe
    #:mopr-uri
    #:mopr-viz

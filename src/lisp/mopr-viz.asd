@@ -8,6 +8,7 @@
 
   :depends-on
   (#:mopr-sgt
+   #:mopr-ops
    #:uiop
    #:cffi
    #:float-features
@@ -47,11 +48,10 @@
        (:static-file "moprReprIncludes.h")))
      (:file "rdata"
       :depends-on ("ffi"))
-     (:file "control")
      (:file "rnode"
       :depends-on ("rdata" "ffi"))
      (:file "repr"
-      :depends-on ("rdata" "rnode" "ffi" "control"))))))
+      :depends-on ("rdata" "rnode" "ffi"))))))
 
 (register-system-packages "mopr-viz"
                           '(:mopr-viz/repr-def
@@ -62,6 +62,3 @@
                             :mopr-viz/repr-rdata
                             :mopr-viz/repr-rnode
                             :mopr-viz/repr))
-
-(register-system-packages "mopr-viz"
-                          '(:mopr-msg/ctrl))

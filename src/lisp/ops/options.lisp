@@ -1,49 +1,7 @@
 ;;;; -*- Mode: LISP; Syntax: COMMON-LISP; Package: CL-USER -*-
 ;;
 
-(in-package :cl-user)
-
-(defpackage :mopr-msg/ctrl
-
-  (:use :mopr-sgt)
-  (:use :cl)
-  (:export
-
-   ;; Generic APIs
-   #:payload-get-options
-   #:find-enode-by-id
-
-   ;; NODE-IDENTIFIER API
-   #:node-identifier
-   #:node-identifier-id
-
-   ))
-
-(in-package :mopr-msg/ctrl)
-
-(defvar *node-identifier-id-counter*)
-
-(defclass node-identifier ()
-  ((id
-    :type (unsigned-byte 32)
-    ;; Zero value is reserved for "no selection", so INITFORM will INCF.
-    :initform (incf *node-identifier-id-counter*)
-    :reader node-identifier-id)))
-
-(defmethod enode-init-component ((payload payload) node (component node-identifier))
-  nil)
-
-(defmethod enode-term-component ((payload payload) node (component node-identifier))
-  nil)
-
-(defmethod mopr-sgt:enode-procedure-create-component-unchecked (pr (cc (eql 'node-identifier)))
-  ;; Zero value is reserved for "no selection".
-  (let ((*node-identifier-id-counter* 0))
-    (call-next-method)))
-
-(defun find-enode-by-id (n id &aux (rn (enode-find-component n 'node-identifier)))
-  (if (eql (node-identifier-id rn) id) n
-      (loop for c across (enode-children n) for x = (find-enode-by-id c id) if x return x)))
+(in-package :mopr-ops)
 
 (defgeneric payload-get-options (payload id-sub)
   (:documentation "Get the options available for the selected part of given node.")
@@ -61,7 +19,7 @@
 (defconstant +options-group-container+
   '(("group expr-label")))
 
-(defmethod payload-get-options ((payload group-container) id-sub)
+(defmethod payload-get-options ((payload mopr-sgt:group-container) id-sub)
   (nth id-sub +options-group-container+))
 
 ;;
@@ -76,7 +34,7 @@
     ("var attr-input AUX FORM")
     ("var attr-input VAL FORM")))
 
-(defmethod payload-get-options ((payload var-directive) id-sub)
+(defmethod payload-get-options ((payload mopr-sgt:var-directive) id-sub)
   (nth id-sub +options-var-directive+))
 
 ;;
@@ -92,7 +50,7 @@
     ("each attr-label VALUE(S)")
     ("each attr-input VALUE(S)")))
 
-(defmethod payload-get-options ((payload each-directive) id-sub)
+(defmethod payload-get-options ((payload mopr-sgt:each-directive) id-sub)
   (nth id-sub +options-each-directive+))
 
 ;;
@@ -112,7 +70,7 @@
     ("iota attr-label STEP")
     ("iota attr-input STEP")))
 
-(defmethod payload-get-options ((payload iota-directive) id-sub)
+(defmethod payload-get-options ((payload mopr-sgt:iota-directive) id-sub)
   (nth id-sub +options-iota-directive+))
 
 ;;
@@ -125,7 +83,7 @@
     ("call attr-input AUX")
     ("call attr-input BODY")))
 
-(defmethod payload-get-options ((payload call-directive) id-sub)
+(defmethod payload-get-options ((payload mopr-sgt:call-directive) id-sub)
   (nth id-sub +options-call-directive+))
 
 ;;
@@ -137,7 +95,7 @@
     ("prim-type attr-label NAME")
     ("prim-type attr-input NAME")))
 
-(defmethod payload-get-options ((payload prim-type-statement) id-sub)
+(defmethod payload-get-options ((payload mopr-sgt:prim-type-statement) id-sub)
   (nth id-sub +options-prim-type-statement+))
 
 ;;
@@ -156,7 +114,7 @@
     ("prim-attr attr-input TYPE")
     ("prim-attr attr-input BODY")))
 
-(defmethod payload-get-options ((payload prim-attr-statement) id-sub)
+(defmethod payload-get-options ((payload mopr-sgt:prim-attr-statement) id-sub)
   (nth id-sub +options-prim-attr-statement+))
 
 ;;
@@ -171,7 +129,7 @@
     ("prim-rel attr-input META")
     ("prim-rel attr-input BODY")))
 
-(defmethod payload-get-options ((payload prim-rel-statement) id-sub)
+(defmethod payload-get-options ((payload mopr-sgt:prim-rel-statement) id-sub)
   (nth id-sub +options-prim-rel-statement+))
 
 ;;
@@ -183,7 +141,7 @@
     ("prim-ns attr-label NAME")
     ("prim-ns attr-input NAME")))
 
-(defmethod payload-get-options ((payload prim-ns-container) id-sub)
+(defmethod payload-get-options ((payload mopr-sgt:prim-ns-container) id-sub)
   (nth id-sub +options-prim-ns-container+))
 
 ;;
@@ -195,7 +153,7 @@
     ("prim attr-label PATH")
     ("prim attr-input PATH")))
 
-(defmethod payload-get-options ((payload prim-statement) id-sub)
+(defmethod payload-get-options ((payload mopr-sgt:prim-statement) id-sub)
   (nth id-sub +options-prim-statement+))
 
 ;;
@@ -206,7 +164,7 @@
   '(("tree expr-label")
     ("tree attr-input BODY")))
 
-(defmethod payload-get-options ((payload tree-statement) id-sub)
+(defmethod payload-get-options ((payload mopr-sgt:tree-statement) id-sub)
   (nth id-sub +options-tree-statement+))
 
 ;;
@@ -217,5 +175,5 @@
   '(("meta expr-label")
     ("meta attr-input BODY")))
 
-(defmethod payload-get-options ((payload meta-statement) id-sub)
+(defmethod payload-get-options ((payload mopr-sgt:meta-statement) id-sub)
   (nth id-sub +options-meta-statement+))
