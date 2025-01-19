@@ -14,6 +14,8 @@
 
    ;; OPTIONS
    #:payload-get-options
+   #:enode-procedure-calculate-command-options
+   #:enode-procedure-apply-command-option
 
    ;; COLLECT
    #:get-info-for-component

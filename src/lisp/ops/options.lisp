@@ -8,6 +8,23 @@
   (:method (payload id-sub)
     nil))
 
+(defun enode-procedure-calculate-command-options (pr id-node id-sub)
+  (when (zerop id-sub) (error "Zero id-sub passed to populate-command-options!"))
+  (mopr-sgt:with-bound-procedure-accessors ((root mopr-sgt:procedure-root)) pr
+    (let* ((n (find-enode-by-id root id-node))
+           (payload-opts (payload-get-options (mopr-sgt:bnode-find-payload n) (1- id-sub))))
+      (cons `(("id-node" ,id-node) ("id-sub" ,id-sub))
+            (loop for opt in payload-opts collect `(("name" ,opt)))))))
+
+(defun enode-procedure-apply-command-option (pr id-node id-sub id-opt)
+  (when (zerop id-sub) (error "Zero id-sub passed to root-enode-apply-command-option!"))
+  (when (zerop id-opt) (error "Zero id-opt passed to root-enode-apply-command-option!"))
+  (mopr-sgt:with-bound-procedure-accessors ((root mopr-sgt:procedure-root)) pr
+    (let* ((n (find-enode-by-id root id-node))
+           (opts (payload-get-options (mopr-sgt:bnode-find-payload n) (1- id-sub)))
+           (idx (1- id-opt)))
+      (format t "APPLIED OPTION: ~A~%" (nth idx opts)))))
+
 ;;
 ;;; ROOT-CONTAINER API
 ;;

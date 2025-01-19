@@ -6,7 +6,7 @@
 (defpackage :mopr-viz/repr
   (:use :cl)
   (:export
-   #:calculate-editor-layout))
+   #:enode-procedure-calculate-editor-layout))
 
 (in-package :mopr-viz/repr)
 
@@ -18,18 +18,19 @@
           collect `(("id-sub" ,id-sub)
                     ,@(mopr-viz/repr-rdata:rdata-command-attributes rd))))
 
-(defun calculate-editor-layout (root-enode pixels-w pixels-h)
-  (declare (ignore pixels-h))
-  (mopr-viz/layout-shared:with-layout-settings
-      (let* ((rn (mopr-sgt:enode-find-component root-enode 'mopr-viz/repr-rnode:rnode))
-             (root-yn (mopr-viz/repr-rdata:rdata-ynode
-                       (car (mopr-viz/repr-rnode:rnode-rdatas rn)))))
-        (mopr-viz/yoga-fun:node-calculate-layout root-yn
-                                                 (float pixels-w)
-                                                 mopr-viz/yoga-def:+undefined+ ;; pixels-h
-                                                 mopr-viz/yoga-def:+direction-ltr+)
-        (cons
-         `(("pixels-w" ,(write-to-string pixels-w))
-           ("pixels-h" ,(write-to-string (mopr-viz/layout-shared:layout-dimension
-                                          root-yn :height))))
-         (mopr-ops:collect-info-for-components root-enode '(mopr-viz/repr-rnode:rnode))))))
+(defun enode-procedure-calculate-editor-layout (pr pixels-w-f pixels-h-f)
+  (declare (ignore pixels-h-f))
+  (mopr-sgt:with-bound-procedure-accessors ((root mopr-sgt:procedure-root)) pr
+    (mopr-viz/layout-shared:with-layout-settings
+        (let* ((rn (mopr-sgt:enode-find-component root 'mopr-viz/repr-rnode:rnode))
+               (root-yn (mopr-viz/repr-rdata:rdata-ynode
+                         (car (mopr-viz/repr-rnode:rnode-rdatas rn)))))
+          (mopr-viz/yoga-fun:node-calculate-layout root-yn
+                                                   pixels-w-f
+                                                   mopr-viz/yoga-def:+undefined+ ;; pixels-h-f
+                                                   mopr-viz/yoga-def:+direction-ltr+)
+          (cons
+           `(("pixels-w" ,(write-to-string pixels-w-f))
+             ("pixels-h" ,(write-to-string (mopr-viz/layout-shared:layout-dimension
+                                            root-yn :height))))
+           (mopr-ops:collect-info-for-components root '(mopr-viz/repr-rnode:rnode)))))))

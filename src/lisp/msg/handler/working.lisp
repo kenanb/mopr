@@ -13,7 +13,12 @@
       (error "Workshop ID doesn't match the active workshop."))
     (unless (equal puuid (getf context :project-res))
       (error "Project ID doesn't match the active project."))
-    (populate-editor-layout (mopr-uri:resource-id-query rid))))
+    (let ((result (apply #'populate-editor-layout (mopr-uri:resource-id-query rid))))
+      (xmls:make-node
+       :name "layout"
+       :attrs (car result)
+       :children (loop for o in (cdr result)
+                       collecting (xmls:make-node :name "command" :attrs o))))))
 
 (defmethod handle-get-request (rid (category (eql 'base-request-fn-option))
                                &key context remaining)
@@ -25,7 +30,12 @@
       (error "Workshop ID doesn't match the active workshop."))
     (unless (equal puuid (getf context :project-res))
       (error "Project ID doesn't match the active project."))
-    (populate-command-options (mopr-uri:resource-id-query rid))))
+    (let ((result (apply #'populate-command-options (mopr-uri:resource-id-query rid))))
+      (xmls:make-node
+       :name "options"
+       :attrs (car result)
+       :children (loop for o in (cdr result)
+                       collecting (xmls:make-node :name "option" :attrs o))))))
 
 (defmethod handle-post-request (rid request-body (category (eql 'main-request-fn-working-res))
                                 &key context remaining)

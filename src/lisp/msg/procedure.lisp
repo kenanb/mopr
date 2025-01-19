@@ -25,42 +25,13 @@
 (defun term-repr ()
   (mopr-sgt:enode-procedure-delete-components *procedure* +component-classes+))
 
-(defun %populate-editor-layout (pr &key pixels-w pixels-h &allow-other-keys)
-  (mopr-sgt:with-bound-procedure-accessors ((root mopr-sgt:procedure-root)) pr
-    (let ((layout (mopr-viz/repr:calculate-editor-layout root
+(defun populate-editor-layout (&key (pixels-w 480) (pixels-h 960) &allow-other-keys)
+  (mopr-viz/repr:enode-procedure-calculate-editor-layout *procedure*
                                                          (float pixels-w)
-                                                         (float pixels-h))))
-      (xmls:make-node
-       :name "layout"
-       :attrs (car layout)
-       :children (mapcar (lambda (attrs) (xmls:make-node :name "command" :attrs attrs))
-                         (cdr layout))))))
+                                                         (float pixels-h)))
 
-(defun populate-editor-layout (query)
-  (apply #'%populate-editor-layout *procedure* query))
+(defun populate-command-options (&key (id-node 0) (id-sub 0) &allow-other-keys)
+  (mopr-ops:enode-procedure-calculate-command-options *procedure* id-node id-sub))
 
-(defun %populate-command-options (pr &key id-node id-sub &allow-other-keys)
-  (when (zerop id-sub) (error "Zero id-sub passed to root-enode-populate-command-options!"))
-  (mopr-sgt:with-bound-procedure-accessors ((root mopr-sgt:procedure-root)) pr
-    (let* ((n (mopr-ops:find-enode-by-id root id-node))
-           (opts (mopr-ops:payload-get-options (mopr-sgt:bnode-find-payload n) (1- id-sub)))
-           (nof-opts (length opts)))
-      (xmls:make-node
-       :name "options" :attrs `(("id-node" ,id-node) ("id-sub" ,id-sub))
-       :children (loop for o in opts
-                       collecting (xmls:make-node :name "option" :attrs `(("name" ,o))))))))
-
-(defun populate-command-options (query)
-  (apply #'%populate-command-options *procedure* query))
-
-(defun %apply-command-option (pr id-node id-sub id-opt)
-  (when (zerop id-sub) (error "Zero id-sub passed to root-enode-apply-command-option!"))
-  (when (zerop id-opt) (error "Zero id-opt passed to root-enode-apply-command-option!"))
-  (mopr-sgt:with-bound-procedure-accessors ((root mopr-sgt:procedure-root)) pr
-    (let* ((n (mopr-ops:find-enode-by-id root id-node))
-           (opts (mopr-ops:payload-get-options (mopr-sgt:bnode-find-payload n) (1- id-sub)))
-           (idx (1- id-opt)))
-      (format t "APPLIED OPTION: ~A~%" (nth idx opts)))))
-
-(defun apply-command-option (&rest args)
-  (apply #'%apply-command-option *procedure* args))
+(defun apply-command-option (id-node id-sub id-opt)
+  (mopr-ops:enode-procedure-apply-command-option *procedure* id-node id-sub id-opt))
