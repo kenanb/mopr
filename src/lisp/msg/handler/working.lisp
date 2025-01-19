@@ -13,7 +13,7 @@
       (error "Workshop ID doesn't match the active workshop."))
     (unless (equal puuid (getf context :project-res))
       (error "Project ID doesn't match the active project."))
-    (let ((result (apply #'populate-editor-layout (mopr-uri:resource-id-query rid))))
+    (let ((result (apply #'pr-populate-editor-layout (mopr-uri:resource-id-query rid))))
       (xmls:make-node
        :name "layout"
        :attrs (car result)
@@ -30,7 +30,7 @@
       (error "Workshop ID doesn't match the active workshop."))
     (unless (equal puuid (getf context :project-res))
       (error "Project ID doesn't match the active project."))
-    (let ((result (apply #'populate-command-options (mopr-uri:resource-id-query rid))))
+    (let ((result (apply #'pr-populate-command-options (mopr-uri:resource-id-query rid))))
       (xmls:make-node
        :name "options"
        :attrs (car result)
@@ -51,11 +51,11 @@
       ((equal (xmls:node-name request-body) "action")
        (let ((action-name (cadr (assoc "name" (xmls:node-attrs request-body) :test #'string=))))
          (cond
-           ((equal action-name "init-repr")
-            (init-repr)
+           ((equal action-name "init-interaction")
+            (pr-init-interaction)
             (format t "Representation components for bound procedure are initialized.~%"))
-           ((equal action-name "term-repr")
-            (term-repr)
+           ((equal action-name "term-interaction")
+            (pr-term-interaction)
             (format t "Representation components for bound procedure are terminated.~%"))))))
     ;; TODO : Revisit.
     (xmls:make-node :name "action-result" :attrs `(("status" "OK")))))
@@ -78,6 +78,6 @@
             (let ((id-node (parse-integer (cadr (assoc "id-node" (xmls:node-attrs request-body) :test #'string=))))
                   (id-sub (parse-integer (cadr (assoc "id-sub" (xmls:node-attrs request-body) :test #'string=))))
                   (id-opt (parse-integer (cadr (assoc "id-opt" (xmls:node-attrs request-body) :test #'string=)))))
-              (apply-command-option id-node id-sub id-opt)))))))
+              (pr-apply-command-option id-node id-sub id-opt)))))))
     ;; TODO : Revisit.
     (xmls:make-node :name "action-result" :attrs `(("status" "OK")))))

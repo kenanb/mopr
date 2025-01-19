@@ -35,10 +35,10 @@ struct Messaging
      bindStaging( );
 
     unsigned int
-     initRepr( );
+     initInteraction( );
 
     unsigned int
-     termRepr( );
+     termInteraction( );
 
     unsigned int
      initGenericWorkshopEndpoints( const AppEnvironment * appEnvironment );

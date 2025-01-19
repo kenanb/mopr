@@ -19,7 +19,7 @@
    #:handle-get-request
    #:handle-post-request
    #:release-response
-   #:exec-procedure
+   #:execute-procedure
    ))
 
 (in-package #:mopr-srv/in-process)
@@ -71,5 +71,5 @@
     ;;         (cffi:mem-ref response-body-h :pointer))
     ))
 
-(defun exec-procedure (layer-h call-enabled)
-  (mopr-msg:exec-repr layer-h call-enabled))
+(defun execute-procedure (layer-h call-enabled)
+  (mopr-msg:pr-execute layer-h call-enabled))

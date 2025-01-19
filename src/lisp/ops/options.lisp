@@ -9,7 +9,7 @@
     nil))
 
 (defun enode-procedure-calculate-command-options (pr id-node id-sub)
-  (when (zerop id-sub) (error "Zero id-sub passed to populate-command-options!"))
+  (when (zerop id-sub) (error "Zero id-sub passed to enode-procedure-calculate-command-options!"))
   (mopr-sgt:with-bound-procedure-accessors ((root mopr-sgt:procedure-root)) pr
     (let* ((n (find-enode-by-id root id-node))
            (payload-opts (payload-get-options (mopr-sgt:bnode-find-payload n) (1- id-sub))))
@@ -17,8 +17,8 @@
             (loop for opt in payload-opts collect `(("name" ,opt)))))))
 
 (defun enode-procedure-apply-command-option (pr id-node id-sub id-opt)
-  (when (zerop id-sub) (error "Zero id-sub passed to root-enode-apply-command-option!"))
-  (when (zerop id-opt) (error "Zero id-opt passed to root-enode-apply-command-option!"))
+  (when (zerop id-sub) (error "Zero id-sub passed to enode-procedure-apply-command-option!"))
+  (when (zerop id-opt) (error "Zero id-opt passed to enode-procedure-apply-command-option!"))
   (mopr-sgt:with-bound-procedure-accessors ((root mopr-sgt:procedure-root)) pr
     (let* ((n (find-enode-by-id root id-node))
            (opts (payload-get-options (mopr-sgt:bnode-find-payload n) (1- id-sub)))

@@ -86,7 +86,7 @@ unsigned int
 unsigned int
  ClientInProcessECL::execProcedure( void * pLayer, unsigned int callEnabled ) const
 {
-    cl_object symFnExec_l = getSymbol( "MOPR-SRV/IN-PROCESS", "EXEC-PROCEDURE" );
+    cl_object symFnExec_l = getSymbol( "MOPR-SRV/IN-PROCESS", "EXECUTE-PROCEDURE" );
 
     cl_object hLayer_l = ecl_make_pointer( pLayer );
 

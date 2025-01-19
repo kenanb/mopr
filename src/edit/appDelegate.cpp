@@ -103,7 +103,7 @@ void
     // Representation classes.
     //
 
-    messaging.initRepr( );
+    messaging.initInteraction( );
 
     // Populated and cleaned up on the Lisp side.
     CommandQueue commandQueue;
@@ -399,7 +399,7 @@ void
 
     overlayProgram.fini( );
 
-    messaging.termRepr( );
+    messaging.termInteraction( );
     messaging.releaseProject( );
     delete cli;
 }

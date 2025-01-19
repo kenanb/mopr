@@ -228,14 +228,14 @@ unsigned int
 }
 
 unsigned int
- Messaging::initRepr( )
+ Messaging::initInteraction( )
 {
     pugi::xml_document docResponse;
     pugi::xml_document docRequest;
 
     pugi::xml_node node_action = docRequest.append_child( "action" );
     pugi::xml_attribute attr_action_name = node_action.append_attribute( "name" );
-    attr_action_name.set_value( "init-repr" );
+    attr_action_name.set_value( "init-interaction" );
 
     requestPost( client, docResponse, uriResBound.c_str( ), docRequest );
 
@@ -243,14 +243,14 @@ unsigned int
 }
 
 unsigned int
- Messaging::termRepr( )
+ Messaging::termInteraction( )
 {
     pugi::xml_document docResponse;
     pugi::xml_document docRequest;
 
     pugi::xml_node node_action = docRequest.append_child( "action" );
     pugi::xml_attribute attr_action_name = node_action.append_attribute( "name" );
-    attr_action_name.set_value( "term-repr" );
+    attr_action_name.set_value( "term-interaction" );
 
     requestPost( client, docResponse, uriResBound.c_str( ), docRequest );
 

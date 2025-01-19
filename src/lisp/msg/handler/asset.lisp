@@ -85,7 +85,7 @@
          (let ((action-name (cadr (assoc "name" (xmls:node-attrs request-body) :test #'string=))))
            (cond
              ((equal action-name "bind")
-              (bind-repr apath)
+              (bind-pr apath)
               (format t "File bound: ~A~%" apath)
               (push `("uri" ,(format nil "/workshop/~A/project/~A/asset/~A/working/0/" wuuid puuid auuid))
                     (xmls:node-attrs ret))
