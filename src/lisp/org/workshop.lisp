@@ -132,7 +132,10 @@ using WORKSHOP-ACQUIRE-PROJECT once this call succeeds.
       (make-pndescriptor :role :workshop :uuid wuuid :path wpath))))
 
 (defun load-workshop-metadata (wdir-abs
-                               &aux (wpath (ensure-directory-pathname wdir-abs)))
+                               &aux
+                                 (wdir-abs-native (native-namestring wdir-abs))
+                                 (wpath (ensure-directory-pathname wdir-abs-native)))
+  (mopr-utl:validate-simple-path wpath)
   (validate-workshop-path wpath)
   (load-workshop-metadata-unchecked wpath))
 

@@ -11,6 +11,7 @@ mainly in Lisp. UNTESTED. DO NOT USE!"
 
   :depends-on
   (#:mopr-uri
+   #:mopr-utl
    #:uiop)
 
   :pathname "org"

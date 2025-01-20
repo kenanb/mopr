@@ -7,9 +7,15 @@
   (:use #:cl
         #:mopr-sgt ; TODO : Revise.
         )
+
+  (:import-from :uiop/filesystem
+                #:native-namestring)
+
   (:export
 
    ;; PROCEDURE API
    #:procedure-execute
+   #:procedure-export-to-usd-file
+   #:procedure-export-to-usda-string
 
    ))

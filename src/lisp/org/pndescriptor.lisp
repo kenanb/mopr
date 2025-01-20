@@ -25,13 +25,19 @@ addressing. TODO: Implement setting.
    :type pathname
    :read-only t))
 
+;; Using NATIVE-NAMESTRING to resolve possible HOME directory references via
+;; TILDE character. Even though Lisp code will handle the pathname correctly,
+;; foreign library code we eventually pass the NAMESTRING to might not.
+
 (defun make-pndescriptor-for-file (role file)
-  (make-new-pndescriptor
-   role
-   (or (file-pathname-p file)
-       (error "File descriptor requested for non-file path!"))))
+  (let* ((file-native (native-namestring file))
+         (path (file-pathname-p file-native)))
+    (unless path (error "File descriptor requested for non-file path!"))
+    (mopr-utl:validate-simple-path path)
+    (make-new-pndescriptor role path)))
 
 (defun make-pndescriptor-for-directory (role directory)
-  (make-new-pndescriptor
-   role
-   (ensure-directory-pathname directory)))
+  (let* ((directory-native (native-namestring directory))
+         (path (ensure-directory-pathname directory-native)))
+    (mopr-utl:validate-simple-path path)
+    (make-new-pndescriptor role path)))

@@ -64,7 +64,14 @@ specific project. This is expected to be tracked by the WORKSHOP instance.
 
 (defun project-get-asset (pinfo lookup-type lookup-val)
   (let ((sanitized-val (case lookup-type
-                         (:path (or (file-pathname-p lookup-val)
-                                    (error "Bad input for asset query!")))
+                         ;; We shouldn't need to call NATIVE-NAMESTRING here.
+                         ;; Because this lookup is supposed to be used ONLY in the
+                         ;; context of relative paths, which are not expected to
+                         ;; refer to HOME anyway. But we validate for path being
+                         ;; simple, so that a possible failure to match due to
+                         ;; lookup path provided being complex is easy to debug.
+                         (:path (mopr-utl:validate-simple-path
+                                 (or (file-pathname-p lookup-val)
+                                     (error "Bad input for asset query!"))))
                          (otherwise lookup-val))))
     (pndesc-alist-assoc (project-info-assets pinfo) lookup-type sanitized-val)))

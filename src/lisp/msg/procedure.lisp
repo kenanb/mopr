@@ -19,6 +19,9 @@
 (defun pr-execute (layer-h call-enabled)
   (mopr-exe:procedure-execute *procedure* layer-h call-enabled))
 
+(defun pr-export-to-usd-file (filepath call-enabled)
+  (mopr-exe:procedure-export-to-usd-file *procedure* filepath call-enabled))
+
 (defun pr-init-interaction ()
   (mopr-sgt:enode-procedure-create-components *procedure* +component-classes+))
 

@@ -9,6 +9,7 @@
                 #:read-file-string
                 #:with-safe-io-syntax)
   (:import-from :uiop/filesystem
+                #:native-namestring
                 #:file-exists-p
                 #:directory-exists-p
                 #:directory-files
