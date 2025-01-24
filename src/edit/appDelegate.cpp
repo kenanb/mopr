@@ -94,7 +94,8 @@ void
     if ( const ClientInProcess * cliInProcess =
           dynamic_cast< const ClientInProcess * >( cli ) )
     {
-        cliInProcess->execProcedure( ( void * ) &sLayer, 1 );
+        cliInProcess->execProcedure(
+         assetMessaging.uuid.c_str( ), ( void * ) &sLayer, 1 );
     }
     else
     {

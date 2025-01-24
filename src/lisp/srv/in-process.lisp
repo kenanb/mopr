@@ -71,5 +71,5 @@
     ;;         (cffi:mem-ref response-body-h :pointer))
     ))
 
-(defun execute-procedure (layer-h call-enabled)
-  (mopr-msg:pr-execute layer-h call-enabled))
+(defun execute-procedure (auuid layer-h call-enabled)
+  (mopr-msg:pr-execute auuid layer-h call-enabled))

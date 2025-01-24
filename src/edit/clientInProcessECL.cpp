@@ -84,13 +84,17 @@ unsigned int
 }
 
 unsigned int
- ClientInProcessECL::execProcedure( void * pLayer, unsigned int callEnabled ) const
+ ClientInProcessECL::execProcedure( const char * auuid,
+                                    void * pLayer,
+                                    unsigned int callEnabled ) const
 {
     cl_object symFnExec_l = getSymbol( "MOPR-SRV/IN-PROCESS", "EXECUTE-PROCEDURE" );
 
+    cl_object strAUUID_l = ecl_make_constant_base_string( auuid, -1 );
+
     cl_object hLayer_l = ecl_make_pointer( pLayer );
 
-    cl_funcall( 3, symFnExec_l, hLayer_l, callEnabled ? ECL_T : ECL_NIL );
+    cl_funcall( 4, symFnExec_l, strAUUID_l, hLayer_l, callEnabled ? ECL_T : ECL_NIL );
 
     return 0;
 }

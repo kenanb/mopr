@@ -32,7 +32,9 @@ class MOPR_API ClientInProcessECL final
      releaseResponse( char ** pResponse ) const override;
 
     virtual unsigned int
-     execProcedure( void * pLayer, unsigned int callEnabled ) const override;
+     execProcedure( const char * auuid,
+                    void * pLayer,
+                    unsigned int callEnabled ) const override;
 };
 
 }   // namespace mopr

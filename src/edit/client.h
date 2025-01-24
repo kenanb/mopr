@@ -59,7 +59,9 @@ class ClientInProcess : public Client
     virtual ~ClientInProcess( ) override = default;
 
     virtual unsigned int
-     execProcedure( void * pLayer, unsigned int callEnabled ) const = 0;
+     execProcedure( const char * auuid,
+                    void * pLayer,
+                    unsigned int callEnabled ) const = 0;
 };
 
 }   // namespace mopr

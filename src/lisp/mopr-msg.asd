@@ -29,10 +29,8 @@ mainly in Lisp. UNTESTED. DO NOT USE!"
     :depends-on ("package"))
    (:file "workshop"
     :depends-on ("package"))
-   (:file "procedure"
-    :depends-on ("package"))
    (:module #:handler
-    :depends-on ("package" "handler-base" "session" "workshop" "procedure")
+    :depends-on ("package" "handler-base" "session" "workshop")
     :components
     ((:file "absolute")
      (:file "relative")
