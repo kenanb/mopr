@@ -10,35 +10,8 @@
 namespace mopr
 {
 
-Messaging::Messaging( const Client * client )
-    : client( client )
-    , uriEpW( )
-    , uriResW( )
-    , uriEpP( )
-    , uriResP( )
-    , uriEpPL( )
-    , uriEpA( )
-    , uriResA( )
-    , pLockState( )
-    , uriEpStaging( )
-    , uriEpWorking( )
-    , uriResBound( )
+MessagingBase::MessagingBase( const Client * client ) : client( client ), base( ), uuid( )
 {
-}
-
-void
- Messaging::debugPrint( )
-{
-    std::cout << "\nWorkshop endpoint URI  : " << uriEpW
-              << "\nWorkshop resource URI  : " << uriResW
-              << "\nProject endpoint URI   : " << uriEpP
-              << "\nProject resource URI   : " << uriResP
-              << "\nProj lock endpoint URI : " << uriEpPL
-              << "\nAsset endpoint URI     : " << uriEpA
-              << "\nAsset resource URI     : " << uriResA
-              << "\nStaging endpoint URI   : " << uriEpStaging
-              << "\nWorking endpoint URI   : " << uriEpWorking
-              << "\nBound resource URI     : " << uriResBound << std::endl;
 }
 
 static unsigned int
@@ -99,8 +72,26 @@ static unsigned int
     return 0;
 }
 
+unsigned int
+ MessagingBase::requestGetAndSetBaseInfo( const char * get )
+{
+    pugi::xml_document doc;
+    requestGet( client, doc, get );
+
+    const std::string & select = getBaseResourceSelector( );
+    pugi::xpath_node xp = doc.select_node( select.c_str( ) );
+
+    if ( xp )
+    {
+        uuid = xp.node( ).attribute( "uuid" ).value( );
+        base = xp.node( ).attribute( "uri" ).value( );
+        return 0;
+    }
+    return 1;
+}
+
 std::string
- Messaging::requestGetAndSelectUri( const char * get, const char * select )
+ MessagingBase::requestGetAndSelectUri( const char * get, const char * select ) const
 {
     pugi::xml_document doc;
     requestGet( client, doc, get );
@@ -112,7 +103,7 @@ std::string
 }
 
 std::string
- Messaging::locateEndpoint( const char * uriResource, const char * endpoint )
+ MessagingBase::locateEndpoint( const char * uriResource, const char * endpoint ) const
 {
     std::string select = "//endpoints/endpoint[@name='";
     select += endpoint;
@@ -120,24 +111,86 @@ std::string
     return requestGetAndSelectUri( uriResource, select.c_str( ) );
 }
 
-std::string
- Messaging::locateResourceWorkshop( const std::string & uriEndpointWorkshop )
+WorkshopMessaging::WorkshopMessaging( const Client * client )
+    : MessagingBase( client ), uriEpW( ), uriEpP( ), projectPathToMessaging( )
 {
-    return requestGetAndSelectUri( uriEndpointWorkshop.c_str( ), "//workshop" );
+}
+
+ProjectMessaging &
+ WorkshopMessaging::getOrCreateProjectMessaging( const std::string & projectPath )
+{
+    if ( auto it = projectPathToMessaging.find( projectPath );
+         it != projectPathToMessaging.end( ) )
+        return it->second;
+
+    ProjectMessaging projectMessaging( client, projectPath );
+    projectMessaging.initGenericEndpoints( uriEpP );
+
+    projectPathToMessaging.emplace( projectPath, projectMessaging );
+    return projectPathToMessaging.at( projectPath );
+}
+
+void
+ WorkshopMessaging::debugPrint( ) const
+{
+    std::cout << "\nWorkshop UUID          : " << uuid
+              << "\nWorkshop endpoint URI  : " << uriEpW
+              << "\nWorkshop resource URI  : " << base
+              << "\nProject endpoint URI   : " << uriEpP << std::endl;
+}
+
+unsigned int
+ WorkshopMessaging::initGenericEndpoints( )
+{
+    uriEpW = locateEndpoint( "/", "workshop" );
+    if ( uriEpW.empty( ) ) return 1;
+
+    if ( requestGetAndSetBaseInfo( uriEpW.c_str( ) ) ) return 1;
+
+    uriEpP = locateEndpoint( base.c_str( ), "project" );
+    if ( uriEpP.empty( ) ) return 1;
+
+    return 0;
+}
+
+ProjectMessaging::ProjectMessaging( const Client * client,
+                                    const std::string & projectPath )
+    : MessagingBase( client )
+    , path( projectPath )
+    , uriEpPL( )
+    , uriEpA( )
+    , pLockState( )
+    , assetPathToMessaging( )
+{
+}
+
+AssetMessaging &
+ ProjectMessaging::getOrCreateAssetMessaging( const std::string & assetPath )
+{
+    if ( auto it = assetPathToMessaging.find( assetPath );
+         it != assetPathToMessaging.end( ) )
+        return it->second;
+
+    AssetMessaging assetMessaging( client, assetPath );
+    assetMessaging.initGenericEndpoints( uriEpA );
+
+    assetPathToMessaging.emplace( assetPath, assetMessaging );
+    return assetPathToMessaging.at( assetPath );
+}
+
+void
+ ProjectMessaging::debugPrint( ) const
+{
+    std::cout << "\nProject UUID           : " << uuid
+              << "\nProject PATH           : " << path
+              << "\nProject resource URI   : " << base
+              << "\nProj lock endpoint URI : " << uriEpPL
+              << "\nAsset endpoint URI     : " << uriEpA << std::endl;
 }
 
 std::string
- Messaging::locateResourceProject( const std::string & uriEndpointProject,
-                                   const AppEnvironment * appEnvironment )
-{
-    std::string selection = "//projects/project[@path='";
-    selection += appEnvironment->getProjectPath( );
-    selection += "']";
-    return requestGetAndSelectUri( uriEndpointProject.c_str( ), selection.c_str( ) );
-}
-
-std::string
- Messaging::manageProjectLock( const std::string & uriResourceProject, bool acquire )
+ ProjectMessaging::manageProjectLock( const std::string & uriResourceProject,
+                                      bool acquire ) const
 {
     pugi::xml_document docResponse;
     pugi::xml_document docRequest;
@@ -155,57 +208,80 @@ std::string
     return result;
 }
 
-std::string
- Messaging::locateResourceAsset( const std::string & uriEndpointAsset,
-                                 const AppEnvironment * appEnvironment )
-{
-    std::string selection = "//assets/asset[@path='";
-    selection += appEnvironment->getAssetPath( );
-    selection += "']";
-    return requestGetAndSelectUri( uriEndpointAsset.c_str( ), selection.c_str( ) );
-}
-
 unsigned int
- Messaging::initGenericWorkshopEndpoints( const AppEnvironment * appEnvironment )
+ ProjectMessaging::acquireProject( )
 {
-    uriEpW = locateEndpoint( "/", "workshop" );
-    if ( uriEpW.empty( ) ) return 0;
-
-    uriResW = locateResourceWorkshop( uriEpW );
-    if ( uriResW.empty( ) ) return 0;
-
-    uriEpP = locateEndpoint( uriResW.c_str( ), "project" );
-    if ( uriEpP.empty( ) ) return 0;
-
-    uriResP = locateResourceProject( uriEpP, appEnvironment );
-    if ( uriResP.empty( ) ) return 0;
-
-    uriEpPL = locateEndpoint( uriResP.c_str( ), "lock" );
-    if ( uriEpPL.empty( ) ) return 0;
+    pLockState = manageProjectLock( uriEpPL, true );
+    if ( pLockState != "acquired" ) return 1;
 
     return 0;
 }
 
 unsigned int
- Messaging::initGenericProjectEndpoints( const AppEnvironment * appEnvironment )
+ ProjectMessaging::releaseProject( )
 {
-    uriEpA = locateEndpoint( uriResP.c_str( ), "asset" );
+    pLockState = manageProjectLock( uriEpPL, false );
+    if ( pLockState != "released" ) return 1;
+
+    return 0;
+}
+
+unsigned int
+ ProjectMessaging::initGenericEndpoints( const std::string & uriEndpointProject )
+{
+    if ( requestGetAndSetBaseInfo( uriEndpointProject.c_str( ) ) ) return 1;
+
+    uriEpPL = locateEndpoint( base.c_str( ), "lock" );
+    if ( uriEpPL.empty( ) ) return 1;
+
+    return 0;
+}
+
+unsigned int
+ ProjectMessaging::initProjectEndpoints( )
+{
+    uriEpA = locateEndpoint( base.c_str( ), "asset" );
     if ( uriEpA.empty( ) ) return 0;
 
-    uriResA = locateResourceAsset( uriEpA, appEnvironment );
-    if ( uriResA.empty( ) ) return 0;
+    return 0;
+}
 
-    uriEpStaging = locateEndpoint( uriResA.c_str( ), "staging" );
-    if ( uriEpStaging.empty( ) ) return 0;
+AssetMessaging::AssetMessaging( const Client * client, const std::string & assetPath )
+    : MessagingBase( client )
+    , path( assetPath )
+    , uriEpStaging( )
+    , uriEpWorking( )
+    , uriResBound( )
+{
+}
 
-    uriEpWorking = locateEndpoint( uriResA.c_str( ), "working" );
-    if ( uriEpWorking.empty( ) ) return 0;
+void
+ AssetMessaging::debugPrint( ) const
+{
+    std::cout << "\nAsset UUID             : " << uuid
+              << "\nAsset PATH             : " << path
+              << "\nAsset resource URI     : " << base
+              << "\nStaging endpoint URI   : " << uriEpStaging
+              << "\nWorking endpoint URI   : " << uriEpWorking
+              << "\nBound resource URI     : " << uriResBound << std::endl;
+}
+
+unsigned int
+ AssetMessaging::initGenericEndpoints( const std::string & uriEndpointAsset )
+{
+    if ( requestGetAndSetBaseInfo( uriEndpointAsset.c_str( ) ) ) return 1;
+
+    uriEpStaging = locateEndpoint( base.c_str( ), "staging" );
+    if ( uriEpStaging.empty( ) ) return 1;
+
+    uriEpWorking = locateEndpoint( base.c_str( ), "working" );
+    if ( uriEpWorking.empty( ) ) return 1;
 
     return 0;
 }
 
 unsigned int
- Messaging::bindStaging( )
+ AssetMessaging::bindStaging( )
 {
     pugi::xml_document docResponse;
     pugi::xml_document docRequest;
@@ -228,7 +304,7 @@ unsigned int
 }
 
 unsigned int
- Messaging::initInteraction( )
+ AssetMessaging::initInteraction( ) const
 {
     pugi::xml_document docResponse;
     pugi::xml_document docRequest;
@@ -243,7 +319,7 @@ unsigned int
 }
 
 unsigned int
- Messaging::termInteraction( )
+ AssetMessaging::termInteraction( ) const
 {
     pugi::xml_document docResponse;
     pugi::xml_document docRequest;
@@ -253,24 +329,6 @@ unsigned int
     attr_action_name.set_value( "term-interaction" );
 
     requestPost( client, docResponse, uriResBound.c_str( ), docRequest );
-
-    return 0;
-}
-
-unsigned int
- Messaging::acquireProject( )
-{
-    pLockState = manageProjectLock( uriEpPL, true );
-    if ( pLockState != "acquired" ) return 0;
-
-    return 0;
-}
-
-unsigned int
- Messaging::releaseProject( )
-{
-    pLockState = manageProjectLock( uriEpPL, false );
-    if ( pLockState != "released" ) return 0;
 
     return 0;
 }
@@ -336,7 +394,9 @@ static CommandBase *
 }
 
 unsigned int
- Messaging::populateEditorLayout( CommandQueue & commandQueue, int pixelsW, int pixelsH )
+ AssetMessaging::populateEditorLayout( CommandQueue & commandQueue,
+                                       int pixelsW,
+                                       int pixelsH ) const
 {
     std::string uriEditorLayout = uriResBound;
     uriEditorLayout += "editor-layout";
@@ -365,9 +425,9 @@ unsigned int
 }
 
 unsigned int
- Messaging::populateCommandOptions( std::vector< std::string > & commandOptions,
-                                    unsigned int idNode,
-                                    unsigned int idSub )
+ AssetMessaging::populateCommandOptions( std::vector< std::string > & commandOptions,
+                                         unsigned int idNode,
+                                         unsigned int idSub ) const
 {
     std::string uriOptions = uriResBound;
     uriOptions += "option";
@@ -388,9 +448,9 @@ unsigned int
 }
 
 unsigned int
- Messaging::applyCommandOption( unsigned int idNode,
-                                unsigned int idSub,
-                                unsigned int idOpt )
+ AssetMessaging::applyCommandOption( unsigned int idNode,
+                                     unsigned int idSub,
+                                     unsigned int idOpt ) const
 {
     std::string uriOptions = uriResBound;
     uriOptions += "option";

@@ -21,7 +21,7 @@ class MOPR_API ClientLoopbackHTTP final : public Client
   public:
     ClientLoopbackHTTP( const char * wDirAbs, unsigned int port );
 
-    virtual ~ClientLoopbackHTTP( ) override;
+    virtual ~ClientLoopbackHTTP( );
 
     virtual unsigned int
      validate( ) const override;

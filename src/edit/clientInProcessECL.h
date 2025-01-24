@@ -15,7 +15,7 @@ class MOPR_API ClientInProcessECL final
   public:
     ClientInProcessECL( const char * wDirAbs );
 
-    virtual ~ClientInProcessECL( ) override;
+    virtual ~ClientInProcessECL( );
 
     virtual unsigned int
      validate( ) const override;

@@ -59,7 +59,8 @@
            (pdesc (car pcons))
            (acons (mopr-uri:desc-alist-assoc (mopr-org:project-info-assets (cdr pcons)) :uuid auuid))
            (adesc (car acons))
-           (apath (mopr-org:desc-chain-as-path (mopr-uri:make-desc-chain (ws-descriptor) pdesc adesc)
+           (apath (mopr-org:desc-chain-as-path (mopr-uri:make-desc-chain pdesc adesc)
+                                               :relative-expected-p t
                                                :file-expected-p t)))
       (xmls:make-node :name "asset" :attrs `(("path" ,(namestring apath)))))))
 
@@ -77,15 +78,18 @@
            (pdesc (car pcons))
            (acons (mopr-uri:desc-alist-assoc (mopr-org:project-info-assets (cdr pcons)) :uuid auuid))
            (adesc (car acons))
-           (apath (mopr-org:desc-chain-as-path (mopr-uri:make-desc-chain (ws-descriptor) pdesc adesc)
+           (apath (mopr-org:desc-chain-as-path (mopr-uri:make-desc-chain pdesc adesc)
+                                               :relative-expected-p t
                                                :file-expected-p t))
+           (apath-full (mopr-org:desc-chain-as-path (mopr-uri:make-desc-chain (ws-descriptor) pdesc adesc)
+                                                    :file-expected-p t))
            (ret (handle-get-request rid category :context context :remaining remaining)))
       (cond
         ((equal (xmls:node-name request-body) "action")
          (let ((action-name (cadr (assoc "name" (xmls:node-attrs request-body) :test #'string=))))
            (cond
              ((equal action-name "bind")
-              (bind-pr apath)
+              (bind-pr apath-full)
               (format t "File bound: ~A~%" apath)
               (push `("uri" ,(format nil "/workshop/~A/project/~A/asset/~A/working/0/" wuuid puuid auuid))
                     (xmls:node-attrs ret))

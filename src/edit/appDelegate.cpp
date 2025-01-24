@@ -67,13 +67,20 @@ void
         exit( -1 );
     }
 
-    Messaging messaging( cli );
+    WorkshopMessaging workshopMessaging( cli );
+    workshopMessaging.initGenericEndpoints( );
+    workshopMessaging.debugPrint( );
 
-    messaging.initGenericWorkshopEndpoints( appEnvironment );
-    messaging.acquireProject( );
-    messaging.initGenericProjectEndpoints( appEnvironment );
-    messaging.bindStaging( );
-    messaging.debugPrint( );
+    ProjectMessaging & projectMessaging =
+     workshopMessaging.getOrCreateProjectMessaging( appEnvironment->getProjectPath( ) );
+    projectMessaging.acquireProject( );
+    projectMessaging.initProjectEndpoints( );
+    projectMessaging.debugPrint( );
+
+    AssetMessaging & assetMessaging =
+     projectMessaging.getOrCreateAssetMessaging( appEnvironment->getAssetPath( ) );
+    assetMessaging.debugPrint( );
+    assetMessaging.bindStaging( );
 
     //
     // Construct scene.
@@ -103,7 +110,7 @@ void
     // Representation classes.
     //
 
-    messaging.initInteraction( );
+    assetMessaging.initInteraction( );
 
     // Populated and cleaned up on the Lisp side.
     CommandQueue commandQueue;
@@ -111,7 +118,7 @@ void
     std::vector< std::string > commandOptions;
 
     commandQueue.clear( );
-    messaging.populateEditorLayout( commandQueue, 640, 960 );
+    assetMessaging.populateEditorLayout( commandQueue, 640, 960 );
     // commandQueue.debugPrint();
 
     //
@@ -288,7 +295,7 @@ void
 
         if ( optSelected )
         {
-            messaging.applyCommandOption(
+            assetMessaging.applyCommandOption(
              appState.idSelected, appState.idSubSelected, optSelected );
 
             // Reset.
@@ -300,7 +307,7 @@ void
             commandOptions.clear( );
             if ( appState.idSelected )
             {
-                messaging.populateCommandOptions(
+                assetMessaging.populateCommandOptions(
                  commandOptions, appState.idSelected, appState.idSubSelected );
             }
 
@@ -399,8 +406,8 @@ void
 
     overlayProgram.fini( );
 
-    messaging.termInteraction( );
-    messaging.releaseProject( );
+    assetMessaging.termInteraction( );
+    projectMessaging.releaseProject( );
     delete cli;
 }
 
