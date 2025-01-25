@@ -1,4 +1,5 @@
 {
+    "allow-export-based-preview": false,
     "screen-width"   : 1280,
     "screen-height"  : 960,
     "complexity": 1.25,

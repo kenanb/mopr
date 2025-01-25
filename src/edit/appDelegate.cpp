@@ -82,30 +82,44 @@ void
     assetMessaging.debugPrint( );
     assetMessaging.bindStaging( );
 
-    // std::string wsRelUsdFilePath;
-    // assetMessaging.exportToUsd( wsRelUsdFilePath );
-    // std::cerr << "USD FILE PATH: " << wsRelUsdFilePath << std::endl;
-
     //
     // Construct scene.
     //
 
-    pxr::SdfLayerRefPtr layer = pxr::SdfLayer::CreateAnonymous( );
-    MoprLayer sLayer;
-    sLayer.SetRefPtr( layer );
+    pxr::SdfLayerRefPtr layer;
 
     // Stage needs to be available for app state initialization.
     if ( const ClientInProcess * cliInProcess =
           dynamic_cast< const ClientInProcess * >( cli ) )
     {
+        printf( "Populating preview layer using direct method.\n" );
+
+        layer = pxr::SdfLayer::CreateAnonymous( );
+
+        MoprLayer sLayer;
+        sLayer.SetRefPtr( layer );
         cliInProcess->execProcedure(
          assetMessaging.uuid.c_str( ), ( void * ) &sLayer, 1 );
+    }
+    else if ( appConfig.allowExportBasedPreview
+              && dynamic_cast< const ClientLoopbackHTTP * >( cli ) )
+    {
+        printf( "Populating preview layer using export method.\n" );
+
+        std::string wsRelUsdFilePath;
+        assetMessaging.exportToUsd( wsRelUsdFilePath );
+        std::string absUsdFilePath = resolvedWorkshopPath;
+        absUsdFilePath += wsRelUsdFilePath;
+
+        layer = pxr::SdfLayer::OpenAsAnonymous( absUsdFilePath );
     }
     else
     {
         printf(
-         "Client type doesn't support layer population yet. "
+         "Client configuration doesn't support layer population. "
          "Preview is disabled.\n" );
+
+        layer = pxr::SdfLayer::CreateAnonymous( );
     }
 
     // Stage needs to be available for app state initialization.

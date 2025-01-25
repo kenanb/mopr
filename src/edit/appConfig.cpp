@@ -24,6 +24,7 @@ AppConfig::AppConfig( )
     , screenW( 1024 )
     , screenH( 768 )
     // Render and scene settings:
+    , allowExportBasedPreview( false )
     , renderer( )
     , complexity( 1.0 )
     , enableFrameAll( true )
@@ -89,6 +90,8 @@ bool
     {
         result = true;
         pxr::JsObject const & jsObj = jsonRoot.GetJsObject( );
+        getJsValue< bool >(
+         jsObj, this->allowExportBasedPreview, "allow-export-based-preview" );
         getJsValue< std::string >( jsObj, this->renderer, "renderer" );
         getJsValue< std::string >( jsObj, this->fontDefault, "font-default" );
         getJsValue< std::string >( jsObj, this->fontHeading, "font-heading" );

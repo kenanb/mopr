@@ -22,6 +22,7 @@ struct AppConfig
     int screenH;
 
     // Render and scene settings:
+    bool allowExportBasedPreview;
     std::string renderer;
     double complexity;
     bool enableFrameAll;
