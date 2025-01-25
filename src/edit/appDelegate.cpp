@@ -82,6 +82,10 @@ void
     assetMessaging.debugPrint( );
     assetMessaging.bindStaging( );
 
+    // std::string wsRelUsdFilePath;
+    // assetMessaging.exportToUsd( wsRelUsdFilePath );
+    // std::cerr << "USD FILE PATH: " << wsRelUsdFilePath << std::endl;
+
     //
     // Construct scene.
     //

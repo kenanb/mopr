@@ -74,6 +74,9 @@ struct AssetMessaging : public MessagingBase
      termInteraction( ) const;
 
     unsigned int
+     exportToUsd( std::string & workshopRelPath ) const;
+
+    unsigned int
      populateEditorLayout( CommandQueue & commandQueue, int pixelsW, int pixelsH ) const;
 
     unsigned int

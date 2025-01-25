@@ -333,6 +333,27 @@ unsigned int
     return 0;
 }
 
+unsigned int
+ AssetMessaging::exportToUsd( std::string & workshopRelPath ) const
+{
+    pugi::xml_document docResponse;
+    pugi::xml_document docRequest;
+
+    pugi::xml_node node_action = docRequest.append_child( "action" );
+    pugi::xml_attribute attr_action_name = node_action.append_attribute( "name" );
+    attr_action_name.set_value( "export-to-usd" );
+    pugi::xml_attribute attr_action_call = node_action.append_attribute( "call" );
+    attr_action_call.set_value( "enable" );
+
+    requestPost( client, docResponse, uriResBound.c_str( ), docRequest );
+
+    pugi::xpath_node xp_res = docResponse.select_node( "//action-result" );
+
+    workshopRelPath = xp_res.node( ).attribute( "path" ).value( );
+
+    return 0;
+}
+
 static CommandBase *
  generateCommand( const pugi::xml_node & node )
 {
