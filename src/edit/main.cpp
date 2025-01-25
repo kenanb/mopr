@@ -178,7 +178,10 @@ int
                         ImGui::CreateContext( );
 
                         ImGuiIO & io = ImGui::GetIO( );
-                        ( void ) io;
+                        // ( void ) io;
+
+                        // TODO : Revisit.
+                        io.IniFilename = nullptr;
 
                         // Enable Keyboard Controls.
                         io.ConfigFlags |= ImGuiConfigFlags_DockingEnable;
