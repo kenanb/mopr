@@ -388,11 +388,15 @@ void
         ImGui_ImplSDL2_NewFrame( );
         ImGui::NewFrame( );
 
-        editor.draw( commandQueue, &appState.idSelected, &appState.idSubSelected );
-        if ( commandOptions.size( ) )
-        {
-            editor.drawOptions( commandOptions, &optSelected );
-        }
+        editor.drawMenu( );
+        editor.drawTree( commandQueue,
+                         commandOptions,
+                         &appState.idSelected,
+                         &appState.idSubSelected,
+                         &optSelected );
+
+        // Draw main after the windows that shouldn't be impacted by docking.
+        editor.drawMain( );
 
         ImGui::Render( );
         GL_CALL( glViewport( 0, 0, ( int ) io.DisplaySize.x, ( int ) io.DisplaySize.y ) );

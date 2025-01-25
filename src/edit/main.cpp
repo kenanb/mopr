@@ -181,6 +181,7 @@ int
                         ( void ) io;
 
                         // Enable Keyboard Controls.
+                        io.ConfigFlags |= ImGuiConfigFlags_DockingEnable;
                         io.ConfigFlags |= ImGuiConfigFlags_NavEnableKeyboard;
 
                         uiSetStyle();

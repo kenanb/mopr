@@ -22,12 +22,23 @@ struct Editor
     }
 
     void
-     draw( CommandQueue const & q,
-           unsigned int * idSelected,
-           unsigned int * idSubSelected );
+     drawMenu( ) const;
 
     void
-     drawOptions( const std::vector< std::string > & o, unsigned int * optSelected );
+     drawMain( ) const;
+
+    void
+     drawParameters( ) const;
+
+    void
+     drawContents( ) const;
+
+    void
+     drawTree( CommandQueue const & commandQueue,
+               std::vector< std::string > const & payloadOptions,
+               unsigned int * idSelected,
+               unsigned int * idSubSelected,
+               unsigned int * optSelected ) const;
 
     FontInfo const * fontInfos;
 };
