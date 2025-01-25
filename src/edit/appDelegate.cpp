@@ -9,6 +9,7 @@
 #include "appState.h"
 #include "messaging.h"
 #include "procedureViz.h"
+#include "viewportNavigation.h"
 
 #include "common.h"
 #include "editor.h"
