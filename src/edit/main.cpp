@@ -6,6 +6,10 @@
 #include "appEnvironment.h"
 #include "guiConfig.h"
 
+#include "client.h"
+#include "clientInProcessECL.h"
+#include "clientLoopbackHTTP.h"
+
 #include "imgui.h"
 #include "imgui_impl_opengl3.h"
 #include "imgui_impl_sdl2.h"
@@ -100,6 +104,30 @@ int
             break;
     }
 
+    //
+    // Initialize backend.
+    //
+
+    const std::string & resolvedWorkshopPath = appEnvironment.getResolvedWorkshopPath( );
+
+    const mopr::Client * cli = nullptr;
+    if ( appEnvironment.getPortNumber( ) )
+    {
+        cli = static_cast< mopr::Client * >( new mopr::ClientLoopbackHTTP(
+         resolvedWorkshopPath.c_str( ), appEnvironment.getPortNumber( ) ) );
+    }
+    else
+    {
+        cli = static_cast< mopr::Client * >(
+         new mopr::ClientInProcessECL( resolvedWorkshopPath.c_str( ) ) );
+    }
+
+    if ( cli->validate( ) )
+    {
+        printf( "Couldn't validate client!\n" );
+        return EXIT_FAILURE;
+    }
+
     // Initialize configuration.
     //
 
@@ -117,10 +145,10 @@ int
         return EXIT_FAILURE;
     }
 
-    int imgFlags = IMG_INIT_PNG;
-
     // Initialize SDL
     //
+
+    int imgFlags = IMG_INIT_PNG;
 
     // NOTE: I observe an issue with SDL2 when initializing SDL_INIT_AUDIO.
     // Startup seems to hang as of 2.30, waiting for the semaphore introduced
@@ -188,7 +216,7 @@ int
                         io.ConfigFlags |= ImGuiConfigFlags_DockingEnable;
                         io.ConfigFlags |= ImGuiConfigFlags_NavEnableKeyboard;
 
-                        uiSetStyle();
+                        uiSetStyle( );
 
                         ImGui_ImplSDL2_InitForOpenGL( window, ctx );
 
@@ -212,7 +240,7 @@ int
                     // Run application delegate.
                     //
 
-                    mopr::appDelegate( window, &appEnvironment );
+                    mopr::appDelegate( window, &appEnvironment, cli );
 
                     // Teardown ImGui.
                     //
@@ -242,5 +270,6 @@ int
 
     IMG_Quit( );
     SDL_Quit( );
+    delete cli;
     return EXIT_SUCCESS;
 }

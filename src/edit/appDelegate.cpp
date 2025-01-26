@@ -1,7 +1,6 @@
 // GL API providers (GLEW, GLApi) should be included before other GL headers.
 #include "pxr/imaging/garch/glApi.h"
 
-#include "clientInProcessECL.h"
 #include "clientLoopbackHTTP.h"
 
 #include "appConfig.h"
@@ -36,36 +35,14 @@ namespace mopr
 {
 
 void
- appDelegate( SDL_Window * window, const AppEnvironment * appEnvironment )
+ appDelegate( SDL_Window * window,
+              const AppEnvironment * appEnvironment,
+              const Client * cli )
 {
     GLint fboWindow;
     GL_CALL( glGetIntegerv( GL_FRAMEBUFFER_BINDING, &fboWindow ) );
 
     auto const & appConfig = mopr::AppConfig::GetInstance( );
-
-    //
-    // Initialize MOPR backend.
-    //
-
-    const std::string & resolvedWorkshopPath = appEnvironment->getResolvedWorkshopPath( );
-
-    const Client * cli = nullptr;
-    if ( appEnvironment->getPortNumber( ) )
-    {
-        cli = static_cast< Client * >( new ClientLoopbackHTTP(
-         resolvedWorkshopPath.c_str( ), appEnvironment->getPortNumber( ) ) );
-    }
-    else
-    {
-        cli = static_cast< Client * >(
-         new ClientInProcessECL( resolvedWorkshopPath.c_str( ) ) );
-    }
-
-    if ( cli->validate( ) )
-    {
-        printf( "Couldn't validate client!\n" );
-        exit( -1 );
-    }
 
     //
     // Init app state.
@@ -118,7 +95,7 @@ void
 
         std::string wsRelUsdFilePath;
         assetMessaging.exportToUsd( wsRelUsdFilePath );
-        std::string absUsdFilePath = resolvedWorkshopPath;
+        std::string absUsdFilePath = appEnvironment->getResolvedWorkshopPath( );
         absUsdFilePath += wsRelUsdFilePath;
 
         layer = pxr::SdfLayer::OpenAsAnonymous( absUsdFilePath );
@@ -386,7 +363,6 @@ void
 
     assetMessaging.termInteraction( );
     projectMessaging.releaseProject( );
-    delete cli;
 }
 
 }   // namespace mopr
