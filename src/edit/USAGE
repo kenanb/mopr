@@ -12,7 +12,6 @@ USAGE: mopr_editor -w /absolute/path/to/workshop/ -p workshop/relative/path/to/p
      - It will try to establish connection with this backend server. All communication with the backend will happen over HTTP.
      Otherwise:
      - MOPR Editor will initialize the in-process backend.
--C : Scene camera path, in SdfPath syntax.
 -f : First frame.
 -l : Last frame.
 -h : Show help.

@@ -29,10 +29,9 @@ AppEnvironment::AppEnvironment( int argc, char * argv[] )
     , workshopPath( NULL )
     , projectPath( NULL )
     , assetPath( NULL )
-    , camera( NULL )
     , frameFirst( 0.0 )
     , frameLast( 100.0 )
-    , portNumber( 0 ) // 0 means "use in-process backend".
+    , portNumber( 0 )   // 0 means "use in-process backend".
 {
     // Extract app root.
     //
@@ -57,7 +56,7 @@ AppEnvironment::AppEnvironment( int argc, char * argv[] )
 
     this->action = ActionRun;
 
-    while ( ( opt = getopt( argc, argv, "c:w:p:a:C:P:f:l:h" ) ) != -1 )
+    while ( ( opt = getopt( argc, argv, "c:w:p:a:P:f:l:h" ) ) != -1 )
     {
         switch ( opt )
         {
@@ -75,10 +74,6 @@ AppEnvironment::AppEnvironment( int argc, char * argv[] )
 
             case 'a':   // project-relative asset path
                 this->assetPath = optarg;
-                break;
-
-            case 'C':   // scene camera
-                this->camera = optarg;
                 break;
 
             case 'P':   // port number
@@ -204,8 +199,7 @@ std::string
     }
     else
     {
-        printf( "Project path was not provided! Exiting!\n" );
-        exit( -1 );
+        return "";
     }
 }
 
@@ -218,8 +212,7 @@ std::string
     }
     else
     {
-        printf( "Asset path was not provided! Exiting!\n" );
-        exit( -1 );
+        return "";
     }
 }
 

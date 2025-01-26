@@ -25,11 +25,11 @@ PXR_NAMESPACE_USING_DIRECTIVE
 namespace mopr
 {
 
-Scene::Scene( const pxr::SdfLayerRefPtr layer, const char * cameraPath )
+Scene::Scene( const pxr::SdfLayerRefPtr layer, const std::string & cameraPath )
     : stage( ), camera( ), drawTarget( ), lighting( ), renderSettings( )
 {
     this->stage = pxr::UsdStage::Open( layer, pxr::UsdStage::LoadAll );
-    if ( cameraPath ) this->camera = pxr::SdfPath( cameraPath );
+    if ( !cameraPath.empty( ) ) this->camera = pxr::SdfPath( cameraPath );
 }
 
 Scene::~Scene( )

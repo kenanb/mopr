@@ -68,18 +68,28 @@ void
         exit( -1 );
     }
 
+    //
+    // Init app state.
+    //
+
+    AppState appState{ appEnvironment, &appConfig };
+
+    //
+    // Init messaging.
+    //
+
     WorkshopMessaging workshopMessaging( cli );
     workshopMessaging.initGenericEndpoints( );
     workshopMessaging.debugPrint( );
 
     ProjectMessaging & projectMessaging =
-     workshopMessaging.getOrCreateProjectMessaging( appEnvironment->getProjectPath( ) );
+     workshopMessaging.getOrCreateProjectMessaging( appState.projectPath );
     projectMessaging.acquireProject( );
     projectMessaging.initProjectEndpoints( );
     projectMessaging.debugPrint( );
 
     AssetMessaging & assetMessaging =
-     projectMessaging.getOrCreateAssetMessaging( appEnvironment->getAssetPath( ) );
+     projectMessaging.getOrCreateAssetMessaging( appState.assetPath );
     assetMessaging.debugPrint( );
     assetMessaging.bindStaging( );
 
@@ -123,8 +133,13 @@ void
         layer = pxr::SdfLayer::CreateAnonymous( );
     }
 
-    // Stage needs to be available for app state initialization.
-    Scene scene{ layer, appEnvironment->camera };
+    Scene scene{ layer, appState.camera };
+
+    // Update viewport transform based on stage contents.
+    if ( appConfig.enableFrameAll )
+    {
+        scene.frameAll( appState.viewTranslate );
+    }
 
     //
     // Representation classes.
@@ -140,25 +155,6 @@ void
     commandQueue.clear( );
     assetMessaging.populateEditorLayout( commandQueue, 640, 960 );
     // commandQueue.debugPrint();
-
-    //
-    // Init app state.
-    //
-
-    AppState appState{ appConfig.screenW, appConfig.screenH };
-
-    appState.viewRotate[ 0 ] = appConfig.viewRotate[ 0 ];
-    appState.viewRotate[ 1 ] = appConfig.viewRotate[ 1 ];
-    if ( appConfig.enableFrameAll )
-    {
-        scene.frameAll( appState.viewTranslate );
-    }
-    else
-    {
-        appState.viewTranslate[ 0 ] = appConfig.viewTranslate[ 0 ];
-        appState.viewTranslate[ 1 ] = appConfig.viewTranslate[ 1 ];
-        appState.viewTranslate[ 2 ] = appConfig.viewTranslate[ 2 ];
-    }
 
     //
     // Init scene.
@@ -255,7 +251,7 @@ void
     Uint32 lastRenderedTick = SDL_GetTicks( ) - timeStepMS;
 
     // Rely on last-frame-wraparound to ensure rendering the very first frame first.
-    double frameToRender = appEnvironment->frameLast + 1;
+    double frameToRender = appState.frameLast + 1;
 
     unsigned int idPrev = appState.idSelected;
     unsigned int idSubPrev = appState.idSubSelected;
@@ -276,9 +272,9 @@ void
             lastRenderedTick = currentTick;
         }
 
-        if ( frameToRender > appEnvironment->frameLast )
+        if ( frameToRender > appState.frameLast )
         {
-            frameToRender = appEnvironment->frameFirst;
+            frameToRender = appState.frameFirst;
         }
 
         //

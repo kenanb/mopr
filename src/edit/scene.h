@@ -41,7 +41,7 @@ struct Scene
 
     pxr::VtDictionary renderSettings;
 
-    Scene( const pxr::SdfLayerRefPtr layer, const char * camera );
+    Scene( const pxr::SdfLayerRefPtr layer, const std::string & cameraPath );
 
     ~Scene( );
 

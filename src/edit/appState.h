@@ -3,6 +3,9 @@
 
 #include <string>
 
+#include "appConfig.h"
+#include "appEnvironment.h"
+
 namespace mopr
 {
 
@@ -18,19 +21,29 @@ typedef enum NavigationState
 
 struct AppState
 {
+    // Defaulted to values from AppEnvironment.
+    std::string projectPath;
+    std::string assetPath;
+    double frameFirst;
+    double frameLast;
+
+    // Defaulted to values from AppConfig.
     int screenW;
     int screenH;
+    double viewRotate[ 2 ];
+    double viewTranslate[ 3 ];
+
+    // Defaulted to values from constructor.
     bool quit;
     bool showOverlays;
     NavigationState nav;
+    std::string camera;
     unsigned int idSelected;
     unsigned int idSubSelected;
     double mx;
     double my;
-    double viewRotate[ 2 ];
-    double viewTranslate[ 3 ];
 
-    AppState( int screenW, int screenH );
+    AppState( const AppEnvironment * appEnv, const AppConfig * appCfg );
 };
 
 }   // namespace mopr

@@ -21,7 +21,6 @@ struct AppEnvironment
     char const * workshopPath;
     char const * projectPath;
     char const * assetPath;
-    char const * camera;
     double frameFirst;
     double frameLast;
     unsigned int portNumber;
