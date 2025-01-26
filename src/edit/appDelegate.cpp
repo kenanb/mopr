@@ -34,21 +34,64 @@
 namespace mopr
 {
 
+static pxr::SdfLayerRefPtr
+ generateLayer( const AssetMessaging & assetMessaging,
+                const AppConfig & appConfig,
+                const AppEnvironment * appEnvironment )
+{
+    pxr::SdfLayerRefPtr layer;
+
+    // Stage needs to be available for app state initialization.
+    if ( const ClientInProcess * cliInProcess =
+          dynamic_cast< const ClientInProcess * >( assetMessaging.client ) )
+    {
+        printf( "Populating preview layer using direct method.\n" );
+
+        layer = pxr::SdfLayer::CreateAnonymous( );
+
+        MoprLayer sLayer;
+        sLayer.SetRefPtr( layer );
+        cliInProcess->execProcedure(
+         assetMessaging.uuid.c_str( ), ( void * ) &sLayer, 1 );
+    }
+    else if ( appConfig.allowExportBasedPreview
+              && dynamic_cast< const ClientLoopbackHTTP * >( assetMessaging.client ) )
+    {
+        printf( "Populating preview layer using export method.\n" );
+
+        std::string wsRelUsdFilePath;
+        assetMessaging.exportToUsd( wsRelUsdFilePath );
+        std::string absUsdFilePath = appEnvironment->getResolvedWorkshopPath( );
+        absUsdFilePath += wsRelUsdFilePath;
+
+        layer = pxr::SdfLayer::OpenAsAnonymous( absUsdFilePath );
+    }
+    else
+    {
+        printf(
+         "Client configuration doesn't support layer population. "
+         "Preview is disabled.\n" );
+
+        layer = pxr::SdfLayer::CreateAnonymous( );
+    }
+
+    return layer;
+}
+
 void
  appDelegate( SDL_Window * window,
               const AppEnvironment * appEnvironment,
               const Client * cli )
 {
+    auto const & appConfig = mopr::AppConfig::GetInstance( );
+    AppState appState{ appEnvironment, &appConfig };
+
+    //
+    // Get framebuffer ID of window.
+    //
+
     GLint fboWindow;
     GL_CALL( glGetIntegerv( GL_FRAMEBUFFER_BINDING, &fboWindow ) );
-
-    auto const & appConfig = mopr::AppConfig::GetInstance( );
-
-    //
-    // Init app state.
-    //
-
-    AppState appState{ appEnvironment, &appConfig };
 
     //
     // Init messaging.
@@ -73,43 +116,8 @@ void
     // Construct scene.
     //
 
-    pxr::SdfLayerRefPtr layer;
-
-    // Stage needs to be available for app state initialization.
-    if ( const ClientInProcess * cliInProcess =
-          dynamic_cast< const ClientInProcess * >( cli ) )
-    {
-        printf( "Populating preview layer using direct method.\n" );
-
-        layer = pxr::SdfLayer::CreateAnonymous( );
-
-        MoprLayer sLayer;
-        sLayer.SetRefPtr( layer );
-        cliInProcess->execProcedure(
-         assetMessaging.uuid.c_str( ), ( void * ) &sLayer, 1 );
-    }
-    else if ( appConfig.allowExportBasedPreview
-              && dynamic_cast< const ClientLoopbackHTTP * >( cli ) )
-    {
-        printf( "Populating preview layer using export method.\n" );
-
-        std::string wsRelUsdFilePath;
-        assetMessaging.exportToUsd( wsRelUsdFilePath );
-        std::string absUsdFilePath = appEnvironment->getResolvedWorkshopPath( );
-        absUsdFilePath += wsRelUsdFilePath;
-
-        layer = pxr::SdfLayer::OpenAsAnonymous( absUsdFilePath );
-    }
-    else
-    {
-        printf(
-         "Client configuration doesn't support layer population. "
-         "Preview is disabled.\n" );
-
-        layer = pxr::SdfLayer::CreateAnonymous( );
-    }
-
-    Scene scene{ layer, appState.camera };
+    Scene scene{ generateLayer( assetMessaging, appConfig, appEnvironment ),
+                 appState.camera };
 
     // Update viewport transform based on stage contents.
     if ( appConfig.enableFrameAll )
@@ -123,7 +131,6 @@ void
 
     assetMessaging.initInteraction( );
 
-    // Populated and cleaned up on the Lisp side.
     CommandQueue commandQueue;
 
     std::vector< std::string > commandOptions;
