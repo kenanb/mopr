@@ -8,7 +8,6 @@
 #include "appDelegate.h"
 #include "appState.h"
 #include "messaging.h"
-#include "procedureViz.h"
 #include "viewportNavigation.h"
 
 #include "common.h"
@@ -194,54 +193,13 @@ void
     // Init editor.
     //
 
-    ImGuiIO & io = ImGui::GetIO( );
-    FontInfo fontInfos[ FONT_ROLE_TERMINATOR ];
-
-    {
-        int fontSize = appConfig.fontBaseSize;
-        fontInfos[ FONT_ROLE_DEFAULT ].fontSize = fontSize;
-
-        if ( appConfig.fontDefault.empty( ) )
-        {
-            fontInfos[ FONT_ROLE_DEFAULT ].fontPtr = NULL;
-        }
-        else
-        {
-            std::string relFontPath = "res/font/";
-            relFontPath += appConfig.fontDefault;
-            relFontPath += ".ttf";
-            std::string absFontPath =
-             appEnvironment->resolveAppRelativePath( relFontPath.c_str( ) );
-            fontInfos[ FONT_ROLE_DEFAULT ].fontPtr =
-             io.Fonts->AddFontFromFileTTF( absFontPath.c_str( ), fontSize );
-        }
-    }
-
-    {
-        int fontSize = appConfig.fontBaseSize + 4;
-        fontInfos[ FONT_ROLE_HEADING ].fontSize = fontSize;
-
-        if ( appConfig.fontHeading.empty( ) )
-        {
-            fontInfos[ FONT_ROLE_HEADING ].fontPtr = NULL;
-        }
-        else
-        {
-            std::string relFontPath = "res/font/";
-            relFontPath += appConfig.fontHeading;
-            relFontPath += ".ttf";
-            std::string absFontPath =
-             appEnvironment->resolveAppRelativePath( relFontPath.c_str( ) );
-            fontInfos[ FONT_ROLE_HEADING ].fontPtr =
-             io.Fonts->AddFontFromFileTTF( absFontPath.c_str( ), fontSize );
-        }
-    }
-
-    Editor editor{ fontInfos };
+    Editor editor;
 
     //
     // Event loop.
     //
+
+    ImGuiIO & io = ImGui::GetIO( );
 
     static const double refreshRate = 60.0;
     static const double timeStepMS = 1000.0 / refreshRate;

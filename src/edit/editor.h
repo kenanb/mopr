@@ -17,9 +17,7 @@ namespace mopr
 
 struct Editor
 {
-    Editor( FontInfo const * const fontInfos ) : fontInfos( fontInfos )
-    {
-    }
+    Editor( ) = default;
 
     void
      drawMenu( ) const;
@@ -39,8 +37,6 @@ struct Editor
                unsigned int * idSelected,
                unsigned int * idSubSelected,
                unsigned int * optSelected ) const;
-
-    FontInfo const * fontInfos;
 };
 
 }   // namespace mopr

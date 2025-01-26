@@ -4,6 +4,7 @@
 #include "appConfig.h"
 #include "appDelegate.h"
 #include "appEnvironment.h"
+#include "guiConfig.h"
 
 #include "imgui.h"
 #include "imgui_impl_opengl3.h"
@@ -193,6 +194,19 @@ int
 
                         const char * glsl_version = "#version 150 core";
                         ImGui_ImplOpenGL3_Init( glsl_version );
+                    }
+
+                    auto & guiConfig = mopr::GuiConfig::Instance( );
+
+                    if ( guiConfig.Init( &appEnvironment, &appConfig ) )
+                    {
+                        printf( "Successfully initialized GUI configuration.\n" );
+                    }
+                    else
+                    {
+                        printf(
+                         "Some GUI configuration error[s] resulted in fallback "
+                         "settings beig used.\n" );
                     }
 
                     // Run application delegate.

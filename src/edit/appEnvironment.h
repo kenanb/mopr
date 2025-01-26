@@ -27,6 +27,9 @@ struct AppEnvironment
 
     AppEnvironment( int argc, char * argv[] );
 
+    bool
+     statPath( char const * path, int * mode ) const;
+
     std::string
      resolveCwdRelativePath( char const * path ) const;
 

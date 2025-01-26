@@ -12,34 +12,11 @@
 namespace mopr
 {
 
-typedef enum FontRole
-{
-    FONT_ROLE_DEFAULT = 0,
-    FONT_ROLE_HEADING,
-    FONT_ROLE_TERMINATOR
-} FontRole;
-
-struct FontInfo
-{
-    ImFont * fontPtr;
-    float fontSize;
-};
-
-struct CommandSettings
-{
-    float roundingFactor;
-    ImU32 colorTheme[ COMMAND_THEME_TERMINATOR ];
-
-    CommandSettings( );
-};
-
 struct CommandContext
 {
     unsigned int idSelected;
     unsigned int idSubSelected;
     ImVec2 offset;
-    FontInfo const * fontInfos;
-    CommandSettings const * settings;
 };
 
 struct CommandBase

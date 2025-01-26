@@ -128,6 +128,12 @@ AppEnvironment::AppEnvironment( int argc, char * argv[] )
     }
 }
 
+bool
+ AppEnvironment::statPath( char const * path, int * mode ) const
+{
+    return pxr::ArchGetStatMode( path, mode );
+}
+
 std::string
  AppEnvironment::resolveCwdRelativePath( char const * path ) const
 {

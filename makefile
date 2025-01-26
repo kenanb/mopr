@@ -339,6 +339,7 @@ MOPR_EDIT_CPP_OBJ ::= src/edit/.main.cpp.o \
 	src/edit/.overlayLayer.cpp.o \
 	src/edit/.overlayProgram.cpp.o \
 	src/edit/.appConfig.cpp.o \
+	src/edit/.guiConfig.cpp.o \
 	src/edit/.appDelegate.cpp.o \
 	src/edit/.appEnvironment.cpp.o \
 	src/edit/.appState.cpp.o \

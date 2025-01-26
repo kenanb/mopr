@@ -169,10 +169,7 @@ void
 
     // Get the current ImGui cursor position
     ImVec2 offset = ImGui::GetCursorScreenPos( );
-    static const CommandSettings settings;
-    CommandContext ctxCmd{
-        *idSelected, *idSubSelected, offset, this->fontInfos, &settings
-    };
+    CommandContext ctxCmd{ *idSelected, *idSubSelected, offset };
 
     for ( const auto & cmd : commandQueue.commands )
     {
