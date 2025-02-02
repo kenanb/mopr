@@ -3,7 +3,7 @@
 
 #include "appState.h"
 
-#include "SDL.h"
+#include "SDL3/SDL.h"
 
 namespace mopr
 {

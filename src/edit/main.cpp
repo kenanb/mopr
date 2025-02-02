@@ -12,11 +12,10 @@
 
 #include "imgui.h"
 #include "imgui_impl_opengl3.h"
-#include "imgui_impl_sdl2.h"
+#include "imgui_impl_sdl3.h"
 
-#include "SDL.h"
-#include "SDL_image.h"
-#include "SDL_opengl.h"
+#include "SDL3/SDL.h"
+#include "SDL3/SDL_opengl.h"
 
 #include "pxr/pxr.h"
 
@@ -148,18 +147,12 @@ int
     // Initialize SDL
     //
 
-    int imgFlags = IMG_INIT_PNG;
-
     // NOTE: I observe an issue with SDL2 when initializing SDL_INIT_AUDIO.
     // Startup seems to hang as of 2.30, waiting for the semaphore introduced
     // to PULSEAUDIO_DetectDevices in 82ce05ad. sdl2-2.28.5 works.
-    if ( SDL_Init( SDL_INIT_VIDEO | SDL_INIT_AUDIO ) < 0 )
+    if ( !SDL_Init( SDL_INIT_VIDEO ) )
     {
         SDL_Log( "SDL could not initialize! SDL_Error: %s\n", SDL_GetError( ) );
-    }
-    else if ( ~IMG_Init( imgFlags ) & imgFlags )
-    {
-        SDL_Log( "IMG could not initialize! SDL_Error: %s\n", IMG_GetError( ) );
     }
     else
     {
@@ -172,13 +165,11 @@ int
 
         SDL_Log( "SDL Base Path: %s\n", SDL_GetBasePath( ) );
 
-        Uint32 windowFlags = SDL_WINDOW_SHOWN | SDL_WINDOW_OPENGL;
+        Uint32 windowFlags = SDL_WINDOW_OPENGL;
         // | SDL_WINDOW_RESIZABLE
         // | SDL_WINDOW_ALLOW_HIGHDPI
 
         SDL_Window * window = SDL_CreateWindow( "MOPR Editor",
-                                                SDL_WINDOWPOS_UNDEFINED,
-                                                SDL_WINDOWPOS_UNDEFINED,
                                                 appConfig.screenW,
                                                 appConfig.screenH,
                                                 windowFlags );
@@ -193,7 +184,7 @@ int
                 if ( initGraphicsApi( ) )
                 {
                     // Use Vsync
-                    if ( SDL_GL_SetSwapInterval( 1 ) < 0 )
+                    if ( !SDL_GL_SetSwapInterval( 1 ) )
                     {
                         SDL_Log( "Warning: Unable to set VSync! SDL Error: %s\n",
                                  SDL_GetError( ) );
@@ -218,7 +209,7 @@ int
 
                         uiSetStyle( );
 
-                        ImGui_ImplSDL2_InitForOpenGL( window, ctx );
+                        ImGui_ImplSDL3_InitForOpenGL( window, ctx );
 
                         const char * glsl_version = "#version 150 core";
                         ImGui_ImplOpenGL3_Init( glsl_version );
@@ -247,12 +238,12 @@ int
 
                     {
                         ImGui_ImplOpenGL3_Shutdown( );
-                        ImGui_ImplSDL2_Shutdown( );
+                        ImGui_ImplSDL3_Shutdown( );
                         ImGui::DestroyContext( );
                     }
                 }
 
-                SDL_GL_DeleteContext( ctx );
+                SDL_GL_DestroyContext( ctx );
             }
             else
             {
@@ -268,7 +259,6 @@ int
         }
     }
 
-    IMG_Quit( );
     SDL_Quit( );
     delete cli;
     return EXIT_SUCCESS;

@@ -12,19 +12,19 @@ void
             // TODO
             break;
         case SDL_BUTTON_MIDDLE:
-            if ( e->button.state == SDL_PRESSED )
+            if ( e->button.down )
             {
                 switch ( SDL_GetModState( ) )
                 {
-                    case KMOD_NONE:
+                    case SDL_KMOD_NONE:
                         appState->nav = NAVIGATION_STATE_ORBIT;
                         break;
-                    case KMOD_LSHIFT:
-                    case KMOD_RSHIFT:
+                    case SDL_KMOD_LSHIFT:
+                    case SDL_KMOD_RSHIFT:
                         appState->nav = NAVIGATION_STATE_PAN;
                         break;
-                    case KMOD_LCTRL:
-                    case KMOD_RCTRL:
+                    case SDL_KMOD_LCTRL:
+                    case SDL_KMOD_RCTRL:
                         appState->nav = NAVIGATION_STATE_ZOOM;
                         break;
                     default:
@@ -45,10 +45,10 @@ void
 void
  handleMouseMotion( AppState * appState, const SDL_Event * e )
 {
-    int x, y;
+    float x, y;
     SDL_GetMouseState( &x, &y );
-    int dx = x - appState->mx;
-    int dy = y - appState->my;
+    double dx = x - appState->mx;
+    double dy = y - appState->my;
 
     switch ( appState->nav )
     {
@@ -79,7 +79,7 @@ void
  handleKeyUp( AppState * appState, const SDL_Event * e )
 {
     SDL_KeyboardEvent eKeyboard = e->key;
-    switch ( eKeyboard.keysym.sym )
+    switch ( eKeyboard.key )
     {
         case SDLK_ESCAPE:
             appState->quit = true;

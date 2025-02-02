@@ -22,11 +22,10 @@
 
 #include "imgui.h"
 #include "imgui_impl_opengl3.h"
-#include "imgui_impl_sdl2.h"
+#include "imgui_impl_sdl3.h"
 
-#include "SDL.h"
-#include "SDL_image.h"
-#include "SDL_opengl.h"
+#include "SDL3/SDL.h"
+#include "SDL3/SDL_opengl.h"
 
 #include <stddef.h>
 #include <vector>
@@ -227,23 +226,23 @@ void
 
         while ( SDL_PollEvent( &e ) )
         {
-            ImGui_ImplSDL2_ProcessEvent( &e );
+            ImGui_ImplSDL3_ProcessEvent( &e );
 
             switch ( e.type )
             {
-                case SDL_QUIT:
+                case SDL_EVENT_QUIT:
                     appState.quit = true;
                     break;
-                case SDL_MOUSEBUTTONDOWN:
+                case SDL_EVENT_MOUSE_BUTTON_DOWN:
                     if ( !io.WantCaptureMouse ) handleMouseButton( &appState, &e );
                     break;
-                case SDL_MOUSEBUTTONUP:
+                case SDL_EVENT_MOUSE_BUTTON_UP:
                     if ( !io.WantCaptureMouse ) handleMouseButton( &appState, &e );
                     break;
-                case SDL_MOUSEMOTION:
+                case SDL_EVENT_MOUSE_MOTION:
                     if ( !io.WantCaptureMouse ) handleMouseMotion( &appState, &e );
                     break;
-                case SDL_KEYUP:
+                case SDL_EVENT_KEY_UP:
                     if ( !io.WantCaptureKeyboard ) handleKeyUp( &appState, &e );
                     break;
                 default:
@@ -324,7 +323,7 @@ void
 
         // Start ImGui frame.
         ImGui_ImplOpenGL3_NewFrame( );
-        ImGui_ImplSDL2_NewFrame( );
+        ImGui_ImplSDL3_NewFrame( );
         ImGui::NewFrame( );
 
         editor.drawMenu( );

@@ -327,7 +327,7 @@ CURL_LDLIBS ::= `curl-config --libs`
 
 MOPR_EDIT_CF ::= $(COMMON_CFLAGS) $(USD_CFLAGS) -fPIC
 
-MOPR_EDIT_LIBS = gl glew sdl2 SDL2_image pugixml
+MOPR_EDIT_LIBS = gl glew sdl3 pugixml
 
 MOPR_EDIT_CPP_OBJ ::= src/edit/.main.cpp.o \
 	src/edit/.clientInProcessECL.cpp.o \
@@ -350,7 +350,7 @@ MOPR_EDIT_CPP_OBJ ::= src/edit/.main.cpp.o \
 	src/edit/ext/imgui/.imgui_draw.cpp.o \
 	src/edit/ext/imgui/.imgui_tables.cpp.o \
 	src/edit/ext/imgui/.imgui_widgets.cpp.o \
-	src/edit/ext/imgui/backends/.imgui_impl_sdl2.cpp.o \
+	src/edit/ext/imgui/backends/.imgui_impl_sdl3.cpp.o \
 	src/edit/ext/imgui/backends/.imgui_impl_opengl3.cpp.o \
 	src/edit/ext/imgui/misc/cpp/.imgui_stdlib.cpp.o
 
