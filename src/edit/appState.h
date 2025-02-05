@@ -37,9 +37,6 @@ struct AppState
     bool quit;
     bool showOverlays;
     NavigationState nav;
-    std::string camera;
-    unsigned int idSelected;
-    unsigned int idSubSelected;
     double mx;
     double my;
 

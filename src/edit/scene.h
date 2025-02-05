@@ -29,11 +29,12 @@ namespace mopr
 // Scene
 //
 
-struct Scene
+class Scene
 {
     std::shared_ptr< class pxr::UsdImagingGLEngine > engine;
-    // Stage and camera path are directly related.
+    // Stage, frame step and camera path are directly related.
     pxr::UsdStageRefPtr stage;
+    double fstepMS;
     pxr::SdfPath camera;
 
     pxr::GlfDrawTargetRefPtr drawTarget;
@@ -41,12 +42,25 @@ struct Scene
 
     pxr::VtDictionary renderSettings;
 
+  public:
     Scene( const pxr::SdfLayerRefPtr layer, const std::string & cameraPath );
 
     ~Scene( );
 
     void
-     frameAll( double viewTranslate[ 3 ] );
+     frameAll( double viewTranslate[ 3 ] ) const;
+
+    double
+     frameStepMS( ) const
+    {
+        return this->fstepMS;
+    }
+
+    GLint
+     fboDrawTarget( ) const
+    {
+        return this->drawTarget->GetFramebufferId( );
+    }
 
     void
      initDrawTarget( const AppState * appState );

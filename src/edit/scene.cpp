@@ -26,9 +26,10 @@ namespace mopr
 {
 
 Scene::Scene( const pxr::SdfLayerRefPtr layer, const std::string & cameraPath )
-    : stage( ), camera( ), drawTarget( ), lighting( ), renderSettings( )
+    : stage( ), fstepMS( 0.0 ), camera( ), drawTarget( ), lighting( ), renderSettings( )
 {
     this->stage = pxr::UsdStage::Open( layer, pxr::UsdStage::LoadAll );
+    this->fstepMS = 1000.0 / this->stage->GetFramesPerSecond( );
     if ( !cameraPath.empty( ) ) this->camera = pxr::SdfPath( cameraPath );
 }
 
@@ -37,7 +38,7 @@ Scene::~Scene( )
 }
 
 void
- Scene::frameAll( double viewTranslate[ 3 ] )
+ Scene::frameAll( double viewTranslate[ 3 ] ) const
 {
     auto const & appConfig = mopr::AppConfig::GetInstance( );
 

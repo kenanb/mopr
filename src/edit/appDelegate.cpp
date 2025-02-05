@@ -33,6 +33,9 @@
 namespace mopr
 {
 
+static const double scRefreshRate = 60.0;
+static const double scTimeStepMS = 1000.0 / scRefreshRate;
+
 static pxr::SdfLayerRefPtr
  generateLayer( const AssetMessaging & assetMessaging,
                 const AppConfig & appConfig,
@@ -77,6 +80,40 @@ static pxr::SdfLayerRefPtr
     return layer;
 }
 
+struct Asset
+{
+    AssetMessaging * msg;
+    std::string camera;
+    unsigned int idSelected;
+    unsigned int idSubSelected;
+    CommandQueue commandQueue;
+    std::vector< std::string > commandOptions;
+    Scene scene;
+
+    Asset( AssetMessaging * msg,
+           const pxr::SdfLayerRefPtr layer,
+           const std::string & cameraPath )
+        : msg( msg )
+        , camera( cameraPath )
+        , idSelected( 0 )
+        , idSubSelected( 0 )
+        , commandQueue( )
+        , commandOptions( )
+        , scene( layer, cameraPath )
+    {
+    }
+
+    Asset( AssetMessaging & assetMessaging,
+           const AppConfig & appConfig,
+           const AppEnvironment * appEnvironment,
+           const std::string & cameraPath )
+        : Asset( &assetMessaging,
+                 generateLayer( assetMessaging, appConfig, appEnvironment ),
+                 cameraPath )
+    {
+    }
+};
+
 void
  appDelegate( SDL_Window * window,
               const AppEnvironment * appEnvironment,
@@ -112,31 +149,26 @@ void
     assetMessaging.bindStaging( );
 
     //
-    // Construct scene.
+    // Construct asset and corresponding scene.
     //
 
-    Scene scene{ generateLayer( assetMessaging, appConfig, appEnvironment ),
-                 appState.camera };
+    Asset asset{ assetMessaging, appConfig, appEnvironment, "" };
 
     // Update viewport transform based on stage contents.
     if ( appConfig.enableFrameAll )
     {
-        scene.frameAll( appState.viewTranslate );
+        asset.scene.frameAll( appState.viewTranslate );
     }
 
     //
     // Representation classes.
     //
 
-    assetMessaging.initInteraction( );
+    asset.msg->initInteraction( );
 
-    CommandQueue commandQueue;
-
-    std::vector< std::string > commandOptions;
-
-    commandQueue.clear( );
-    assetMessaging.populateEditorLayout( commandQueue, 640, 960 );
-    // commandQueue.debugPrint();
+    asset.commandQueue.clear( );
+    asset.msg->populateEditorLayout( asset.commandQueue, 640, 960 );
+    // asset.commandQueue.debugPrint();
 
     //
     // Init scene.
@@ -145,7 +177,7 @@ void
     GLuint vaoDrawTarget;
     GL_CALL( glGenVertexArrays( 1, &vaoDrawTarget ) );
     GL_CALL( glBindVertexArray( vaoDrawTarget ) );
-    if ( !scene.init( &appState ) )
+    if ( !asset.scene.init( &appState ) )
     {
         SDL_Log( "Unable to initialize OpenGL state for Usd.\n" );
         return;
@@ -184,35 +216,32 @@ void
 
     ImGuiIO & io = ImGui::GetIO( );
 
-    static const double refreshRate = 60.0;
-    static const double timeStepMS = 1000.0 / refreshRate;
-    const double frameStepMS = 1000.0 / scene.stage->GetFramesPerSecond( );
-
     // Ensure initial update by subtracting refresh wait time.
-    Uint32 lastRenderedTick = SDL_GetTicks( ) - timeStepMS;
+    Uint64 lastRenderedTickMS = SDL_GetTicks( ) - scTimeStepMS;
 
     // Rely on last-frame-wraparound to ensure rendering the very first frame first.
     double frameToRender = appState.frameLast + 1;
 
-    unsigned int idPrev = appState.idSelected;
-    unsigned int idSubPrev = appState.idSubSelected;
-    unsigned int optSelected = 0;
     while ( appState.quit == false )
     {
         // TODO: Improve update scheduling.
-        Uint32 currentTick = SDL_GetTicks( );
-        Uint32 delta = currentTick - lastRenderedTick;
-        if ( delta <= timeStepMS )
+        Uint64 currentTickMS = SDL_GetTicks( );
+        Uint64 deltaMS = currentTickMS - lastRenderedTickMS;
+        if ( deltaMS <= scTimeStepMS )
         {
             SDL_Delay( 1 );
             continue;
         }
         else
         {
-            frameToRender += delta / frameStepMS;
-            lastRenderedTick = currentTick;
+            lastRenderedTickMS = currentTickMS;
         }
 
+        //
+        // Calculate frame to render.
+        //
+
+        frameToRender += deltaMS / asset.scene.frameStepMS( );
         if ( frameToRender > appState.frameLast )
         {
             frameToRender = appState.frameFirst;
@@ -250,29 +279,6 @@ void
             }
         }
 
-        if ( optSelected )
-        {
-            assetMessaging.applyCommandOption(
-             appState.idSelected, appState.idSubSelected, optSelected );
-
-            // Reset.
-            optSelected = 0;
-        }
-
-        if ( idPrev != appState.idSelected || idSubPrev != appState.idSubSelected )
-        {
-            commandOptions.clear( );
-            if ( appState.idSelected )
-            {
-                assetMessaging.populateCommandOptions(
-                 commandOptions, appState.idSelected, appState.idSubSelected );
-            }
-
-            // Reset.
-            idPrev = appState.idSelected;
-            idSubPrev = appState.idSubSelected;
-        }
-
         //
         // Draw and blit scene.
         //
@@ -282,11 +288,10 @@ void
         // so we maintain a separate VAO for it.
         GL_CALL( glBindVertexArray( vaoDrawTarget ) );
 
-        scene.draw( frameToRender, &appState );
+        asset.scene.draw( frameToRender, &appState );
 
         GL_CALL( glBindFramebuffer( GL_DRAW_FRAMEBUFFER, fboWindow ) );
-        GL_CALL( glBindFramebuffer( GL_READ_FRAMEBUFFER,
-                                    scene.drawTarget->GetFramebufferId( ) ) );
+        GL_CALL( glBindFramebuffer( GL_READ_FRAMEBUFFER, asset.scene.fboDrawTarget( ) ) );
 
         GL_CALL( glBlitFramebuffer( 0,
                                     0,
@@ -321,16 +326,20 @@ void
         // Draw editor.
         //
 
+        unsigned int optSelected = 0;
+        unsigned int idPrev = asset.idSelected;
+        unsigned int idSubPrev = asset.idSubSelected;
+
         // Start ImGui frame.
         ImGui_ImplOpenGL3_NewFrame( );
         ImGui_ImplSDL3_NewFrame( );
         ImGui::NewFrame( );
 
         editor.drawMenu( );
-        editor.drawTree( commandQueue,
-                         commandOptions,
-                         &appState.idSelected,
-                         &appState.idSubSelected,
+        editor.drawTree( asset.commandQueue,
+                         asset.commandOptions,
+                         &asset.idSelected,
+                         &asset.idSubSelected,
                          &optSelected );
 
         // Draw main after the windows that shouldn't be impacted by docking.
@@ -344,13 +353,33 @@ void
         ImGui_ImplOpenGL3_RenderDrawData( ImGui::GetDrawData( ) );
 
         //
-        // Finalize.
+        // Finalize draw.
         //
 
         GL_CALL( glFinish( ) );
 
         // Update screen.
         SDL_GL_SwapWindow( window );
+
+        //
+        // React to queued UI interactions.
+        //
+
+        if ( optSelected )
+        {
+            asset.msg->applyCommandOption(
+             asset.idSelected, asset.idSubSelected, optSelected );
+        }
+
+        if ( idPrev != asset.idSelected || idSubPrev != asset.idSubSelected )
+        {
+            asset.commandOptions.clear( );
+            if ( asset.idSelected )
+            {
+                asset.msg->populateCommandOptions(
+                 asset.commandOptions, asset.idSelected, asset.idSubSelected );
+            }
+        }
     }
 
     //
@@ -367,7 +396,7 @@ void
 
     overlayProgram.fini( );
 
-    assetMessaging.termInteraction( );
+    asset.msg->termInteraction( );
     projectMessaging.releaseProject( );
 }
 
