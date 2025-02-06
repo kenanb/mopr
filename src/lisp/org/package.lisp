@@ -52,6 +52,7 @@
    #:asset-info-p
    #:asset-info
    #:asset-info-content-type
+   #:asset-info-description
 
    ;; PROJECT
    #:make-project-info

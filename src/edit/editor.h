@@ -5,6 +5,7 @@
 
 #include "imgui.h"
 
+#include <map>
 #include <string>
 #include <vector>
 
@@ -20,7 +21,8 @@ struct Editor
     Editor( ) = default;
 
     void
-     drawMenu( ) const;
+     drawMenu( const std::map< std::string, std::string > & assetPaths,
+               std::string & assetSelected ) const;
 
     void
      drawMain( ) const;

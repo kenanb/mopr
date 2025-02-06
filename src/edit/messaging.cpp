@@ -164,6 +164,30 @@ ProjectMessaging::ProjectMessaging( const Client * client,
 {
 }
 
+unsigned int
+ ProjectMessaging::getSourceAssetPaths( std::map< std::string, std::string > & pathMap )
+{
+    pugi::xml_document docResponse;
+    requestGet( client, docResponse, uriEpA.c_str( ) );
+
+    pugi::xpath_node_set xp_assets = docResponse.select_nodes( "//assets/asset" );
+
+    for ( pugi::xpath_node_set::const_iterator it = xp_assets.begin( );
+          it != xp_assets.end( );
+          ++it )
+    {
+        std::string assetType = it->node( ).attribute( "asset-type" ).value( );
+        if ( "SOURCE" == assetType )
+        {
+            pathMap.insert( std::pair< std::string, std::string >(
+             it->node( ).attribute( "path" ).value( ),
+             it->node( ).attribute( "description" ).value( ) ) );
+        }
+    }
+
+    return 0;
+}
+
 AssetMessaging &
  ProjectMessaging::getOrCreateAssetMessaging( const std::string & assetPath )
 {

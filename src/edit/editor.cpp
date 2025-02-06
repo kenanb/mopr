@@ -9,16 +9,27 @@ static const int midPointOffsetX = 44;
 static const int padding = 4;
 
 void
- Editor::drawMenu( ) const
+ Editor::drawMenu( const std::map< std::string, std::string > & assetPaths,
+                   std::string & assetSelected ) const
 {
     if ( ImGui::BeginMainMenuBar( ) )
     {
         ImGui::Text( "MOPR EDITOR" );
         ImGui::Separator( );
+
         if ( ImGui::BeginMenu( "Project" ) )
         {
-            if ( ImGui::MenuItem( "Open" ) )
+            if ( ImGui::BeginMenu( "Assets" ) )
             {
+                for ( auto const & assetPathPair : assetPaths )
+                {
+                    if ( ImGui::MenuItem( assetPathPair.first.c_str( ),
+                                          assetPathPair.second.c_str( ) ) )
+                    {
+                        assetSelected = assetPathPair.first;
+                    }
+                }
+                ImGui::EndMenu( );
             }
             ImGui::EndMenu( );
         }

@@ -7,7 +7,6 @@ AppState::AppState( const AppEnvironment * appEnv, const AppConfig * appCfg )
 
     // Defaulted to values from AppEnvironment.
     : projectPath( appEnv->getProjectPath( ) )
-    , assetPath( appEnv->getAssetPath( ) )
     , frameFirst( appEnv->frameFirst )
     , frameLast( appEnv->frameLast )
 
@@ -25,6 +24,7 @@ AppState::AppState( const AppEnvironment * appEnv, const AppConfig * appCfg )
     , nav( NAVIGATION_STATE_NONE )
     , mx( 0.0 )
     , my( 0.0 )
+    , assetPath( )
 
 {
 }

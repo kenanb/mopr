@@ -4,6 +4,7 @@
 #include "client.h"
 #include "procedureViz.h"
 
+#include <map>
 #include <string>
 #include <unordered_map>
 #include <vector>
@@ -110,6 +111,9 @@ struct ProjectMessaging : public MessagingBase
         selection += "']";
         return selection;
     }
+
+    unsigned int
+     getSourceAssetPaths( std::map< std::string, std::string > & pathMap );
 
     AssetMessaging &
      getOrCreateAssetMessaging( const std::string & assetPath );

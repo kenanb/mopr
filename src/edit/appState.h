@@ -23,7 +23,6 @@ struct AppState
 {
     // Defaulted to values from AppEnvironment.
     std::string projectPath;
-    std::string assetPath;
     double frameFirst;
     double frameLast;
 
@@ -39,6 +38,7 @@ struct AppState
     NavigationState nav;
     double mx;
     double my;
+    std::string assetPath;
 
     AppState( const AppEnvironment * appEnv, const AppConfig * appCfg );
 };

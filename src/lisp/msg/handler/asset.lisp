@@ -19,11 +19,15 @@
        (loop for a in project-assets
              for auuid = (mopr-uri:descriptor-uuid (car a))
              for path = (namestring (mopr-org:pndescriptor-path (car a)))
+             for acontenttype = (mopr-org:asset-info-content-type (cdr a))
+             for adescription = (mopr-org:asset-info-description (cdr a))
              for uri = (format nil "/workshop/~A/project/~A/asset/~A/" wuuid puuid auuid)
              collecting (xmls:make-node :name "asset"
                                         :attrs `(("path" ,path)
                                                  ("uuid" ,auuid)
-                                                 ("uri" ,uri))))))))
+                                                 ("uri" ,uri)
+                                                 ("asset-type" ,acontenttype)
+                                                 ("description" ,adescription))))))))
 
 (defmethod handle-get-request (rid (category (eql 'main-request-fn-asset-res))
                                &key context remaining)

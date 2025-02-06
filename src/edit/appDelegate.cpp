@@ -27,6 +27,7 @@
 #include "SDL3/SDL.h"
 #include "SDL3/SDL_opengl.h"
 
+#include <map>
 #include <stddef.h>
 #include <vector>
 
@@ -143,59 +144,21 @@ void
     projectMessaging.initProjectEndpoints( );
     projectMessaging.debugPrint( );
 
+    std::map< std::string, std::string > sourceAssetPathMap;
+    projectMessaging.getSourceAssetPaths( sourceAssetPathMap );
+
     //
-    // Construct asset and corresponding scene.
+    // Init asset and scene related variables.
     //
+
+    // Variable will be cleared while asset selection is initialized,
+    // and selection will be assigned to appState.assetPath member.
+    std::string assetSelected = appEnvironment->getAssetPath( );
 
     Asset * asset = nullptr;
 
-    if ( !appState.assetPath.empty( ) )
-    {
-        AssetMessaging & assetMessaging =
-         projectMessaging.getOrCreateAssetMessaging( appState.assetPath );
-        assetMessaging.debugPrint( );
-        assetMessaging.bindStaging( );
-
-        asset = new Asset( assetMessaging, appConfig, appEnvironment, "" );
-    }
-
-    if ( asset )
-    {
-        // Update viewport transform based on stage contents.
-        if ( appConfig.enableFrameAll )
-        {
-            asset->scene.frameAll( appState.viewTranslate );
-        }
-    }
-
-    //
-    // Representation classes.
-    //
-
-    if ( asset )
-    {
-        asset->msg->initInteraction( );
-
-        asset->commandQueue.clear( );
-        asset->msg->populateEditorLayout( asset->commandQueue, 640, 960 );
-        // asset->commandQueue.debugPrint();
-    }
-
-    //
-    // Init scene.
-    //
-
     GLuint vaoDrawTarget;
     GL_CALL( glGenVertexArrays( 1, &vaoDrawTarget ) );
-    GL_CALL( glBindVertexArray( vaoDrawTarget ) );
-    if ( asset )
-    {
-        if ( !asset->scene.init( &appState ) )
-        {
-            SDL_Log( "Unable to initialize OpenGL state for Usd.\n" );
-            return;
-        }
-    }
 
     //
     // Init overlay.
@@ -360,7 +323,7 @@ void
         ImGui_ImplSDL3_NewFrame( );
         ImGui::NewFrame( );
 
-        editor.drawMenu( );
+        editor.drawMenu( sourceAssetPathMap, assetSelected );
 
         unsigned int optSelected = 0, idPrev = 0, idSubPrev = 0;
         if ( asset )
@@ -414,6 +377,61 @@ void
                     asset->msg->populateCommandOptions(
                      asset->commandOptions, asset->idSelected, asset->idSubSelected );
                 }
+            }
+        }
+
+        if ( !assetSelected.empty( ) && appState.assetPath != assetSelected )
+        {
+            appState.assetPath = assetSelected;
+            assetSelected.clear( );
+
+            //
+            // Construct asset messaging.
+            //
+
+            AssetMessaging & assetMessaging =
+             projectMessaging.getOrCreateAssetMessaging( appState.assetPath );
+            assetMessaging.bindStaging( );
+            assetMessaging.debugPrint( );
+
+            //
+            // Construct asset and corresponding scene.
+            //
+
+            if ( asset )
+            {
+                asset->msg->termInteraction( );
+                delete asset;
+            }
+
+            asset = new Asset( assetMessaging, appConfig, appEnvironment, "" );
+
+            // Update viewport transform based on stage contents.
+            if ( appConfig.enableFrameAll )
+            {
+                asset->scene.frameAll( appState.viewTranslate );
+            }
+
+            //
+            // Representation classes.
+            //
+
+            asset->msg->initInteraction( );
+
+            asset->commandQueue.clear( );
+            asset->msg->populateEditorLayout( asset->commandQueue, 640, 960 );
+            // asset->commandQueue.debugPrint();
+
+            //
+            // Init scene.
+            //
+
+            GL_CALL( glBindVertexArray( vaoDrawTarget ) );
+
+            if ( !asset->scene.init( &appState ) )
+            {
+                SDL_Log( "Unable to initialize OpenGL state for Usd.\n" );
+                return;
             }
         }
     }
