@@ -147,10 +147,7 @@ int
     // Initialize SDL
     //
 
-    // NOTE: I observe an issue with SDL2 when initializing SDL_INIT_AUDIO.
-    // Startup seems to hang as of 2.30, waiting for the semaphore introduced
-    // to PULSEAUDIO_DetectDevices in 82ce05ad. sdl2-2.28.5 works.
-    if ( !SDL_Init( SDL_INIT_VIDEO ) )
+    if ( !SDL_Init( SDL_INIT_VIDEO | SDL_INIT_AUDIO ) )
     {
         SDL_Log( "SDL could not initialize! SDL_Error: %s\n", SDL_GetError( ) );
     }
