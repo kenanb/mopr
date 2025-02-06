@@ -186,7 +186,7 @@ void
     // Update the draw target's size.
     this->drawTarget->SetSize( pxr::GfVec2i( appState->screenW, appState->screenH ) );
 
-    GLfloat clearColor[ 4 ] = { 0.1, 0, 0, 0 };
+    GLfloat clearColor[ 4 ] = { 0, 0, 0, 0 };
     GLfloat clearDepth[ 1 ] = { 1 };
 
     glClearBufferfv( GL_COLOR, 0, clearColor );
@@ -257,7 +257,7 @@ void
     params.showGuides = appConfig.enablePurposeGuide;
     params.showProxy = appConfig.enablePurposeProxy;
     params.showRender = appConfig.enablePurposeRender;
-    params.clearColor = pxr::GfVec4f{ 1.0f, 0.5f, 0.1f, 1.0f };
+    params.clearColor = pxr::GfVec4f{ 0.5f, 0.5f, 0.5f, 1.0f };
     params.frame = pxr::UsdTimeCode( frame );
     // params.clipPlanes = std::vector<GfVec4d>{};
 

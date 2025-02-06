@@ -122,7 +122,7 @@ AppEnvironment::AppEnvironment( int argc, char * argv[] )
         }
     }
 
-    if ( !( this->workshopPath && this->projectPath && this->assetPath ) )
+    if ( !( this->workshopPath && this->projectPath ) )
     {
         this->action = ActionHelpFailure;
     }

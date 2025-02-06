@@ -143,32 +143,43 @@ void
     projectMessaging.initProjectEndpoints( );
     projectMessaging.debugPrint( );
 
-    AssetMessaging & assetMessaging =
-     projectMessaging.getOrCreateAssetMessaging( appState.assetPath );
-    assetMessaging.debugPrint( );
-    assetMessaging.bindStaging( );
-
     //
     // Construct asset and corresponding scene.
     //
 
-    Asset * asset = new Asset( assetMessaging, appConfig, appEnvironment, "" );
+    Asset * asset = nullptr;
 
-    // Update viewport transform based on stage contents.
-    if ( appConfig.enableFrameAll )
+    if ( !appState.assetPath.empty( ) )
     {
-        asset->scene.frameAll( appState.viewTranslate );
+        AssetMessaging & assetMessaging =
+         projectMessaging.getOrCreateAssetMessaging( appState.assetPath );
+        assetMessaging.debugPrint( );
+        assetMessaging.bindStaging( );
+
+        asset = new Asset( assetMessaging, appConfig, appEnvironment, "" );
+    }
+
+    if ( asset )
+    {
+        // Update viewport transform based on stage contents.
+        if ( appConfig.enableFrameAll )
+        {
+            asset->scene.frameAll( appState.viewTranslate );
+        }
     }
 
     //
     // Representation classes.
     //
 
-    asset->msg->initInteraction( );
+    if ( asset )
+    {
+        asset->msg->initInteraction( );
 
-    asset->commandQueue.clear( );
-    asset->msg->populateEditorLayout( asset->commandQueue, 640, 960 );
-    // asset->commandQueue.debugPrint();
+        asset->commandQueue.clear( );
+        asset->msg->populateEditorLayout( asset->commandQueue, 640, 960 );
+        // asset->commandQueue.debugPrint();
+    }
 
     //
     // Init scene.
@@ -177,10 +188,13 @@ void
     GLuint vaoDrawTarget;
     GL_CALL( glGenVertexArrays( 1, &vaoDrawTarget ) );
     GL_CALL( glBindVertexArray( vaoDrawTarget ) );
-    if ( !asset->scene.init( &appState ) )
+    if ( asset )
     {
-        SDL_Log( "Unable to initialize OpenGL state for Usd.\n" );
-        return;
+        if ( !asset->scene.init( &appState ) )
+        {
+            SDL_Log( "Unable to initialize OpenGL state for Usd.\n" );
+            return;
+        }
     }
 
     //
@@ -241,10 +255,13 @@ void
         // Calculate frame to render.
         //
 
-        frameToRender += deltaMS / asset->scene.frameStepMS( );
-        if ( frameToRender > appState.frameLast )
+        if ( asset )
         {
-            frameToRender = appState.frameFirst;
+            frameToRender += deltaMS / asset->scene.frameStepMS( );
+            if ( frameToRender > appState.frameLast )
+            {
+                frameToRender = appState.frameFirst;
+            }
         }
 
         //
@@ -283,30 +300,41 @@ void
         // Draw and blit scene.
         //
 
-        // DrawTarget saves/sets up/restores OpenGL state explicitly
-        // via Bind/Unbind.  But it still seems to modify VAO state,
-        // so we maintain a separate VAO for it.
-        GL_CALL( glBindVertexArray( vaoDrawTarget ) );
+        if ( asset )
+        {
+            // DrawTarget saves/sets up/restores OpenGL state explicitly
+            // via Bind/Unbind.  But it still seems to modify VAO state,
+            // so we maintain a separate VAO for it.
+            GL_CALL( glBindVertexArray( vaoDrawTarget ) );
 
-        asset->scene.draw( frameToRender, &appState );
+            asset->scene.draw( frameToRender, &appState );
 
-        GL_CALL( glBindFramebuffer( GL_DRAW_FRAMEBUFFER, fboWindow ) );
-        GL_CALL(
-         glBindFramebuffer( GL_READ_FRAMEBUFFER, asset->scene.fboDrawTarget( ) ) );
+            GL_CALL( glBindFramebuffer( GL_DRAW_FRAMEBUFFER, fboWindow ) );
+            GL_CALL(
+             glBindFramebuffer( GL_READ_FRAMEBUFFER, asset->scene.fboDrawTarget( ) ) );
 
-        GL_CALL( glBlitFramebuffer( 0,
-                                    0,
-                                    appState.screenW,
-                                    appState.screenH,
-                                    0,
-                                    0,
-                                    appState.screenW,
-                                    appState.screenH,
-                                    GL_COLOR_BUFFER_BIT,
-                                    GL_NEAREST ) );
+            GL_CALL( glBlitFramebuffer( 0,
+                                        0,
+                                        appState.screenW,
+                                        appState.screenH,
+                                        0,
+                                        0,
+                                        appState.screenW,
+                                        appState.screenH,
+                                        GL_COLOR_BUFFER_BIT,
+                                        GL_NEAREST ) );
 
-        GL_CALL( glBindFramebuffer( GL_DRAW_FRAMEBUFFER, fboWindow ) );
-        GL_CALL( glBindFramebuffer( GL_READ_FRAMEBUFFER, fboWindow ) );
+            GL_CALL( glBindFramebuffer( GL_DRAW_FRAMEBUFFER, fboWindow ) );
+            GL_CALL( glBindFramebuffer( GL_READ_FRAMEBUFFER, fboWindow ) );
+        }
+        else
+        {
+            GLfloat clearColor[ 4 ] = { 0.5, 0.5, 0.5, 1.0 };
+            GLfloat clearDepth[ 1 ] = { 1 };
+
+            glClearBufferfv( GL_COLOR, 0, clearColor );
+            glClearBufferfv( GL_DEPTH, 0, clearDepth );
+        }
 
         //
         // Draw overlay layers.
@@ -327,21 +355,25 @@ void
         // Draw editor.
         //
 
-        unsigned int optSelected = 0;
-        unsigned int idPrev = asset->idSelected;
-        unsigned int idSubPrev = asset->idSubSelected;
-
         // Start ImGui frame.
         ImGui_ImplOpenGL3_NewFrame( );
         ImGui_ImplSDL3_NewFrame( );
         ImGui::NewFrame( );
 
         editor.drawMenu( );
-        editor.drawTree( asset->commandQueue,
-                         asset->commandOptions,
-                         &asset->idSelected,
-                         &asset->idSubSelected,
-                         &optSelected );
+
+        unsigned int optSelected = 0, idPrev = 0, idSubPrev = 0;
+        if ( asset )
+        {
+            optSelected = 0;
+            idPrev = asset->idSelected;
+            idSubPrev = asset->idSubSelected;
+            editor.drawTree( asset->commandQueue,
+                             asset->commandOptions,
+                             &asset->idSelected,
+                             &asset->idSubSelected,
+                             &optSelected );
+        }
 
         // Draw main after the windows that shouldn't be impacted by docking.
         editor.drawMain( );
@@ -366,19 +398,22 @@ void
         // React to queued UI interactions.
         //
 
-        if ( optSelected )
+        if ( asset )
         {
-            asset->msg->applyCommandOption(
-             asset->idSelected, asset->idSubSelected, optSelected );
-        }
-
-        if ( idPrev != asset->idSelected || idSubPrev != asset->idSubSelected )
-        {
-            asset->commandOptions.clear( );
-            if ( asset->idSelected )
+            if ( optSelected )
             {
-                asset->msg->populateCommandOptions(
-                 asset->commandOptions, asset->idSelected, asset->idSubSelected );
+                asset->msg->applyCommandOption(
+                 asset->idSelected, asset->idSubSelected, optSelected );
+            }
+
+            if ( idPrev != asset->idSelected || idSubPrev != asset->idSubSelected )
+            {
+                asset->commandOptions.clear( );
+                if ( asset->idSelected )
+                {
+                    asset->msg->populateCommandOptions(
+                     asset->commandOptions, asset->idSelected, asset->idSubSelected );
+                }
             }
         }
     }
@@ -397,8 +432,11 @@ void
 
     overlayProgram.fini( );
 
-    asset->msg->termInteraction( );
-    delete asset;
+    if ( asset )
+    {
+        asset->msg->termInteraction( );
+        delete asset;
+    }
 
     projectMessaging.releaseProject( );
 }

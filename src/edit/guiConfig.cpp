@@ -81,7 +81,7 @@ CommandConfig::CommandConfig( ) : roundingFactor( 4.0f )
 {
     colorTheme[ COMMAND_THEME_NONE ] = IM_COL32( 0, 0, 0, 255 );
     colorTheme[ COMMAND_THEME_ROOT_CONTAINER_FG ] = IM_COL32( 0, 0, 0, 125 );
-    colorTheme[ COMMAND_THEME_ROOT_CONTAINER_BG ] = IM_COL32( 235, 220, 175, 125 );
+    colorTheme[ COMMAND_THEME_ROOT_CONTAINER_BG ] = IM_COL32( 200, 200, 200, 125 );
     colorTheme[ COMMAND_THEME_EXPR_CONTAINER_FG ] = IM_COL32( 0, 0, 0, 125 );
     colorTheme[ COMMAND_THEME_EXPR_CONTAINER_BG ] = IM_COL32( 235, 235, 235, 150 );
     colorTheme[ COMMAND_THEME_EXPR_LABEL_FG ] = IM_COL32( 0, 0, 0, 255 );
