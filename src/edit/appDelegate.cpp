@@ -152,23 +152,23 @@ void
     // Construct asset and corresponding scene.
     //
 
-    Asset asset{ assetMessaging, appConfig, appEnvironment, "" };
+    Asset * asset = new Asset( assetMessaging, appConfig, appEnvironment, "" );
 
     // Update viewport transform based on stage contents.
     if ( appConfig.enableFrameAll )
     {
-        asset.scene.frameAll( appState.viewTranslate );
+        asset->scene.frameAll( appState.viewTranslate );
     }
 
     //
     // Representation classes.
     //
 
-    asset.msg->initInteraction( );
+    asset->msg->initInteraction( );
 
-    asset.commandQueue.clear( );
-    asset.msg->populateEditorLayout( asset.commandQueue, 640, 960 );
-    // asset.commandQueue.debugPrint();
+    asset->commandQueue.clear( );
+    asset->msg->populateEditorLayout( asset->commandQueue, 640, 960 );
+    // asset->commandQueue.debugPrint();
 
     //
     // Init scene.
@@ -177,7 +177,7 @@ void
     GLuint vaoDrawTarget;
     GL_CALL( glGenVertexArrays( 1, &vaoDrawTarget ) );
     GL_CALL( glBindVertexArray( vaoDrawTarget ) );
-    if ( !asset.scene.init( &appState ) )
+    if ( !asset->scene.init( &appState ) )
     {
         SDL_Log( "Unable to initialize OpenGL state for Usd.\n" );
         return;
@@ -241,7 +241,7 @@ void
         // Calculate frame to render.
         //
 
-        frameToRender += deltaMS / asset.scene.frameStepMS( );
+        frameToRender += deltaMS / asset->scene.frameStepMS( );
         if ( frameToRender > appState.frameLast )
         {
             frameToRender = appState.frameFirst;
@@ -288,10 +288,11 @@ void
         // so we maintain a separate VAO for it.
         GL_CALL( glBindVertexArray( vaoDrawTarget ) );
 
-        asset.scene.draw( frameToRender, &appState );
+        asset->scene.draw( frameToRender, &appState );
 
         GL_CALL( glBindFramebuffer( GL_DRAW_FRAMEBUFFER, fboWindow ) );
-        GL_CALL( glBindFramebuffer( GL_READ_FRAMEBUFFER, asset.scene.fboDrawTarget( ) ) );
+        GL_CALL(
+         glBindFramebuffer( GL_READ_FRAMEBUFFER, asset->scene.fboDrawTarget( ) ) );
 
         GL_CALL( glBlitFramebuffer( 0,
                                     0,
@@ -327,8 +328,8 @@ void
         //
 
         unsigned int optSelected = 0;
-        unsigned int idPrev = asset.idSelected;
-        unsigned int idSubPrev = asset.idSubSelected;
+        unsigned int idPrev = asset->idSelected;
+        unsigned int idSubPrev = asset->idSubSelected;
 
         // Start ImGui frame.
         ImGui_ImplOpenGL3_NewFrame( );
@@ -336,10 +337,10 @@ void
         ImGui::NewFrame( );
 
         editor.drawMenu( );
-        editor.drawTree( asset.commandQueue,
-                         asset.commandOptions,
-                         &asset.idSelected,
-                         &asset.idSubSelected,
+        editor.drawTree( asset->commandQueue,
+                         asset->commandOptions,
+                         &asset->idSelected,
+                         &asset->idSubSelected,
                          &optSelected );
 
         // Draw main after the windows that shouldn't be impacted by docking.
@@ -367,17 +368,17 @@ void
 
         if ( optSelected )
         {
-            asset.msg->applyCommandOption(
-             asset.idSelected, asset.idSubSelected, optSelected );
+            asset->msg->applyCommandOption(
+             asset->idSelected, asset->idSubSelected, optSelected );
         }
 
-        if ( idPrev != asset.idSelected || idSubPrev != asset.idSubSelected )
+        if ( idPrev != asset->idSelected || idSubPrev != asset->idSubSelected )
         {
-            asset.commandOptions.clear( );
-            if ( asset.idSelected )
+            asset->commandOptions.clear( );
+            if ( asset->idSelected )
             {
-                asset.msg->populateCommandOptions(
-                 asset.commandOptions, asset.idSelected, asset.idSubSelected );
+                asset->msg->populateCommandOptions(
+                 asset->commandOptions, asset->idSelected, asset->idSubSelected );
             }
         }
     }
@@ -396,7 +397,9 @@ void
 
     overlayProgram.fini( );
 
-    asset.msg->termInteraction( );
+    asset->msg->termInteraction( );
+    delete asset;
+
     projectMessaging.releaseProject( );
 }
 
