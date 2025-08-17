@@ -21,7 +21,7 @@ static void
     sEmptyArgv[ 0 ] = { sEmptyPath };
 }
 
-ARCH_CONSTRUCTOR( moprInit, 100, void )
+ARCH_CONSTRUCTOR( moprInit, 100 )
 {
     initEmptyArgv( );
 
@@ -45,7 +45,7 @@ ARCH_CONSTRUCTOR( moprInit, 100, void )
     // runExamples( );
 }
 
-ARCH_DESTRUCTOR( moprFini, 100, void )
+ARCH_DESTRUCTOR( moprFini, 100 )
 {
     // Shutdown ECL.
     cl_shutdown( );

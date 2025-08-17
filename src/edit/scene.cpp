@@ -250,7 +250,8 @@ void
     // params.drawMode = pxr::UsdImagingGLDrawMode::DRAW_SHADED_SMOOTH;
     params.drawMode = pxr::UsdImagingGLDrawMode::DRAW_WIREFRAME;
     params.enableLighting = appConfig.enableLightingPlaceholder;
-    params.enableIdRender = false;
+    // Removed as of usd-25.05:
+    // params.enableIdRender = false;
     params.enableSceneMaterials = appConfig.enableSceneMaterials;
     params.complexity = appConfig.complexity;
     params.cullStyle = pxr::UsdImagingGLCullStyle::CULL_STYLE_NOTHING;

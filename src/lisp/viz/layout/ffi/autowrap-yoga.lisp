@@ -7,7 +7,10 @@
  ;; Only needed during spec generation. So once we generate the spec file,
  ;; we shouldn't need the envvar being defined for later REPL use.
  :sysincludes
- (cl:list (uiop/os:getenv "MOPR_YOGA_INC_DIR"))
+ (cl:list
+  ;; NOTE: It can be necessary to add compiler or system include directory paths
+  ;; to this list for c2ffi to locate indirect includes.
+  (uiop/os:getenv "MOPR_YOGA_INC_DIR"))
 
  ;; For now, we limit spec generation to avoid committing too many changes.
  :exclude-arch
