@@ -75,7 +75,8 @@ USD_LFLAGS ::= $(USD_LIB_ROOT) \
 # NOTE: It is assumed that the correct python environment was activated, if needed.
 PYTHON_VER_MAJ ::= `python -c 'import sys; print(sys.version_info[0])'`
 PYTHON_VER_MIN ::= `python -c 'import sys; print(sys.version_info[1])'`
-BOOST_PYTHON_LIB ::= boost_python$(PYTHON_VER_MAJ)$(PYTHON_VER_MIN)
+# Recent usd versions don't have boost dependency anymore.
+# BOOST_PYTHON_LIB ::= boost_python$(PYTHON_VER_MAJ)$(PYTHON_VER_MIN)
 
 #
 #
@@ -377,8 +378,8 @@ $(mopr_edit): LDFLAGS  ::= $(COMMON_LFLAGS) $(USD_LFLAGS) -L$(MOPR_LIB_DIR)
 $(mopr_edit): LDLIBS   ::= `pkg-config --libs $(MOPR_EDIT_LIBS)` \
 	 $(CURL_LDLIBS) -lmopr_core -lmopr_repr -lyoga_core
 
-# boost-python is required by usdGeom dependency.
-$(mopr_edit): LDLIBS += -lboost_regex -l$(BOOST_PYTHON_LIB)
+# Recent usd versions don't have boost dependency anymore.
+# $(mopr_edit): LDLIBS += -lboost_regex -l$(BOOST_PYTHON_LIB)
 
 ifeq ($(MOPR_MONOLITHIC_USD),1)
 $(mopr_edit): LDLIBS += -lusd_ms
